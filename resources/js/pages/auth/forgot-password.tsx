@@ -3,16 +3,15 @@ import { Head, useForm } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
 import { FormEventHandler } from 'react';
 
-import InputError from '@/components/input-error';
-import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { InputLabel } from '@/components/ui/input-label';
 import AuthLayout from '@/layouts/auth-layout';
+import { Link } from '@inertiajs/react';
 
 export default function ForgotPassword({ status }: { status?: string }) {
-    const { data, setData, post, processing, errors } = useForm<Required<{ email: string }>>({
-        email: '',
+    const { data, setData, post, processing, errors } = useForm<Required<{ correo: string; cedula: string }>>({
+        correo: '',
+        cedula: '',
     });
 
     const submit: FormEventHandler = (e) => {
@@ -22,40 +21,51 @@ export default function ForgotPassword({ status }: { status?: string }) {
     };
 
     return (
-        <AuthLayout title="Forgot password" description="Enter your email to receive a password reset link">
-            <Head title="Forgot password" />
+        <AuthLayout title="Rec. Contraseña">
+            <Head title="Rec. Contraseña" />
 
             {status && <div className="mb-4 text-center text-sm font-medium text-green-600">{status}</div>}
 
             <div className="space-y-6">
                 <form onSubmit={submit}>
                     <div className="grid gap-2">
-                        <Label htmlFor="email">Email address</Label>
-                        <Input
-                            id="email"
+                        <InputLabel
+                            label="Correo"
+                            id="correo"
                             type="email"
-                            name="email"
                             autoComplete="off"
-                            value={data.email}
                             autoFocus
-                            onChange={(e) => setData('email', e.target.value)}
-                            placeholder="email@example.com"
+                            value={data.correo}
+                            error={errors.correo}
+                            onChange={(e) => setData('correo', e.target.value)}
                         />
 
-                        <InputError message={errors.email} />
+                        <InputLabel
+                            label="Cedula"
+                            id="cedula"
+                            type="text"
+                            autoComplete="off"
+                            autoFocus
+                            value={data.cedula}
+                            error={errors.cedula}
+                            onChange={(e) => setData('cedula', e.target.value)}
+                        />
                     </div>
 
                     <div className="my-6 flex items-center justify-start">
                         <Button className="w-full" disabled={processing}>
                             {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                            Email password reset link
+                            Enviar
                         </Button>
                     </div>
                 </form>
 
-                <div className="text-muted-foreground space-x-1 text-center text-sm">
-                    <span>Or, return to</span>
-                    <TextLink href={route('login')}>log in</TextLink>
+                <div className="my-6 flex items-center justify-start">
+                    <Link href={route('login')} className='w-full'>
+                        <Button className="w-full bg-gray-500 text-white hover:bg-gray-600" disabled={processing}>
+                            Regresar
+                        </Button>
+                    </Link>
                 </div>
             </div>
         </AuthLayout>

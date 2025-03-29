@@ -34,7 +34,7 @@ ARG OPCACHE_DEFAULT
 USER root
 
 # Instalar extensiones php adicionales necesarias
-RUN install-php-extensions exif gd redis
+RUN install-php-extensions exif gd pdo_sqlsrv sqlsrv redis
 
 # Usar el argumento para asignar la variable de entorno
 ENV PHP_OPCACHE_ENABLE=${OPCACHE_DEFAULT}

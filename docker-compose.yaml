@@ -15,7 +15,7 @@ services:
       # typesense:
       #   condition: service_started
     environment:
-      - 'AUTORUN_ENABLED=true'
+      - 'AUTORUN_ENABLED=false'
       - 'APP_NAME=${APP_NAME:-Laravel}'
       - 'APP_ENV=${APP_ENV:-local}'
       - 'APP_KEY=${APP_KEY}'
@@ -33,7 +33,7 @@ services:
       - 'LOG_STACK=${LOG_STACK:-single}'
       - 'LOG_DEPRECATIONS_CHANNEL=${LOG_DEPRECATIONS_CHANNEL:-null}'
       - 'LOG_LEVEL=${LOG_LEVEL:-debug}'
-      - 'DB_CONNECTION=${DB_CONNECTION:-pgsql}'
+      - 'DB_CONNECTION=${DB_CONNECTION}'
       - 'DB_HOST=${DB_HOST:-app_db}'
       - 'DB_PORT=${DB_PORT:-5432}'
       - 'DB_DATABASE=${DB_DATABASE:-app_db}'
@@ -72,7 +72,7 @@ services:
       - 'VITE_APP_NAME=${VITE_APP_NAME}'
     networks:
       - app-network
-  
+
   app_db:
     image: postgres:17.4
     container_name: app_db

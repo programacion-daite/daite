@@ -1,0 +1,30 @@
+# # Ignore node_modules and other directories that aren't needed for production
+/node_modules
+/vendor
+/.env
+/.env.*
+/.idea
+/.vscode
+/.phpunit.result.cache
+/.DS_Store
+/.git
+/.gitignore
+/.github
+/.gitlab-ci.yml
+/.vscode/
+*.swp
+*.swo
+
+# Ignore linked folders / Simbolic links (due to permission errors in docker-builder)
+/public/storage
+
+# # Ignore test, example files and cache
+/tests
+/phpunit.xml
+/phpunit.xml.dist
+
+# # Ignore IDE and editor configuration files
+/.idea
+/.vscode
+/.project
+/.settings

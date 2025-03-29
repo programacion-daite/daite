@@ -1,119 +1,171 @@
-import { Head, useForm } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
-import { FormEventHandler } from 'react';
-
+import { useEffect, useState } from 'react';
 import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AuthLayout from '@/layouts/auth-layout';
+import { InputLabel } from '@/components/ui/input-label';
+import { useRegister, useCheckSocio } from '@/hooks/auth/useRegister';
+import type { MaskitoOptions } from '@maskito/core';
+import {useMaskito} from '@maskito/react';
+import axios from 'axios';
 
-type RegisterForm = {
-    name: string;
-    email: string;
-    password: string;
-    password_confirmation: string;
-};
+const cedulaMask: MaskitoOptions = {
+    mask: [/\d/, /\d/, /\d/, "-", /\d/, /\d/, /\d/, /\d/, /\d/, /\d/, /\d/, "-", /\d/],
+}
 
 export default function Register() {
-    const { data, setData, post, processing, errors, reset } = useForm<Required<RegisterForm>>({
-        name: '',
-        email: '',
-        password: '',
-        password_confirmation: '',
-    });
 
-    const submit: FormEventHandler = (e) => {
-        e.preventDefault();
-        post(route('register'), {
-            onFinish: () => reset('password', 'password_confirmation'),
-        });
-    };
+    const { data: checkData, setData: setCheckData, handleCheckSocio, processing: checking, errors: checkErrors, exists } = useCheckSocio();
+    const { data, setData, handleRegister, processing, errors } = useRegister();
+
+    const cedulaRef = useMaskito({options: cedulaMask})
+
+    const [typing, setTyping] = useState(false);
+    const [debounceTimeout, setDebounceTimeout] = useState<NodeJS.Timeout | null>(null);
+
+    useEffect(() => {
+        if (checkData.cedula.length === 13) { // Asegurar que el formato está completo
+            if (debounceTimeout) clearTimeout(debounceTimeout); // Limpiar timeout anterior
+
+            const timeout = setTimeout(() => {
+                 axios.post('/check-socio', checkData.cedula).then(response => {
+                    console.log(response)
+                }).catch(error => {
+                    console.error(error);
+                });
+            }, 500); 
+
+            setDebounceTimeout(timeout);
+        }
+    }, [checkData.cedula, debounceTimeout]); // Se ejecuta cada vez que la cédula cambia
 
     return (
-        <AuthLayout title="Create an account" description="Enter your details below to create your account">
-            <Head title="Register" />
-            <form className="flex flex-col gap-6" onSubmit={submit}>
-                <div className="grid gap-6">
-                    <div className="grid gap-2">
-                        <Label htmlFor="name">Name</Label>
-                        <Input
-                            id="name"
-                            type="text"
-                            required
-                            autoFocus
-                            tabIndex={1}
-                            autoComplete="name"
-                            value={data.name}
-                            onChange={(e) => setData('name', e.target.value)}
-                            disabled={processing}
-                            placeholder="Full name"
-                        />
-                        <InputError message={errors.name} className="mt-2" />
+        <AuthLayout title="Verificar Socio" description="Ingrese su cédula para continuar con el registro">
+            <Head title="Registro" />
+
+            {/* Formulario para verificar si el socio existe */}
+            {!exists && (
+                <form className="flex flex-col gap-6" onSubmit={handleCheckSocio}>
+                    <div className="grid gap-6">
+                        <div className="grid gap-2">
+                            <InputLabel
+                                label="Cédula"
+                                id="cedula"
+                                type="text"
+                                required
+                                autoFocus
+                                value={checkData.cedula}
+                                error={checkErrors.cedula}
+                                onChange={(e) => setCheckData('cedula', e.target.value)}
+                                disabled={checking}
+                                // onBlur={() => setTyping(false)} 
+                                ref={cedulaRef}
+                            />
+
+                            <InputLabel
+                                label="Codigo"
+                                id="codigo"
+                                type="text"
+                                required
+                                autoFocus
+                                value={checkData.codigo}
+                                error={checkErrors.codigo}
+                                onChange={(e) => setCheckData('codigo', e.target.value)}
+                                disabled={checking}
+                            />
+
+                        </div>
+
+                        <Button type="submit" className="mt-2 w-full" disabled={checking}>
+                            {checking && <LoaderCircle className="h-4 w-4 animate-spin" />}
+                            Verificar
+                        </Button>
+                    </div>
+                </form>
+            )}
+
+            {/* Formulario de registro (se muestra solo si exists es true) */}
+            {exists && (
+                <form className="flex flex-col gap-6" onSubmit={handleRegister}>
+                    <div className="grid gap-6">
+                        <div className="grid gap-2">
+                            <InputLabel
+                                label="Nombre"
+                                id="name"
+                                type="text"
+                                required
+                                autoComplete="name"
+                                value={data.name}
+                                onChange={(e) => setData('name', e.target.value)}
+                                disabled={processing}
+                                placeholder="Nombre completo"
+                                error={errors.name}
+                            />
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label htmlFor="email">Correo electrónico</Label>
+                            <Input
+                                id="email"
+                                type="email"
+                                required
+                                autoComplete="email"
+                                value={data.email}
+                                onChange={(e) => setData('email', e.target.value)}
+                                disabled={processing}
+                                placeholder="email@example.com"
+                            />
+                            <InputError message={errors.email} />
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label htmlFor="password">Contraseña</Label>
+                            <Input
+                                id="password"
+                                type="password"
+                                required
+                                autoComplete="new-password"
+                                value={data.password}
+                                onChange={(e) => setData('password', e.target.value)}
+                                disabled={processing}
+                                placeholder="Contraseña"
+                            />
+                            <InputError message={errors.password} />
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label htmlFor="password_confirmation">Confirmar contraseña</Label>
+                            <Input
+                                id="password_confirmation"
+                                type="password"
+                                required
+                                autoComplete="new-password"
+                                value={data.password_confirmation}
+                                onChange={(e) => setData('password_confirmation', e.target.value)}
+                                disabled={processing}
+                                placeholder="Confirmar contraseña"
+                            />
+                            <InputError message={errors.password_confirmation} />
+                        </div>
+
+                        <Button type="submit" className="mt-2 w-full" disabled={processing}>
+                            {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
+                            Crear cuenta
+                        </Button>
                     </div>
 
-                    <div className="grid gap-2">
-                        <Label htmlFor="email">Email address</Label>
-                        <Input
-                            id="email"
-                            type="email"
-                            required
-                            tabIndex={2}
-                            autoComplete="email"
-                            value={data.email}
-                            onChange={(e) => setData('email', e.target.value)}
-                            disabled={processing}
-                            placeholder="email@example.com"
-                        />
-                        <InputError message={errors.email} />
+                    <div className="text-muted-foreground text-center text-sm">
+                        ¿Ya tienes una cuenta?{' '}
+                        <TextLink href={route('login')}>
+                            Iniciar sesión
+                        </TextLink>
                     </div>
-
-                    <div className="grid gap-2">
-                        <Label htmlFor="password">Password</Label>
-                        <Input
-                            id="password"
-                            type="password"
-                            required
-                            tabIndex={3}
-                            autoComplete="new-password"
-                            value={data.password}
-                            onChange={(e) => setData('password', e.target.value)}
-                            disabled={processing}
-                            placeholder="Password"
-                        />
-                        <InputError message={errors.password} />
-                    </div>
-
-                    <div className="grid gap-2">
-                        <Label htmlFor="password_confirmation">Confirm password</Label>
-                        <Input
-                            id="password_confirmation"
-                            type="password"
-                            required
-                            tabIndex={4}
-                            autoComplete="new-password"
-                            value={data.password_confirmation}
-                            onChange={(e) => setData('password_confirmation', e.target.value)}
-                            disabled={processing}
-                            placeholder="Confirm password"
-                        />
-                        <InputError message={errors.password_confirmation} />
-                    </div>
-
-                    <Button type="submit" className="mt-2 w-full" tabIndex={5} disabled={processing}>
-                        {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                        Create account
-                    </Button>
-                </div>
-
-                <div className="text-muted-foreground text-center text-sm">
-                    Already have an account?{' '}
-                    <TextLink href={route('login')} tabIndex={6}>
-                        Log in
-                    </TextLink>
-                </div>
-            </form>
+                </form>
+            )}
         </AuthLayout>
     );
 }

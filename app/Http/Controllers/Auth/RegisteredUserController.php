@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Utils\Helpers;
 
 class RegisteredUserController extends Controller
 {
@@ -21,6 +22,27 @@ class RegisteredUserController extends Controller
     public function create(): Response
     {
         return Inertia::render('auth/register');
+    }
+
+
+    public function checkSocio(Request $request) {
+
+        $request->validate([
+            'cedula' => 'required|string',
+        ]);
+
+        $fetch = new Request([
+            'procedimiento' => '[AppCooperativa].[p_traer_valor]',
+            'renglon' => 'TRAER_CODIGO',
+            'valor_uno' => $request->cedula,
+        ]);
+
+       $response = Helpers::EjecutarProcedimiento($fetch);
+
+        return response()->json([
+            'codigo' => $response, 
+        ]);
+
     }
 
     /**

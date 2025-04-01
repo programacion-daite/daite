@@ -2,20 +2,22 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
-interface InputLabelProps {
+export interface InputLabelProps {
   id: string;
   type?: string;
   label: string;
   value: string;
-  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  error?: string;
+  onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onInput?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  error?: string | boolean;
   placeholder?: string;
   required?: boolean;
   autoFocus?: boolean;
   tabIndex?: number;
   autoComplete?: string;
   disabled?: boolean;
-  ref?: React.RefCallback<HTMLElement>;
+  readOnly?: boolean;
+  ref?: React.RefCallback<HTMLInputElement>;
 }
 
 export function InputLabel({
@@ -24,6 +26,7 @@ export function InputLabel({
   label,
   value,
   onChange,
+  onInput,
   error,
   placeholder,
   required = false,
@@ -31,7 +34,8 @@ export function InputLabel({
   tabIndex = 1,
   autoComplete = id,
   disabled = false,
-  ref = undefined
+  readOnly = false,
+  ref
 }: InputLabelProps) {
   return (
     <div className="space-y-2">
@@ -46,8 +50,11 @@ export function InputLabel({
         value={value}
         disabled={disabled}
         onChange={onChange}
+        onInput={onInput}
         placeholder={placeholder}
         ref={ref}
+        readOnly={readOnly}
+        aria-invalid={error ? "true" : "false"}
         className={cn(error && "border-red-500")}
       />
       {error && <p className="text-sm text-red-500">{error}</p>}

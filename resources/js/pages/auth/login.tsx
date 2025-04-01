@@ -55,7 +55,6 @@ export default function Login({ status }: LoginProps) {
                             label="Contraseña"
                             id="contrasena"
                             required
-                            autoFocus
                             error={errors.contrasena}
                             value={data.contrasena}
                             onChange={(e) => setData('contrasena', e.target.value)}

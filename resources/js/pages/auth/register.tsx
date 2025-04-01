@@ -1,47 +1,45 @@
-import { Head } from '@inertiajs/react';
-import { LoaderCircle } from 'lucide-react';
-import { useEffect, useState } from 'react';
 import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import AuthLayout from '@/layouts/auth-layout';
 import { InputLabel } from '@/components/ui/input-label';
-import { useRegister, useCheckSocio } from '@/hooks/auth/useRegister';
-import type { MaskitoOptions } from '@maskito/core';
-import {useMaskito} from '@maskito/react';
+import { Label } from '@/components/ui/label';
+import MaskedInput from '@/components/ui/masked-input';
+import { useCheckSocio, useRegister } from '@/hooks/auth/useRegister';
+import AuthLayout from '@/layouts/auth-layout';
+import { Head } from '@inertiajs/react';
 import axios from 'axios';
-
-const cedulaMask: MaskitoOptions = {
-    mask: [/\d/, /\d/, /\d/, "-", /\d/, /\d/, /\d/, /\d/, /\d/, /\d/, /\d/, "-", /\d/],
-}
+import { LoaderCircle } from 'lucide-react';
+import { useEffect, useRef } from 'react';
 
 export default function Register() {
-
     const { data: checkData, setData: setCheckData, handleCheckSocio, processing: checking, errors: checkErrors, exists } = useCheckSocio();
     const { data, setData, handleRegister, processing, errors } = useRegister();
 
-    const cedulaRef = useMaskito({options: cedulaMask})
-
-    const [typing, setTyping] = useState(false);
-    const [debounceTimeout, setDebounceTimeout] = useState<NodeJS.Timeout | null>(null);
+    const typingTimeout = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
-        if (checkData.cedula.length === 13) { // Asegurar que el formato está completo
-            if (debounceTimeout) clearTimeout(debounceTimeout); // Limpiar timeout anterior
+        console.log(checkData);
+        if (checkData.cedula.length === 13) {
+            if (typingTimeout.current) clearTimeout(typingTimeout.current);
 
-            const timeout = setTimeout(() => {
-                 axios.post('/check-socio', checkData.cedula).then(response => {
-                    console.log(response)
-                }).catch(error => {
-                    console.error(error);
-                });
-            }, 500); 
-
-            setDebounceTimeout(timeout);
+            typingTimeout.current = setTimeout(() => {
+                axios
+                    .get(route('checkSocio', [checkData.cedula]))
+                    .then((response) => {
+                        console.log(response);
+                    })
+                    .catch((error) => {
+                        console.error(error);
+                    });
+            }, 500);
         }
-    }, [checkData.cedula, debounceTimeout]); // Se ejecuta cada vez que la cédula cambia
+
+        return () => {
+            if (typingTimeout.current) clearTimeout(typingTimeout.current);
+        };
+    }, [checkData.cedula]); // Solo se ejecuta cuando cambie cedula
 
     return (
         <AuthLayout title="Verificar Socio" description="Ingrese su cédula para continuar con el registro">
@@ -52,18 +50,17 @@ export default function Register() {
                 <form className="flex flex-col gap-6" onSubmit={handleCheckSocio}>
                     <div className="grid gap-6">
                         <div className="grid gap-2">
-                            <InputLabel
+                            <MaskedInput
                                 label="Cédula"
                                 id="cedula"
+                                maskType="cedula"
                                 type="text"
                                 required
                                 autoFocus
                                 value={checkData.cedula}
                                 error={checkErrors.cedula}
-                                onChange={(e) => setCheckData('cedula', e.target.value)}
+                                onInput={(e) => setCheckData('cedula', e.target.value)}
                                 disabled={checking}
-                                // onBlur={() => setTyping(false)} 
-                                ref={cedulaRef}
                             />
 
                             <InputLabel
@@ -71,13 +68,18 @@ export default function Register() {
                                 id="codigo"
                                 type="text"
                                 required
-                                autoFocus
                                 value={checkData.codigo}
                                 error={checkErrors.codigo}
-                                onChange={(e) => setCheckData('codigo', e.target.value)}
-                                disabled={checking}
+                                onChange={(e) => {
+                                    console.log('Código cambiado:', e.target.value);
+                                    // Actualiza solo el valor del código
+                                    setCheckData((prev) => ({
+                                        ...prev,
+                                        codigo: e.target.value,
+                                    }));
+                                }}
+                                readOnly={true}
                             />
-
                         </div>
 
                         <Button type="submit" className="mt-2 w-full" disabled={checking}>
@@ -159,10 +161,7 @@ export default function Register() {
                     </div>
 
                     <div className="text-muted-foreground text-center text-sm">
-                        ¿Ya tienes una cuenta?{' '}
-                        <TextLink href={route('login')}>
-                            Iniciar sesión
-                        </TextLink>
+                        ¿Ya tienes una cuenta? <TextLink href={route('login')}>Iniciar sesión</TextLink>
                     </div>
                 </form>
             )}

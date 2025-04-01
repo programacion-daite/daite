@@ -25,22 +25,23 @@ class RegisteredUserController extends Controller
     }
 
 
-    public function checkSocio(Request $request) {
+    public function checkSocio(Request $request,$cedula) {
 
-        $request->validate([
-            'cedula' => 'required|string',
-        ]);
+        \Log::info($cedula);
+        // $request->validate([
+        //     'cedula' => 'required|string',
+        // ]);
 
         $fetch = new Request([
             'procedimiento' => '[AppCooperativa].[p_traer_valor]',
             'renglon' => 'TRAER_CODIGO',
-            'valor_uno' => $request->cedula,
+            'valor_uno' => $cedula,
         ]);
 
        $response = Helpers::EjecutarProcedimiento($fetch);
 
         return response()->json([
-            'codigo' => $response, 
+            'codigo' => $response,
         ]);
 
     }

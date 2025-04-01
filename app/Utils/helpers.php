@@ -11,7 +11,7 @@ class Helpers {
     private static function esquema(Request $request): array {
 
         $entidad = (object) [
-            'esquema' => $request-> esquema ?? 'dbo',
+            'esquema' => $request-> esquema ?? 'AppCooperativa',
             'nombre' =>
               $request->funcion ??
               $request->procedimiento ??
@@ -47,51 +47,54 @@ class Helpers {
                   table_name = ?
                 "
         ];
-    
+
         // if (!$entidad->nombre)
         //   return abort(422)
         // ;
-    
+
         return DB::select($entidad->sentencia, [$entidad->esquema, $entidad->nombre]);
-    
+
       }
-    
+
       public static function EjecutarProcedimiento(Request $request): Response|ResponseFactory| \Illuminate\Http\Response {
-    
+
         $api = $request->is('api/*');
-    
+
         $entidad = (object) [
-                'esquema' => $request-> esquema ?? 'dbo',
+                'esquema' => $request-> esquema ?? 'AppCooperativa',
                 'nombre' => $request->procedimiento ?? $request->funcion,
                 'parametros' => self::esquema($request)
         ];
-    
+
+        \Log::info("ENTIDAD CAMBIANDA OYE");
+        \Log::info(json_encode($entidad));
+
             $peticion = (object) [
                 'parametros' => null,
                 'ataduras' => null,
                 'consulta' => null,
                 'datos' => null
             ];
-    
+
         if (empty($entidad->parametros) && $entidad->nombre != 'p_registrar_registros') {
                 \Log::info("LA ENTIDAD NO TIENE PARAMETROS $entidad->nombre");
                 return abort(422);
             }
-    
+
         foreach ($entidad->parametros as $indice => $parametro) {
-    
+
                 $parametro->posicion = intval($parametro->posicion);
-    
+
           if ($parametro->cantidad_maxima_caracteres) {
-    
+
             $parametro->cantidad_maxima_caracteres =
               intval($parametro->cantidad_maxima_caracteres)
             ;
-    
+
             $parametro->cantidad_maxima_caracteres === -1 && $parametro->cantidad_maxima_caracteres = null;
-    
+
           }
-    
+
                 if (
                     $parametro->posicion === 1 &&
                     strpos($parametro->nombre, 'id_usuario') === 0 &&
@@ -99,42 +102,42 @@ class Helpers {
                 )
                     $request[$parametro->nombre] = session('usuario')->id_usuario
                 ;
-    
+
           switch ($parametro->tipo) {
-    
+
             case 'bit':
               $request[$parametro->nombre] =
                 boolval($request[$parametro->nombre])
               ;
             break;
-    
+
             case 'int':
               $request[$parametro->nombre] =
                 intval($request[$parametro->nombre])
               ;
             break;
-    
+
             case 'decimal':
               $request[$parametro->nombre] = floatval(
                 str_replace(',', '', $request[$parametro->nombre])
               );
             break;
-    
+
             case 'numeric':
               $request[$parametro->nombre] = floatval(
                 str_replace(',', '', $request[$parametro->nombre])
               );
             break;
-    
+
             case 'datetime':
               $request[$parametro->nombre] = date(
                 'Y-m-d H:i:s',
                 strtotime($request[$parametro->nombre])
               );
             break;
-    
+
             default:
-    
+
               if ($request->hasFile($parametro->nombre))
                 $request[$parametro->nombre] =
                   $request->file($parametro->nombre)->store('archivos/imagenes');
@@ -146,7 +149,7 @@ class Helpers {
               )
                 $request[$parametro->nombre] = strtoupper($request[$parametro->nombre])
               ;
-    
+
               if (
                 strpos($parametro->nombre, 'desde') === 0 ||
                 strpos($parametro->nombre, 'hasta') === 0 ||
@@ -154,11 +157,11 @@ class Helpers {
               )
                 $request[$parametro->nombre] = str_replace('-', '', $request[$parametro->nombre])
               ;
-    
+
             break;
-    
+
           }
-    
+
           if (
             $request[$parametro->nombre] &&
             $parametro->cantidad_maxima_caracteres &&
@@ -172,24 +175,24 @@ class Helpers {
               'codigo_estado' => 400
             ]], 400)
           ;
-    
+
           $peticion->parametros[] = $request[$parametro->nombre] ?? '';
-    
+
           $peticion->ataduras[] = '?';
-    
+
         }
-    
+
         $peticion->consulta = $request->procedimiento
                 ? "SET NOCOUNT ON; EXEC $entidad->esquema.$entidad->nombre"
                 : "SET NOCOUNT ON; SELECT $entidad->esquema.$entidad->nombre"
             ;
-    
+
         setcookie('Consulta', null, -1);
-    
+
         if (!$api && session('usuario')->depurador) {
-    
+
           $parametros = array_map(function($parametro) {
-    
+
             return (
               !is_int($parametro) &&
               !is_float($parametro)
@@ -197,16 +200,16 @@ class Helpers {
               ? "'$parametro'"
               : $parametro
             ;
-    
+
           }, $peticion->parametros);
-    
+
           setcookie(
             'Consulta',
             $peticion->consulta . implode(', ', $parametros)
           );
-    
+
         }
-    
+
             if ($request->retorna ?? true)
                 $peticion->datos = $request->procedimiento
                     ? DB::select(
@@ -229,14 +232,14 @@ class Helpers {
                             $peticion->parametros
                         )
                 ;
-    
+
         $respuesta = response(
           $peticion->datos,
           $peticion->datos[0]?->codigo_estado ?? 200
         );
-    
+
         return $respuesta;
-    
+
       }
 
 }

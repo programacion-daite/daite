@@ -17,6 +17,7 @@ export interface InputLabelProps {
   autoComplete?: string;
   disabled?: boolean;
   readOnly?: boolean;
+  className?: string;
   ref?: React.RefCallback<HTMLInputElement>;
 }
 
@@ -35,7 +36,8 @@ export function InputLabel({
   autoComplete = id,
   disabled = false,
   readOnly = false,
-  ref
+  ref,
+  className,
 }: InputLabelProps) {
   return (
     <div className="space-y-2">
@@ -55,7 +57,7 @@ export function InputLabel({
         ref={ref}
         readOnly={readOnly}
         aria-invalid={error ? "true" : "false"}
-        className={cn(error && "border-red-500")}
+        className={cn(className, error && "border-red-500")}
       />
       {error && <p className="text-sm text-red-500">{error}</p>}
     </div>

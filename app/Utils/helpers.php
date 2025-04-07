@@ -52,7 +52,7 @@ class Helpers {
         //   return abort(422)
         // ;
 
-        return DB::select($entidad->sentencia, [$entidad->esquema, $entidad->nombre]);
+        return DB::select('SET NOCOUNT ON;'.$entidad->sentencia, [$entidad->esquema, $entidad->nombre]);
 
       }
 
@@ -65,9 +65,6 @@ class Helpers {
                 'nombre' => $request->procedimiento ?? $request->funcion,
                 'parametros' => self::esquema($request)
         ];
-
-        \Log::info("ENTIDAD CAMBIANDA OYE");
-        \Log::info(json_encode($entidad));
 
             $peticion = (object) [
                 'parametros' => null,
@@ -95,13 +92,15 @@ class Helpers {
 
           }
 
-                if (
-                    $parametro->posicion === 1 &&
-                    strpos($parametro->nombre, 'id_usuario') === 0 &&
-                    !$request[$parametro->nombre]
-                )
-                    $request[$parametro->nombre] = session('usuario')->id_usuario
-                ;
+
+            if (
+                $parametro->posicion === 1 &&
+                strpos($parametro->nombre, 'id_usuario') === 0 &&
+                !$request[$parametro->nombre] &&
+                !in_array($entidad->nombre, ['p_traer_valor']) // Procedimientos que pueden ejecutarse sin usuario
+            ) {
+                $request[$parametro->nombre] = session('usuario')->id_usuario ?? 1;
+            }
 
           switch ($parametro->tipo) {
 
@@ -189,7 +188,7 @@ class Helpers {
 
         setcookie('Consulta', null, -1);
 
-        if (!$api && session('usuario')->depurador) {
+        if (!$api && session('usuario') && session('usuario')->depurador) {
 
           $parametros = array_map(function($parametro) {
 

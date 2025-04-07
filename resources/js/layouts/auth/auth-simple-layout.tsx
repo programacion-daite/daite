@@ -17,13 +17,13 @@ export default function AuthSimpleLayout({ children, title}: PropsWithChildren<A
             <div className="flex flex-col items-center justify-center">
             <Link href={route('home')} className="flex flex-col items-center gap-2 font-medium">
                 <div className="relative h-40 w-40">
-                  <AppLogoIcon className="size-9 fill-current text-[var(--foreground)] dark:text-white" />
+                  <AppLogoIcon className="size-9 fill-current text-[var(--foreground)] dark:text-white" tabIndex={-1} />
                 </div>
                 <h2 className="mt-6 text-center text-2xl font-bold text-green-800">{title}</h2>
               </Link>
             </div>
 
-            {children}
+                {children}
 
           </div>
         </div>

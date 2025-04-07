@@ -27,22 +27,57 @@ class RegisteredUserController extends Controller
 
     public function checkSocio(Request $request,$cedula) {
 
-        \Log::info($cedula);
         // $request->validate([
         //     'cedula' => 'required|string',
         // ]);
 
-        $fetch = new Request([
-            'procedimiento' => '[AppCooperativa].[p_traer_valor]',
+        $cedula = str_replace(['.', '-', ' '], '', $cedula);
+        $fetch = new Request();
+
+        $fetch->merge([
+            'procedimiento' => 'p_traer_valor',
             'renglon' => 'TRAER_CODIGO',
             'valor_uno' => $cedula,
         ]);
 
        $response = Helpers::EjecutarProcedimiento($fetch);
 
-        return response()->json([
-            'codigo' => $response,
+        return $response;
+
+    }
+
+    /**
+     * Check if a socio exists and fetch their information.
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  string  $cedula
+     * @param string  $codigo
+     * @throws \Illuminate\Validation\ValidationException
+     */
+
+    public function checkSocioExists(Request $request) {
+
+        $request->merge([
+            'cedula' => str_replace(['-', ' '], '', $request->cedula),
+            'codigo' => str_replace(['-', ' '], '', $request->codigo),
         ]);
+        
+        $request->validate([
+            'cedula' => 'required|string',
+            'codigo' => 'required|string',
+        ]);
+
+        $request->merge([
+            'procedimiento' => 'p_traer_valor',
+            'renglon' => 'TRAER_CODIGO',
+            'valor_uno' => $cedula,
+        ]);
+
+       $response = Helpers::EjecutarProcedimiento($fetch);
+
+        return $response;
 
     }
 

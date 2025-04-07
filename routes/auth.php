@@ -37,6 +37,10 @@ Route::middleware('guest')->group(function () {
         ->name('checkSocio');
     });
 
+    Route::post('checkSocioExists', [RegisteredUserController::class, 'checkSocioExists'])
+    ->name('checkSocioExists');
+
+
 Route::middleware('auth')->group(function () {
     Route::get('verify-email', EmailVerificationPromptController::class)
         ->name('verification.notice');

@@ -43,7 +43,7 @@ export function useCheckSocio() {
 
     const handleCheckSocio: FormEventHandler = (e) => {
         e.preventDefault();
-        post(route('check.socio'), {
+        post(route('checkSocioExists'), {
             onSuccess: () => setExists(true),
             onError: () => setExists(false),
         });

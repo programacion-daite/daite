@@ -2,6 +2,7 @@ import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
 
 import { Button } from '@/components/ui/button';
+import ErrorMessage from '@/components/ui/error-message';
 import { Input } from '@/components/ui/input';
 import { InputLabel } from '@/components/ui/input-label';
 import { Label } from '@/components/ui/label';
@@ -11,35 +12,55 @@ import AuthLayout from '@/layouts/auth-layout';
 import { Head } from '@inertiajs/react';
 import axios from 'axios';
 import { LoaderCircle } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 
 export default function Register() {
     const { data: checkData, setData: setCheckData, handleCheckSocio, processing: checking, errors: checkErrors, exists } = useCheckSocio();
     const { data, setData, handleRegister, processing, errors } = useRegister();
 
     const typingTimeout = useRef<NodeJS.Timeout | null>(null);
+    const [ error,setError ] = useState<string | null>(null);
+
+    const fetchSocioData = useCallback((cedula: string) => {
+        if (typingTimeout.current) clearTimeout(typingTimeout.current);
+
+        typingTimeout.current = setTimeout(() => {
+            axios
+                .get(route('checkSocio', [cedula]))
+                .then(({ data }) => {
+
+                    if(data.length === 0) {
+                        setCheckData('codigo', '');
+                        setError('El socio no existe');
+                        return;
+                    }
+
+                    if (data[0]?.tiene_usuario) {
+                        console.log('Socio existe');
+                        setCheckData('codigo', data?.[0].id_entidad);
+                        setError('')
+                    } else {
+                        setCheckData('codigo', '');
+                        setError('El socio no existe ');
+                    }
+                })
+                .catch(() => {
+                    console.error('Error al verificar el socio');
+                    setCheckData('codigo', '');
+                    setError('Error al verificar el socio');
+                });
+        }, 500);
+    }, []);
 
     useEffect(() => {
-        console.log(checkData);
         if (checkData.cedula.length === 13) {
-            if (typingTimeout.current) clearTimeout(typingTimeout.current);
-
-            typingTimeout.current = setTimeout(() => {
-                axios
-                    .get(route('checkSocio', [checkData.cedula]))
-                    .then((response) => {
-                        console.log(response);
-                    })
-                    .catch((error) => {
-                        console.error(error);
-                    });
-            }, 500);
+            fetchSocioData(checkData.cedula);
         }
 
         return () => {
             if (typingTimeout.current) clearTimeout(typingTimeout.current);
         };
-    }, [checkData.cedula]); // Solo se ejecuta cuando cambie cedula
+    }, [checkData.cedula, fetchSocioData]); // Solo se ejecuta cuando cambie cedula
 
     return (
         <AuthLayout title="Verificar Socio" description="Ingrese su cédula para continuar con el registro">
@@ -50,6 +71,11 @@ export default function Register() {
                 <form className="flex flex-col gap-6" onSubmit={handleCheckSocio}>
                     <div className="grid gap-6">
                         <div className="grid gap-2">
+
+                        {error && (
+                            <ErrorMessage message={error} className="mb-4" />
+                        )}
+
                             <MaskedInput
                                 label="Cédula"
                                 id="cedula"
@@ -67,12 +93,11 @@ export default function Register() {
                                 label="Codigo"
                                 id="codigo"
                                 type="text"
+                                className="pointer-events-none"
                                 required
                                 value={checkData.codigo}
                                 error={checkErrors.codigo}
                                 onChange={(e) => {
-                                    console.log('Código cambiado:', e.target.value);
-                                    // Actualiza solo el valor del código
                                     setCheckData((prev) => ({
                                         ...prev,
                                         codigo: e.target.value,
@@ -82,7 +107,7 @@ export default function Register() {
                             />
                         </div>
 
-                        <Button type="submit" className="mt-2 w-full" disabled={checking}>
+                        <Button type="submit" className="mt-2 w-full" disabled={checking || Boolean(error)}>
                             {checking && <LoaderCircle className="h-4 w-4 animate-spin" />}
                             Verificar
                         </Button>

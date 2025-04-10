@@ -65,28 +65,32 @@ export function InputWithSearch({
     return (
         <div className={className}>
             <div className="flex">
-                <div className="flex w-[100px]"> {/* Reducido el ancho del ID */}
+                <div className="w-[50px]">
                     <InputLabel
                         label={label}
                         id={id}
                         value={value}
                         onChange={(e) => handleIdChange(e.target.value)}
                         error={error}
-                        className="rounded-r-none border-r-0"
-                    />
-                    <ModalBusqueda
-                        title={label}
-                        table={table}
-                        field={field}
-                        onSelect={handleSelection}
+                        className="rounded-r-none border-r-0 w-full "
                     />
                 </div>
-                <InputLabel
-                    label="&nbsp;" // Para mantener la alineación con el otro input
-                    value={description}
-                    readOnly
-                    className="rounded-l-none bg-gray-50"
+                <div className="flex flex-1">
+                    <div className="flex-1">
+                        <InputLabel
+                        label="&nbsp;" // Para mantener la alineación con el otro input
+                        value={description}
+                        readOnly
+                        className="w-full rounded-l-none bg-gray-50 pointer-events-none"
+                    />
+                    </div>
+                <ModalBusqueda
+                    title={label}
+                    table={table}
+                    field={field}
+                    onSelect={handleSelection}
                 />
+                </div>
             </div>
         </div>
     );

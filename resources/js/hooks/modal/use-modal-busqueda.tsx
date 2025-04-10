@@ -3,7 +3,7 @@ import axios from 'axios';
 import {ColumnDef, Row } from '@tanstack/react-table';
 import { ColumnConfig, TableItem } from '@/types/table';
 
-interface UseModalBusquedaProps {
+interface UseModalBusquedaProps { 
   table: string;
   field: string;
 }

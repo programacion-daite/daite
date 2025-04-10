@@ -6,6 +6,8 @@ use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use Tighten\Ziggy\Ziggy;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -39,6 +41,18 @@ class HandleInertiaRequests extends Middleware
     {
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
 
+        if ($request->session()->has('conexion')) {
+            $user = $request->user();
+            $cacheKey = "sidebar_items_{$user->id_usuario}";
+            $sidebarItems = Cache::remember($cacheKey, 3600, function () use ($user) {
+                return DB::select('EXEC [DBO].[p_traer_programas] @id_usuario = ? ,@renglon = ?', [
+                    $user->id_usuario,
+                    'ASIGNADOS',
+                ]);
+            });
+        }
+
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
@@ -49,7 +63,8 @@ class HandleInertiaRequests extends Middleware
             'ziggy' => fn (): array => [
                 ...(new Ziggy)->toArray(),
                 'location' => $request->url(),
-            ]
+            ],
+            'sidebarItems' => $sidebarItems ?? [],
         ];
     }
 }

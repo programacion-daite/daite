@@ -8,10 +8,12 @@ use Inertia\Response;
 use Illuminate\Contracts\Routing\ResponseFactory;
 
 class Helpers {
+
+    private static $esquema = 'dbo';
     private static function esquema(Request $request): array {
 
         $entidad = (object) [
-            'esquema' => $request-> esquema ?? 'AppCooperativa',
+            'esquema' => $request-> esquema ?? self::$esquema,
             'nombre' =>
               $request->funcion ??
               $request->procedimiento ??
@@ -54,14 +56,14 @@ class Helpers {
 
         return DB::select('SET NOCOUNT ON;'.$entidad->sentencia, [$entidad->esquema, $entidad->nombre]);
 
-      }
+    }
 
       public static function EjecutarProcedimiento(Request $request): Response|ResponseFactory| \Illuminate\Http\Response {
 
         $api = $request->is('api/*');
 
         $entidad = (object) [
-                'esquema' => $request-> esquema ?? 'AppCooperativa',
+                'esquema' => $request-> esquema ?? self::$esquema,
                 'nombre' => $request->procedimiento ?? $request->funcion,
                 'parametros' => self::esquema($request)
         ];

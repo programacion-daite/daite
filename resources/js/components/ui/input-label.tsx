@@ -33,7 +33,7 @@ export function InputLabel({
   required = false,
   autoFocus = false,
   tabIndex = 1,
-  autoComplete = id,
+  autoComplete = 'nono',
   disabled = false,
   readOnly = false,
   ref,
@@ -41,7 +41,7 @@ export function InputLabel({
 }: InputLabelProps) {
   return (
     <div className="space-y-2">
-      <Label htmlFor={id}>{label}</Label>
+      <Label htmlFor={id}>{label} {required && <span className="text-red-500">*</span>}</Label>
       <Input
         id={id}
         type={type}

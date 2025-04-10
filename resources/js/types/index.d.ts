@@ -31,12 +31,28 @@ export interface SharedData {
 }
 
 export interface User {
-    id: number;
-    name: string;
+    id_usuario: number;
+    usuario: string;
     email: string;
-    avatar?: string;
-    email_verified_at: string | null;
-    created_at: string;
-    updated_at: string;
+    pin: string;
     [key: string]: unknown; // This allows for additional properties...
+}
+
+
+interface sidebarItem {
+    id_programa: number
+    referencia: string
+    id_modulo: number
+    modulo: string
+    tipo_programa: string
+    programa: string
+    descripcion: string
+    icono: string
+    orden_menu: number
+    generico: boolean
+    exclusivo: boolean
+    administracion: boolean
+    visible: boolean
+    aplicacion_movil: boolean
+    favorito: number
 }

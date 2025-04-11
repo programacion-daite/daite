@@ -21,23 +21,17 @@ const masks: Record<string, MaskitoOptions> = {
   },
 };
 
-interface MaskedInputProps extends Omit<InputLabelProps, "ref" | "onInput"> {
+interface MaskedInputProps extends Omit<InputLabelProps, "ref"> {
   maskType: keyof typeof masks;
-  value: string;
-  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void; // Aseguramos que onChange esté presente
-  onInput?: (e: React.ChangeEvent<HTMLInputElement>) => void; // Manejamos el valor en onInput
 }
 
-const MaskedInput = ({ maskType, value, onChange, onInput, ...props }: MaskedInputProps) => {
+const MaskedInput = ({ maskType, ...props }: MaskedInputProps) => {
   const inputRef = useMaskito({ options: masks[maskType] });
 
   return (
     <InputLabel
       {...props}
       ref={inputRef}
-      value={value}
-      onChange={onChange} // Aseguramos que onChange esté presente
-      onInput={onInput}   // Usamos onInput para manejar el valor
     />
   );
 };

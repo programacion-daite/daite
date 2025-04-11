@@ -56,12 +56,32 @@ class GeneralController extends Controller
         ]);
     }
 
+   public function traerUnicaEntidad(Request $request)
+   {
+        info('traerUnicaEntidad');
+
+        $request->merge([
+            'procedimiento' => 'p_traer_unico_registro',
+        ]);
+
+        self::validarProcedimiento($request->get('procedimiento'));
+
+        info($request->all());
+
+        $resultado = Helpers::ejecutarProcedimiento($request);
+
+        return response()->json([
+            $resultado
+        ]);
+   }
+
    public static function validarProcedimiento($procedimiento)
    {
         $procedimientoPermitidos = [
             'p_traer_filtros',
             'p_traer_encabezado_consultas',
             'p_traer_entidades',
+            'p_traer_unico_registro',
         ];
 
         if (!in_array($procedimiento, $procedimientoPermitidos)) {

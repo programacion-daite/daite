@@ -34,12 +34,12 @@ export default function Login() {
             <Head title="Iniciar Sesión" />
             <AuthLayout title="Inicio de Sesión">
                 <div className="w-full max-w-md rounded-lg bg-white p-10 shadow-lg">
-                    
+
                     <div className="mb-6 flex flex-col items-center justify-center">
                         <div className="relative mb-2 h-16 w-60">
                             <img src={logotipo} alt="DAITE Logo" className="object-contain" />
                         </div>
-                        <h1 className="text-xl font-medium text-[#0a5ca8]">Inicio de sesión</h1>
+                        {/* <h1 className="text-xl font-medium text-[#0a5ca8]">Inicio de sesión</h1> */}
                     </div>
 
                     <form className="space-y-6" autoComplete='off' onSubmit={submit}>

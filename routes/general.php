@@ -23,4 +23,10 @@ Route::middleware('auth')->group(function () {
 
     Route::post('traerEntidades', [GeneralController::class, 'traerEntidades'])
         ->name('traerEntidades');
+
+    Route::get('traerUnicaEntidad', [GeneralController::class, 'traerUnicaEntidad'])
+        ->name('traerUnicaEntidad');
+
+    Route::post('traerUnicaEntidad', [GeneralController::class, 'traerUnicaEntidad'])
+        ->name('traerUnicaEntidad');
 });

@@ -1,95 +1,112 @@
 // components/InputWithSearch.tsx
 import { InputLabel } from '@/components/ui/input-label';
 import { ModalBusqueda } from '@/components/search-modal';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import axios from 'axios';
-import { Input } from '@headlessui/react';
+import MaskedInput from './ui/masked-input';
 
-interface InputWithSearchProps {
+interface InputWithSearchProps<T extends Record<string, unknown>> {
     label: string;
     id: string;
-    value: string | number;
+    value: string;
     displayValue?: string;
-    table: string;
+    table?: string;
     field: string;
-    onChange: (value: string | number, item?: any) => void;
+    filter?: string;
+    idField?: string;
+    displayField?: string;
+    onChange: (value: string, item?: T) => void;
     error?: string;
     className?: string;
 }
 
-export function InputWithSearch({
+export function InputWithSearch<T extends Record<string, unknown>>({
     label,
     id,
     value,
     displayValue,
-    table,
     field,
+    table,
+    idField = id,
+    displayField = id.split('_')[1],
     onChange,
+    filter,
     error,
     className
-}: InputWithSearchProps) {
+}: InputWithSearchProps<T>) {
     const [description, setDescription] = useState(displayValue || '');
 
-    const handleIdChange = async (newValue: string) => {
-        onChange(newValue);
+    const handleIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const safeValue = e.target.value || '';
+        onChange(safeValue);
+    };
 
-        if (newValue) {
-            try {
-                const response = await axios.post(
-                    route('traerEntidades'),
-                    { renglon: table, filtro: 'id', valor: newValue },
-                    { headers: { 'Content-Type': 'application/json' }, withCredentials: true }
-                );
+    const buscarEntidad = async (idValue: string) => {
+        if (!idValue) {
+            setDescription('');
+            return;
+        }
 
-                if (response.data[0]?.original?.[0]) {
-                    const item = response.data[0].original[0];
-                    setDescription(item.nombre || item.descripcion);
-                    onChange(newValue, item);
-                } else {
-                    setDescription('');
-                }
-            } catch (error) {
-                console.error('Error:', error);
+        try {
+            const response = await axios.post(
+                route('traerUnicaEntidad'),
+                { renglon: field, filtro: filter, id_renglon: idValue},
+                { headers: { 'Content-Type': 'application/json' }, withCredentials: true }
+            );
+
+            if (response.data[0]?.original?.[0]) {
+                const item = response.data[0].original[0] as T;
+                setDescription(item[displayField] as string || '');
+                onChange(idValue, item);
+            } else {
                 setDescription('');
             }
-        } else {
+        } catch (error) {
+            console.error('Error:', error);
             setDescription('');
         }
     };
 
-    const handleSelection = (item: any) => {
-        onChange(item.id, item);
-        setDescription(item.nombre || item.descripcion);
+    const handleFocusOut = () => {
+        buscarEntidad(value);
+    };
+
+    const handleSelection = (item: Record<string, unknown>) => {
+        const typedItem = item as T;
+        const newValue = String(typedItem[idField]);
+        buscarEntidad(newValue);
     };
 
     return (
         <div className={className}>
             <div className="flex">
                 <div className="w-[50px]">
-                    <InputLabel
-                        label={label}
+                    <MaskedInput
+                        maskType="numeros"
+                        value={value || ''}
+                        type="text"
+                        onInput={handleIdChange}
+                        onBlur={handleFocusOut}
                         id={id}
-                        value={value}
-                        onChange={(e) => handleIdChange(e.target.value)}
+                        label={label}
                         error={error}
-                        className="rounded-r-none border-r-0 w-full "
                     />
                 </div>
                 <div className="flex flex-1">
                     <div className="flex-1">
                         <InputLabel
-                        label="&nbsp;" // Para mantener la alineación con el otro input
-                        value={description}
-                        readOnly
-                        className="w-full rounded-l-none bg-gray-50 pointer-events-none"
-                    />
+                            label="&nbsp;"
+                            value={description}
+                            readOnly
+                            className="w-full rounded-l-none bg-gray-50 pointer-events-none"
+                        />
                     </div>
-                <ModalBusqueda
-                    title={label}
-                    table={table}
-                    field={field}
-                    onSelect={handleSelection}
-                />
+                    <ModalBusqueda
+                        title={label}
+                        table={table || ''}
+                        field={field}
+                        onSelect={handleSelection}
+                    />
                 </div>
             </div>
         </div>

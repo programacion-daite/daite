@@ -3,18 +3,19 @@ import { useForm } from "@inertiajs/react";
 type BeneficiariosForm = {
     id_beneficiario: string;
     renglon: string;
-    id_cuenta: boolean;
+    id_cuenta: string;
     id_banco: string;
     id_tipo_cuenta: string;
     id_moneda: string;
     numero_cuenta: string;
+    [key: string]: string;
 }
 
 export const useBeneficiarios = () => {
     const { data, setData, post, processing, errors, reset } = useForm<Required<BeneficiariosForm>>({
         id_beneficiario: '',
         renglon: '',
-        id_cuenta: true,
+        id_cuenta: 'true',
         id_banco: '',
         id_tipo_cuenta: '',
         id_moneda: '',

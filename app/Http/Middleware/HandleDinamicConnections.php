@@ -5,12 +5,13 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class HandleDinamicConnections
 {
     public function handle($request, Closure $next)
     {
-        if (session()->has('conexion')) {
+        if (Auth::check() && session()->has('conexion')) {
             $credenciales = session('conexion');
 
             Config::set('database.connections.sqlsrv.host', $credenciales->hospedaje);

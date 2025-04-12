@@ -1,5 +1,5 @@
 import { SidebarProvider } from '@/components/ui/sidebar';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface AppShellProps {
     children: React.ReactNode;
@@ -8,6 +8,22 @@ interface AppShellProps {
 
 export function AppShell({ children, variant = 'header' }: AppShellProps) {
     const [isOpen, setIsOpen] = useState(() => (typeof window !== 'undefined' ? localStorage.getItem('sidebar') !== 'false' : true));
+    const [isLargeScreen, setIsLargeScreen] = useState(false);
+
+    useEffect(() => {
+        const checkScreenSize = () => {
+            setIsLargeScreen(window.innerWidth >= 1024);
+        };
+
+        // Check initial screen size
+        checkScreenSize();
+
+        // Add event listener for window resize
+        window.addEventListener('resize', checkScreenSize);
+
+        // Cleanup
+        return () => window.removeEventListener('resize', checkScreenSize);
+    }, []);
 
     const handleSidebarChange = (open: boolean) => {
         setIsOpen(open);
@@ -22,7 +38,12 @@ export function AppShell({ children, variant = 'header' }: AppShellProps) {
     }
 
     return (
-        <SidebarProvider defaultOpen={isOpen} open={isOpen} onOpenChange={handleSidebarChange}>
+        <SidebarProvider
+            defaultOpen={isOpen}
+            open={isOpen}
+            onOpenChange={handleSidebarChange}
+            className={isLargeScreen ? "lg:flex-col" : "lg:flex-row"}
+        >
             {children}
         </SidebarProvider>
     );

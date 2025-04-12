@@ -6,6 +6,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { type SharedData } from '@/types';
 import { usePage } from '@inertiajs/react';
 import { ChevronsUpDown } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export function NavUser() {
     const { auth } = usePage<SharedData>().props;
@@ -17,7 +18,14 @@ export function NavUser() {
             <SidebarMenuItem>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <SidebarMenuButton size="lg" className="text-sidebar-accent-foreground data-[state=open]:bg-sidebar-accent group">
+                        <SidebarMenuButton
+                            size="lg"
+                            className={cn(
+                                "text-sidebar-accent-foreground data-[state=open]:bg-sidebar-accent group",
+                                "lg:flex-row lg:justify-start lg:gap-2 lg:px-4 lg:py-2", // For large screens, adjust layout
+                                "lg:hover:bg-accent lg:hover:text-accent-foreground" // For large screens, add hover styles
+                            )}
+                        >
                             <UserInfo user={auth.user} />
                             <ChevronsUpDown className="ml-auto size-4" />
                         </SidebarMenuButton>

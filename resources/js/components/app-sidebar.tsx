@@ -4,60 +4,41 @@ import { Sidebar,
     SidebarContent,
     SidebarFooter,
     SidebarHeader,
-    SidebarMenu,
-    SidebarMenuButton,
-    SidebarMenuItem
 } from '@/components/ui/sidebar';
-import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-react';
 import AppLogo from './app-logo';
-
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Inicio',
-        href: '/dashboard',
-        icon: LayoutGrid,
-    },
-    {
-        title: 'Beneficiarios',
-        href: '/beneficiarios',
-        icon: Folder,
-    },
-    {
-        title: 'Epagos',
-        href: '/epagos',
-        icon: BookOpen,
-    },
-    {
-        title: 'Ordenes de Pago',
-        href: '/reportes',
-        icon: BookOpen,
-    }
-];
-
+import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export function AppSidebar() {
+    const isMobile = useIsMobile();
 
     return (
-        <Sidebar collapsible="icon" variant="inset">
-            <SidebarHeader>
-                <SidebarMenu>
-                    <SidebarMenuItem>
-                        <SidebarMenuButton size="lg" asChild>
-                            <Link href="/dashboard" prefetch>
-                                <AppLogo />
-                            </Link>
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                </SidebarMenu>
-            </SidebarHeader>
+        <Sidebar
+            collapsible="icon"
+            variant="inset"
+            className={cn(
+                "text-white", // Base styles for all screens
+                "lg:flex-row lg:items-start lg:justify-between lg:px-4 lg:py-2", // Layout for large screens
+            )}
+        >
+            <div className="flex flex-1 items-center gap-8">
+                <SidebarHeader className="lg:flex-row lg:items-center">
+                    <Link href="/dashboard" prefetch className="lg:flex lg:items-center">
+                        <AppLogo className="text-white" />
+                    </Link>
+                </SidebarHeader>
 
-            <SidebarContent>
-                <NavMain items={mainNavItems} />
-            </SidebarContent>
+                {!isMobile && <NavMain />}
+            </div>
 
-            <SidebarFooter>
+            {isMobile && (
+                <SidebarContent className="text-white">
+                    <NavMain />
+                </SidebarContent>
+            )}
+
+            <SidebarFooter className="lg:flex-row lg:items-center">
                 <NavUser />
             </SidebarFooter>
         </Sidebar>

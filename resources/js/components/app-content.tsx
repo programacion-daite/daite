@@ -1,5 +1,6 @@
 import { SidebarInset } from '@/components/ui/sidebar';
 import * as React from 'react';
+import { cn } from '@/lib/utils';
 
 interface AppContentProps extends React.ComponentProps<'main'> {
     variant?: 'header' | 'sidebar';
@@ -7,7 +8,18 @@ interface AppContentProps extends React.ComponentProps<'main'> {
 
 export function AppContent({ variant = 'header', children, ...props }: AppContentProps) {
     if (variant === 'sidebar') {
-        return <SidebarInset {...props}>{children}</SidebarInset>;
+        return (
+            <SidebarInset
+                {...props}
+                className={cn(
+                    "bg-background relative flex min-h-svh flex-1 flex-col",
+                    "lg:min-h-[calc(100svh-4rem)] lg:mt-16", // For large screens, adjust height and add margin top
+                    props.className
+                )}
+            >
+                {children}
+            </SidebarInset>
+        );
     }
 
     return (

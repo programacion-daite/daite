@@ -39,7 +39,7 @@ export default function Login() {
                         <div className="relative mb-2 h-16 w-60">
                             <img src={logotipo} alt="DAITE Logo" className="object-contain" />
                         </div>
-                        {/* <h1 className="text-xl font-medium text-[#0a5ca8]">Inicio de sesión</h1> */}
+                        <h1 className="text-xl font-medium text-[#0a5ca8]">Inicio de sesión</h1>
                     </div>
 
                     <form className="space-y-6" autoComplete='off' onSubmit={submit}>

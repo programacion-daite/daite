@@ -1,4 +1,4 @@
-import { SidebarInset } from '@/components/ui/sidebar';
+simport { SidebarInset } from '@/components/ui/sidebar';
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 

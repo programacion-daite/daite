@@ -39,8 +39,8 @@ export default function LotesPagos() {
                                 label="Cuenta de Banco"
                                 parametros={{ renglon: 'RENGLON_SEGUIMIENTOS' }}
                                 name="id_cuenta_banco"
-                                onValueChange={(valor) => setData('renglon', valor)}
-                                error={errors.renglon}
+                                onValueChange={(valor) => setData('id_cuenta_banco', valor)}
+                                error={errors.id_cuenta_banco}
                             />
 
                             <DynamicSelect
@@ -48,8 +48,8 @@ export default function LotesPagos() {
                                 label="Sucursal"
                                 parametros={{ renglon: 'RENGLON_SEGUIMIENTOS' }}
                                 name="id_sucursal"
-                                onValueChange={(valor) => setData('renglon', valor)}
-                                error={errors.renglon}
+                                onValueChange={(valor) => setData('id_sucursal', valor)}
+                                error={errors.id_sucursal}
                             />
 
                             <DatePicker

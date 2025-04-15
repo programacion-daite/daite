@@ -11,8 +11,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', fn() => Inertia::render('dashboard'))
         ->name('dashboard');
 
-    Route::get('beneficiarios', fn() => Inertia::render('beneficiarios'))
-        ->name('beneficiarios');
+
+    Route::prefix('procesos')->group(function () {
+        Route::get('lotesPagos', fn() => Inertia::render('procesos/lotesPagos'))
+            ->name('lotesPagos');
+    });
+
+    Route::prefix('registros')->group(function () {
+        Route::get('beneficiarios', fn() => Inertia::render('registros/beneficiarios'))
+            ->name('beneficiarios');
+    });
 
 });
 

@@ -56,3 +56,29 @@ interface sidebarItem {
     aplicacion_movil: boolean
     favorito: number
 }
+
+interface Modulo {
+    id_modulo: string;
+    modulo: string;
+    referencia: string;
+}
+
+interface SessionData {
+    usuario: User;
+    modulos: Modulo[];
+    programas: {
+        registros: { [key: string]: Programa[] };
+        procesos: {  [key: string]: Programa[] };
+        reportes: {  [key: string]: Programa[] };
+        favoritos: { [key: string]: Programa[] };
+        genericos: { [key: string]: Programa[] };
+    };
+}
+
+interface Programa {
+    id_programa: string;
+    programa: string;
+    descripcion: string;
+    visible: boolean;
+    favorito: boolean;
+}

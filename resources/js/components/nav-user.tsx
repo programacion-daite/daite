@@ -14,7 +14,7 @@ export function NavUser() {
     const isMobile = useIsMobile();
 
     return (
-        <SidebarMenu>
+        <SidebarMenu className="lg:flex-row lg:items-end">
             <SidebarMenuItem>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -26,8 +26,8 @@ export function NavUser() {
                                 "lg:hover:bg-accent lg:hover:text-accent-foreground" // For large screens, add hover styles
                             )}
                         >
-                            <UserInfo user={auth.user} />
-                            <ChevronsUpDown className="ml-auto size-4" />
+                            <UserInfo user={auth.user} fontColor="text-white" />
+                            <ChevronsUpDown className="ml-auto size-4 text-white" />
                         </SidebarMenuButton>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent

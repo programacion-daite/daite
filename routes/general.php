@@ -29,4 +29,8 @@ Route::middleware('auth')->group(function () {
 
     Route::post('traerUnicaEntidad', [GeneralController::class, 'traerUnicaEntidad'])
         ->name('traerUnicaEntidad');
+
+    Route::get('traerDatosSesion', [GeneralController::class, 'traerDatosSesion'])
+        ->name('traerDatosSesion');
+
 });

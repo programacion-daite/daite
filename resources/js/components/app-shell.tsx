@@ -1,4 +1,5 @@
 import { SidebarProvider } from '@/components/ui/sidebar';
+import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
 
 interface AppShellProps {
@@ -42,7 +43,7 @@ export function AppShell({ children, variant = 'header' }: AppShellProps) {
             defaultOpen={isOpen}
             open={isOpen}
             onOpenChange={handleSidebarChange}
-            className={isLargeScreen ? "lg:flex-col" : "lg:flex-row"}
+            className={cn(isLargeScreen ? "lg:flex-col" : "lg:flex-row", "px-4")}
         >
             {children}
         </SidebarProvider>

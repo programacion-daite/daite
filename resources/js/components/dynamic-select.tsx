@@ -18,7 +18,6 @@ interface DynamicSelectProps {
   label: string;
   name: string;
   defaultValue?: string;
-  procedimiento?: string;
   parametros?: Record<string, string>;
   disabled?: boolean;
   onValueChange?: (value: string) => void;
@@ -32,7 +31,6 @@ export const DynamicSelect = ({
   id,
   label,
   defaultValue = "",
-  procedimiento = "p_traer_registros_consulta_principal",
   parametros = {},
   disabled = false,
   onValueChange,
@@ -50,8 +48,7 @@ export const DynamicSelect = ({
 
     try {
       const body = {
-        ...parametros,
-        procedimiento,
+        ...parametros
       };
 
       const response = await axios.post(route('traerFiltros'), body, {

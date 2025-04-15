@@ -1,8 +1,9 @@
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useInitials } from '@/hooks/use-initials';
+import { cn } from '@/lib/utils';
 import { type User } from '@/types';
 
-export function UserInfo({ user }: { user: User }) {
+export function UserInfo({ user, fontColor }: { user: User, fontColor?: string }) {
     const getInitials = useInitials();
     return (
         <>
@@ -12,7 +13,7 @@ export function UserInfo({ user }: { user: User }) {
                 </AvatarFallback>
             </Avatar>
             <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{user.usuario}</span>
+                <span className={cn("truncate font-medium", fontColor)}>{user.usuario}</span>
             </div>
         </>
     );

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 use App\Utils\Helpers;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use App\Models\User;
 
 class GeneralController extends Controller
 {
@@ -10,6 +12,10 @@ class GeneralController extends Controller
     {
         info('traerFiltros');
         info($request->all());
+
+        $request->merge([
+            'procedimiento' => 'p_traer_filtros',
+        ]);
 
         self::validarProcedimiento($request->get('procedimiento'));
 
@@ -75,13 +81,204 @@ class GeneralController extends Controller
         ]);
    }
 
-   public static function validarProcedimiento($procedimiento)
-   {
+
+// public function traerDatosSesion(Request $request)
+//    {
+//        info('sesion');
+
+//        $api = $request->is('api/*');
+
+//        if ($api && $request->programa !== 'autenticacion.iniciar')
+//          session()->put('usuario', (object) ['id_usuario' => $request->id_usuario]);
+//        ;
+
+//        $usuario = User::where('id_usuario', session('usuario')->id_usuario)->first();
+
+//        $sesion = [
+//          'usuario' => $usuario,
+//          'modulos' => DB::select('EXEC [dbo].[p_traer_registros_combinados] ?, ?, ?', [$usuario->id_usuario, 'MODULOS', '']),
+//          'programas' => [
+//            'registros' => [],
+//            'procesos' => [],
+//            'reportes' => [],
+//            'favoritos' => [],
+//            'genericos' => []
+//          ],
+//          'empresa' => DB::select('EXEC [dbo].[p_traer_datos_generales_inicio_sesion] ?, ?, ?', [$usuario->id_usuario, '', ''])
+//        ];
+
+//        foreach (
+//          DB::select('EXEC [dbo].[p_traer_configuraciones] ?, ?, ?', [$usuario->id_usuario, '', '']) AS $indice => $configuracion
+//        )
+//          $sesion['configuracion'][$configuracion->campo] = $configuracion->valor
+//        ;
+
+//        if (count($sesion['empresa']))
+//          $sesion['empresa'] = $sesion['empresa'][0]
+//        ;
+
+//        foreach (DB::select('EXEC p_traer_programas ?, ?, ?, ?', [$usuario->id_usuario, 'ASIGNADOS', '', 0]) as $indice => $programa) {
+
+//          switch ($programa->tipo_programa) {
+
+//            case 'R': $programa->tipo_programa = 'registros'; break;
+
+//            case 'P': $programa->tipo_programa = 'procesos'; break;
+
+//            case 'C': $programa->tipo_programa = 'reportes'; break;
+
+//            default: $programa->tipo_programa = null; break;
+
+//          }
+
+//          if ($api) {
+
+//            if ($programa->aplicacion_movil && $programa->tipo_programa) {
+
+//              $sesion['programas'][$programa->tipo_programa][] = $programa;
+
+//              $programa->favorito &&
+//              $sesion['programas']['favoritos'][$programa->tipo_programa][] = $programa;
+
+//            }
+
+//          } else {
+
+//            if ($indice === 0)
+//              $sesion['aplicacion']['rutas'] = array_keys(app('router')->getRoutes()->getRoutesByName()) ?? []
+//            ;
+
+//            if ($programa->tipo_programa && in_array($programa->programa, $sesion['aplicacion']['rutas'])) {
+
+//              $sesion['programas'][$programa->tipo_programa][$programa->id_modulo][] = $programa;
+
+//              $programa->favorito &&
+//              $sesion['programas']['favoritos'][] = $programa;
+
+//              $programa->generico &&
+//              $sesion['programas']['genericos'][] = $programa->programa;
+
+//            }
+
+//          }
+
+//        }
+
+//        $sesion['programas']['favoritos'] = [];
+
+//        foreach (DB::select('EXEC p_traer_programas ?, ?, ?, ?', [$usuario->id_usuario, 'FAVORITOS', '', 0]) as $indice => $programa) {
+
+//          switch ($programa->tipo_programa) {
+
+//            case 'R': $programa->tipo_programa = 'registros'; break;
+
+//            case 'P': $programa->tipo_programa = 'procesos'; break;
+
+//            case 'C': $programa->tipo_programa = 'reportes'; break;
+
+//            default: $programa->tipo_programa = null; break;
+
+//          }
+
+//          if ($api) {
+
+//            if ($programa->aplicacion_movil && $programa->tipo_programa)
+//              $sesion['programas']['favoritos'][$programa->tipo_programa][] = $programa;
+
+//          } else if ($programa->tipo_programa && in_array($programa->programa, $sesion['aplicacion']['rutas'])) {
+
+//            $programa->referencia = $programa->descripcion;
+
+//            $sesion['programas']['favoritos'][] = $programa;
+
+//          }
+
+//        }
+
+
+//        return $sesion;
+//     }
+
+
+    public function traerDatosSesion(Request $request)
+    {
+        info('sesion');
+
+        $api = $request->is('api/*');
+
+        if ($api && $request->programa !== 'autenticacion.iniciar')
+            session()->put('usuario', (object) ['id_usuario' => $request->id_usuario]);
+
+        $usuario = User::where('id_usuario', session('usuario')->id_usuario)->first();
+
+        $sesion = [
+            'usuario' => $usuario,
+            'modulos' => DB::select('EXEC [dbo].[p_traer_registros_combinados] ?, ?, ?', [$usuario->id_usuario, 'MODULOS', '']),
+            'programas' => [
+                'registros' => [],
+                'procesos' => [],
+                'reportes' => [],
+                'favoritos' => [],
+                'genericos' => []
+            ],
+            'empresa' => DB::select('EXEC [dbo].[p_traer_datos_generales_inicio_sesion] ?, ?, ?', [$usuario->id_usuario, '', '']),
+            'aplicacion' => [
+                'rutas' => []
+            ]
+        ];
+
+        foreach (
+            DB::select('EXEC [dbo].[p_traer_configuraciones] ?, ?, ?', [$usuario->id_usuario, '', '']) AS $indice => $configuracion
+        )
+            $sesion['configuracion'][$configuracion->campo] = $configuracion->valor;
+
+        if (count($sesion['empresa']))
+            $sesion['empresa'] = $sesion['empresa'][0];
+
+        foreach (DB::select('EXEC p_traer_programas ?, ?, ?, ?', [$usuario->id_usuario, 'ASIGNADOS', '', 0]) as $indice => $programa) {
+            switch ($programa->tipo_programa) {
+                case 'R': $programa->tipo_programa = 'registros'; break;
+                case 'P': $programa->tipo_programa = 'procesos'; break;
+                case 'C': $programa->tipo_programa = 'reportes'; break;
+                default: $programa->tipo_programa = null; break;
+            }
+
+            if ($programa->tipo_programa) {
+                $sesion['programas'][$programa->tipo_programa][$programa->id_modulo][] = $programa;
+            }
+        }
+
+        $sesion['programas']['favoritos'] = [];
+
+        foreach (DB::select('EXEC p_traer_programas ?, ?, ?, ?', [$usuario->id_usuario, 'FAVORITOS', '', 0]) as $indice => $programa) {
+            switch ($programa->tipo_programa) {
+                case 'R': $programa->tipo_programa = 'registros'; break;
+                case 'P': $programa->tipo_programa = 'procesos'; break;
+                case 'C': $programa->tipo_programa = 'reportes'; break;
+                default: $programa->tipo_programa = null; break;
+            }
+
+            if ($api) {
+                if ($programa->aplicacion_movil && $programa->tipo_programa)
+                    $sesion['programas']['favoritos'][$programa->tipo_programa][] = $programa;
+            } else if ($programa->tipo_programa && in_array($programa->programa, $sesion['aplicacion']['rutas'])) {
+                $programa->referencia = $programa->descripcion;
+                $sesion['programas']['favoritos'][] = $programa;
+            }
+        }
+
+        return $sesion;
+    }
+
+    public static function validarProcedimiento($procedimiento)
+    {
         $procedimientoPermitidos = [
             'p_traer_filtros',
             'p_traer_encabezado_consultas',
             'p_traer_entidades',
             'p_traer_unico_registro',
+            'p_traer_datos_sesion',
+            'p_traer_programas',
         ];
 
         if (!in_array($procedimiento, $procedimientoPermitidos)) {
@@ -89,8 +286,7 @@ class GeneralController extends Controller
                 'error' => 'Hubo un inconveniente, por favor intente nuevamente'
             ], 400);
         }
-   }
-
+    }
 
 }
 

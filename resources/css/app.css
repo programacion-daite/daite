@@ -31,6 +31,9 @@
     --color-secondary: var(--secondary);
     --color-secondary-foreground: var(--secondary-foreground);
 
+    --color-tertiary: var(--tertiary);
+    --color-tertiary-foreground: var(--tertiary-foreground);
+
     --color-muted: var(--muted);
     --color-muted-foreground: var(--muted-foreground);
 
@@ -107,6 +110,9 @@
         --input: oklch(0.922 0 0); /* HSL: 214.3 31.8% 91.4% */
         --ring: oklch(0.4566 0.1684 256.13); /* HSL: 142 70% 29% */
 
+        --tertiary: oklch(0.61 0.1355 56.64); /* HSL: 210 40% 96.1% */
+        --tertiary-foreground: oklch(0.145 0 0); /* HSL: 210 40% 96.1% */
+        
         --radius: 0.5rem;
 
         --chart-1: oklch(0.646 0.222 41.116);

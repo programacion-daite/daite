@@ -46,10 +46,10 @@ export function NavMain() {
     if (isMobile) return null;
 
     return (
-        <div className="flex items-center gap-1">
+        <div className="flex items-center">
             <Link
                 href="/dashboard"
-                className="flex items-center gap-1 rounded-md px-3 py-2 text-sm font-bold text-white hover:bg-blue-600"
+                className="flex items-center gap-1 rounded-md px-3 py-2 font-size-header font-bold text-white hover:bg-blue-600"
             >
                 <Home className="h-4 w-4" />
                 <span>Inicio</span>
@@ -61,12 +61,12 @@ export function NavMain() {
                         <Button variant="ghost" className="text-white gap-1 font-bold hover:bg-blue-600">
                             <Icon className="h-4 w-4" />
                             <span>{title}</span>
-                            <ChevronDown className="h-4 w-4 ml-1 transition-transform duration-200" />
+                            <ChevronDown className="h-4 w-4 transition-transform duration-200" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
                         align="start"
-                        className="w-[1000px] bg-white p-1 text-gray-900 overflow-y-auto max-h-[90vh]"
+                        className="w-[1000px] bg-white p-1 text-gray-900 overflow-y-auto max-h-[90vh] [&>*]:text-sm"
                     >
                         <div className="grid grid-cols-4">
                             {sessionData.modulos?.map((modulo: Modulo, idx) => (
@@ -84,7 +84,7 @@ export function NavMain() {
                                                     data-programa-id={programa.id_programa}
                                                     {...(programa.favorito ? { 'data-programa-favorito': '' } : {})}
                                                     className={cn(
-                                                        "flex items-center justify-between rounded-md px-2 py-1.5 text-sm text-gray-700 font-bold",
+                                                        "flex items-center justify-between rounded-md px-2 py-1.5 text-[13px] text-gray-700 font-bold",
                                                         page.url === '#' ? 'active' : '',
                                                         "hover:bg-accent hover:text-white"
                                                     )}

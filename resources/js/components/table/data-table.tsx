@@ -22,7 +22,7 @@ interface DataTableProps {
   onDoubleClick: (item: TableItem) => void;
 }
 
-export function DataTable({
+export const DataTable = React.memo(({
   data,
   columns,
   searchTerm,
@@ -30,7 +30,7 @@ export function DataTable({
   selectedItem,
   onRowClick,
   onDoubleClick,
-}: DataTableProps) {
+}: DataTableProps) => {
   const tableInstance = useReactTable({
     data,
     columns,
@@ -108,4 +108,4 @@ export function DataTable({
       </div>
     </>
   );
-}
+});

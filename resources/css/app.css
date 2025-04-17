@@ -61,6 +61,9 @@
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-ring: var(--sidebar-ring);
+
+    --text-body: var(--font-body);
+    --text-header: var(--font-header);
 }
 
 /*
@@ -112,7 +115,7 @@
 
         --tertiary: oklch(0.61 0.1355 56.64); /* HSL: 210 40% 96.1% */
         --tertiary-foreground: oklch(0.145 0 0); /* HSL: 210 40% 96.1% */
-        
+
         --radius: 0.5rem;
 
         --chart-1: oklch(0.646 0.222 41.116);
@@ -129,6 +132,9 @@
         --sidebar-accent-foreground: oklch(0.205 0 0);
         --sidebar-border: oklch(0.922 0 0);
         --sidebar-ring: oklch(0.87 0 0);
+
+        --text-body: 11px;
+        --text-header: 14px;
 }
 
 .dark {
@@ -169,10 +175,20 @@
 @layer base {
     * {
         @apply border-border;
-        font-size: 14px;
     }
 
     body {
         @apply bg-background text-foreground;
+        font-family: var(--font-sans);
     }
+
+    .input-label input, .input-label select, .input-label textarea, .input-label button, .input-label label {
+        font-size: var(--text-body);
+
+    }
+
+    thead th {
+        font-size: var(--text-header);
+    }
+
 }

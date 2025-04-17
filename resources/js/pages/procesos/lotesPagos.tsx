@@ -44,13 +44,24 @@ export default function LotesPagos() {
     // Usar el hook useForm de Inertia
     const inertiaForm = useForm(initialData);
     const { data, errors, handleInputChange, handleComponentChange, resetForm } = useInertiaFormWrapper(inertiaForm);
-    const { data: lotesPagos, tableColumns } = useDataTable({table: 'clientes', field: 'cliente', open: true });
+    const { data: lotesPagos, tableColumns } =
+    // useDataTable({
+    // columnsRoute: 'traerEncabezadoConsultas',
+    // dataRoute: 'traerEntidades',
+    // columnsParams: {
+    //     renglon: 'CLIENTES',
+    // },
+    // dataParams: {
+    //     renglon: 'CLIENTE',
+    // },
+    // open: true
+    // });
 
     const [searchTerm, setSearchTerm] = useState('');
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        inertiaForm.post('/api/lotes-pagos'); // Ajusta la URL según necesites
+        inertiaForm.post('/api/lotes-pagos');
     };
 
     const handleClear = () => {

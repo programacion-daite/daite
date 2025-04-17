@@ -5,24 +5,35 @@ import { ColumnConfig, TableItem } from '@/types/table';
 
 interface UseDataTableProps {
   open: boolean;
-  table: string;
-  field: string;
+  columnsRoute: string; // ruta para columnas
+  dataRoute: string;    // ruta para datos
+  columnsParams?: Record<string, unknown>; // parámetros personalizados para columnas
+  dataParams?: Record<string, unknown>;    // parámetros personalizados para datos
 }
 
-export function useDataTable({ open, table, field }: UseDataTableProps) {
+export function useDataTable({
+  open,
+  columnsRoute,
+  dataRoute,
+  columnsParams,
+  dataParams,
+}: UseDataTableProps) {
   const [columns, setColumns] = useState<ColumnConfig[]>([]);
   const [data, setData] = useState<TableItem[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open || !columnsRoute) return;
 
     const fetchColumns = async () => {
       try {
         const response = await axios.post(
-          route('traerEncabezadoConsultas'),
-          { renglon: field },
-          { headers: { 'Content-Type': 'application/json' }, withCredentials: true }
+          route(columnsRoute),
+          columnsParams ?? {},
+          {
+            headers: { 'Content-Type': 'application/json' },
+            withCredentials: true,
+          }
         );
 
         const resultado = response.data[0].original;
@@ -34,18 +45,21 @@ export function useDataTable({ open, table, field }: UseDataTableProps) {
     };
 
     fetchColumns();
-  }, [open, field]);
+  }, [open, columnsRoute, columnsParams]);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open || !dataRoute) return;
 
     const fetchData = async () => {
       setLoading(true);
       try {
         const response = await axios.post(
-          route('traerEntidades'),
-          { renglon: table, filtro: '', entidad: '' },
-          { headers: { 'Content-Type': 'application/json' }, withCredentials: true }
+          route(dataRoute),
+          dataParams ?? {},
+          {
+            headers: { 'Content-Type': 'application/json' },
+            withCredentials: true,
+          }
         );
 
         const resultado = response.data[0].original;
@@ -59,7 +73,7 @@ export function useDataTable({ open, table, field }: UseDataTableProps) {
     };
 
     fetchData();
-  }, [open, table]);
+  }, [open, dataRoute, dataParams]);
 
   const tableColumns = useMemo<ColumnDef<TableItem>[]>(() => {
     return columns

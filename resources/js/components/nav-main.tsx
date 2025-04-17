@@ -49,7 +49,7 @@ export function NavMain() {
         <div className="flex items-center">
             <Link
                 href="/dashboard"
-                className="flex items-center gap-1 rounded-md px-3 py-2 font-size-header font-bold text-white hover:bg-blue-600"
+                className="flex items-center gap-1 rounded-md px-3 py-2 text-sm font-bold text-white hover:bg-blue-600"
             >
                 <Home className="h-4 w-4" />
                 <span>Inicio</span>

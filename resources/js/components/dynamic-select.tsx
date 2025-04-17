@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2, RefreshCw } from "lucide-react";
 import { Label } from "@radix-ui/react-label";
 import axios from "axios";
+import { memo } from "react";
 
 interface DynamicSelectProps {
   id: string;
@@ -27,7 +28,7 @@ interface DynamicSelectProps {
   required?: boolean;
 }
 
-export const DynamicSelect = ({
+export const DynamicSelect = memo(({
   id,
   label,
   defaultValue = "",
@@ -98,7 +99,7 @@ export const DynamicSelect = ({
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full input-label">
       <Label htmlFor={id}>{label}</Label>
       <div className="flex items-center gap-2">
         <Select value={value} onValueChange={handleChange} disabled={disabled || loading}>
@@ -133,4 +134,4 @@ export const DynamicSelect = ({
       {error && <div className="text-red-500 text-sm mt-1">{error}</div>}
     </div>
   );
-};
+});

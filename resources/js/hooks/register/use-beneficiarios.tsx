@@ -15,7 +15,7 @@ export const useBeneficiarios = () => {
     const { data, setData, post, processing, errors, reset } = useForm<Required<BeneficiariosForm>>({
         id_beneficiario: '',
         renglon: '',
-        id_cuenta: 'true',
+        id_cuenta: '',
         id_banco: '',
         id_tipo_cuenta: '',
         id_moneda: '',

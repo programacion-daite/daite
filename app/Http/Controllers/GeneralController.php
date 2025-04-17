@@ -221,7 +221,7 @@ class GeneralController extends Controller
                 'favoritos' => [],
                 'genericos' => []
             ],
-            'empresa' => DB::select('EXEC [dbo].[p_traer_datos_generales_inicio_sesion] ?, ?, ?', [$usuario->id_usuario, '', '']),
+            'empresa' => DB::select('EXEC [dbo].[p_traer_registros] @id_usuario = ?, @renglon = ?', [$usuario->id_usuario, 'DATOS_INICIO_SESION', '']),
             'aplicacion' => [
                 'rutas' => []
             ]
@@ -277,7 +277,6 @@ class GeneralController extends Controller
             'p_traer_encabezado_consultas',
             'p_traer_entidades',
             'p_traer_unico_registro',
-            'p_traer_datos_sesion',
             'p_traer_programas',
         ];
 

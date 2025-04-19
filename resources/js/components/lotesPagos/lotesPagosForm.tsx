@@ -4,6 +4,7 @@ import { DatePicker } from '@/components/date-picker';
 import { DynamicSelect } from '@/components/dynamic-select';
 import { InputLabel } from '@/components/ui/input-label';
 import { FormDataType } from '@/types/form';
+import { AsyncSearchSelect } from '@/components/async-select';
 
 // Aseguramos que los componentes tengan displayName
 DatePicker.displayName = 'DatePicker';
@@ -37,19 +38,34 @@ interface LotesPagosFormProps {
           errors={errors}
           handleInputChange={handleInputChange}
           handleComponentChange={handleComponentChange}
+          className="col-span-1 md:col-span-1"
         />
 
         <FormField
           component={DynamicSelect}
           id="id_sucursal"
           label="Sucursal"
-          parametros={{ renglon: 'RENGLON_SEGUIMIENTOS' }}
+          parametros={{ renglon: 'SUCURSALES' }}
           name="id_sucursal"
           data={data}
           errors={errors}
           handleInputChange={handleInputChange}
           handleComponentChange={handleComponentChange}
+        className="col-span-1 md:col-span-1"
         />
+
+{/* <FormField
+  component={AsyncSearchSelect}
+  label="Cuenta de Banco"
+  name="id_cuenta_banco"
+  data={data}
+  errors={errors}
+  handleInputChange={handleInputChange}
+//   handleComponentChange={handleComponentChange}
+  parametros={{ renglon: 'SUCURSALES' }}
+  placeholder="Busca una cuenta..."
+  onValueChange={(opt) => handleComponentChange('id_cuenta_banco')(opt?.value)}
+/> */}
 
         <FormField
           component={DatePicker}
@@ -59,6 +75,7 @@ interface LotesPagosFormProps {
           errors={errors}
           handleInputChange={handleInputChange}
           handleComponentChange={handleComponentChange}
+          className="col-span-1 md:col-span-1"
         />
 
         <FormField
@@ -69,6 +86,7 @@ interface LotesPagosFormProps {
           errors={errors}
           handleInputChange={handleInputChange}
           handleComponentChange={handleComponentChange}
+          className="col-span-1 md:col-span-1"
         />
 
         <FormField
@@ -79,6 +97,7 @@ interface LotesPagosFormProps {
           errors={errors}
           handleInputChange={handleInputChange}
           handleComponentChange={handleComponentChange}
+          className="col-span-1 md:col-span-1"
         />
       </div>
     );

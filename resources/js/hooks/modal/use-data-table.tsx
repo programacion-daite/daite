@@ -123,7 +123,7 @@ export function useAgGridData({
         field: col.columna,
         headerName: col.titulo,
         wrapText: true,
-        autoHeight: true,
+        // autoHeight: 15,
         flex: 1,
         // width: col.ancho ? parseInt(col.ancho) : 130,
         cellStyle: {

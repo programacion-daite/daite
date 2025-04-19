@@ -120,7 +120,7 @@ const myTheme = themeQuartz
             rowSelection={'single'}
             animateRows={true}
             theme={myTheme}
-            domLayout="normal"
+            domLayout="auto"
           />
 
       </div>

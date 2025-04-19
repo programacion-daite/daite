@@ -14,7 +14,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::prefix('procesos')->group(function () {
         Route::get('lotesPagos', fn() => Inertia::render('procesos/lotesPagos'))
-            ->name('lotesPagos');
+            ->name('procesos.lotesPagos');
     });
 
     Route::prefix('registros')->group(function () {

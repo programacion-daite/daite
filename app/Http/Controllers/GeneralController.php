@@ -44,6 +44,58 @@ class GeneralController extends Controller
         ]);
     }
 
+    public function traerEncabezadoRegistros(Request $request)
+    {
+        info('traerEncabezadoConsultas');
+
+        $request->merge([
+            'procedimiento' => 'p_traer_encabezado_registros',
+        ]);
+
+        self::validarProcedimiento($request->get('procedimiento'));
+
+        $resultado = Helpers::ejecutarProcedimiento($request);
+
+        return response()->json([
+            $resultado
+        ]);
+    }
+
+
+    public function traerEncabezadoProcesos(Request $request)
+    {
+        info('traerEncabezadoConsultas');
+
+        $request->merge([
+            'procedimiento' => 'p_traer_encabezado_procesos',
+        ]);
+
+        self::validarProcedimiento($request->get('procedimiento'));
+
+        $resultado = Helpers::ejecutarProcedimiento($request);
+
+        return response()->json([
+            $resultado
+        ]);
+    }
+
+    public function traerEncabezadoReportes(Request $request)
+    {
+        info('traerEncabezadoConsultas');
+
+        $request->merge([
+            'procedimiento' => 'p_traer_encabezado_reportes',
+        ]);
+
+        self::validarProcedimiento($request->get('procedimiento'));
+
+        $resultado = Helpers::ejecutarProcedimiento($request);
+
+        return response()->json([
+            $resultado
+        ]);
+    }
+
     public function traerEntidades(Request $request)
     {
         info('traerEntidades');
@@ -51,6 +103,24 @@ class GeneralController extends Controller
 
         $request->merge([
             'procedimiento' => 'p_traer_entidades',
+        ]);
+
+        self::validarProcedimiento($request->get('procedimiento'));
+
+        $resultado = Helpers::ejecutarProcedimiento($request);
+
+        return response()->json([
+            $resultado
+        ]);
+    }
+
+    public function traerLotesPagos(Request $request)
+    {
+        info('traerEntidades');
+        info($request->all());
+
+        $request->merge([
+            'procedimiento' => 'p_traer_seguimientos',
         ]);
 
         self::validarProcedimiento($request->get('procedimiento'));
@@ -82,193 +152,193 @@ class GeneralController extends Controller
    }
 
 
-// public function traerDatosSesion(Request $request)
-//    {
-//        info('sesion');
+public function traerDatosSesion(Request $request)
+   {
+       info('sesion');
 
-//        $api = $request->is('api/*');
+       $api = $request->is('api/*');
 
-//        if ($api && $request->programa !== 'autenticacion.iniciar')
-//          session()->put('usuario', (object) ['id_usuario' => $request->id_usuario]);
-//        ;
+       if ($api && $request->programa !== 'autenticacion.iniciar')
+         session()->put('usuario', (object) ['id_usuario' => $request->id_usuario]);
+       ;
 
-//        $usuario = User::where('id_usuario', session('usuario')->id_usuario)->first();
+       $usuario = User::where('id_usuario', session('usuario')->id_usuario)->first();
 
-//        $sesion = [
-//          'usuario' => $usuario,
-//          'modulos' => DB::select('EXEC [dbo].[p_traer_registros_combinados] ?, ?, ?', [$usuario->id_usuario, 'MODULOS', '']),
-//          'programas' => [
-//            'registros' => [],
-//            'procesos' => [],
-//            'reportes' => [],
-//            'favoritos' => [],
-//            'genericos' => []
-//          ],
-//          'empresa' => DB::select('EXEC [dbo].[p_traer_datos_generales_inicio_sesion] ?, ?, ?', [$usuario->id_usuario, '', ''])
-//        ];
+       $sesion = [
+         'usuario' => $usuario,
+         'modulos' => DB::select('EXEC [dbo].[p_traer_registros_combinados] ?, ?, ?', [$usuario->id_usuario, 'MODULOS', '']),
+         'programas' => [
+           'registros' => [],
+           'procesos' => [],
+           'reportes' => [],
+           'favoritos' => [],
+           'genericos' => []
+         ],
+         'empresa' => DB::select('EXEC [dbo].[p_traer_registros] @id_usuario = ?, @renglon = ?', [$usuario->id_usuario, 'DATOS_INICIO_SESION', ''])
+       ];
 
-//        foreach (
-//          DB::select('EXEC [dbo].[p_traer_configuraciones] ?, ?, ?', [$usuario->id_usuario, '', '']) AS $indice => $configuracion
-//        )
-//          $sesion['configuracion'][$configuracion->campo] = $configuracion->valor
-//        ;
+       foreach (
+         DB::select('EXEC [dbo].[p_traer_configuraciones] ?, ?, ?', [$usuario->id_usuario, '', '']) AS $indice => $configuracion
+       )
+         $sesion['configuracion'][$configuracion->campo] = $configuracion->valor
+       ;
 
-//        if (count($sesion['empresa']))
-//          $sesion['empresa'] = $sesion['empresa'][0]
-//        ;
+       if (count($sesion['empresa']))
+         $sesion['empresa'] = $sesion['empresa'][0]
+       ;
 
-//        foreach (DB::select('EXEC p_traer_programas ?, ?, ?, ?', [$usuario->id_usuario, 'ASIGNADOS', '', 0]) as $indice => $programa) {
+       foreach (DB::select('EXEC p_traer_programas ?, ?, ?, ?', [$usuario->id_usuario, 'ASIGNADOS', '', 0]) as $indice => $programa) {
 
-//          switch ($programa->tipo_programa) {
+         switch ($programa->tipo_programa) {
 
-//            case 'R': $programa->tipo_programa = 'registros'; break;
+           case 'R': $programa->tipo_programa = 'registros'; break;
 
-//            case 'P': $programa->tipo_programa = 'procesos'; break;
+           case 'P': $programa->tipo_programa = 'procesos'; break;
 
-//            case 'C': $programa->tipo_programa = 'reportes'; break;
+           case 'C': $programa->tipo_programa = 'reportes'; break;
 
-//            default: $programa->tipo_programa = null; break;
+           default: $programa->tipo_programa = null; break;
 
-//          }
+         }
 
-//          if ($api) {
+         if ($api) {
 
-//            if ($programa->aplicacion_movil && $programa->tipo_programa) {
+           if ($programa->aplicacion_movil && $programa->tipo_programa) {
 
-//              $sesion['programas'][$programa->tipo_programa][] = $programa;
+             $sesion['programas'][$programa->tipo_programa][] = $programa;
 
-//              $programa->favorito &&
-//              $sesion['programas']['favoritos'][$programa->tipo_programa][] = $programa;
+             $programa->favorito &&
+             $sesion['programas']['favoritos'][$programa->tipo_programa][] = $programa;
 
-//            }
+           }
 
-//          } else {
+         } else {
 
-//            if ($indice === 0)
-//              $sesion['aplicacion']['rutas'] = array_keys(app('router')->getRoutes()->getRoutesByName()) ?? []
-//            ;
+           if ($indice === 0)
+             $sesion['aplicacion']['rutas'] = array_keys(app('router')->getRoutes()->getRoutesByName()) ?? []
+           ;
 
-//            if ($programa->tipo_programa && in_array($programa->programa, $sesion['aplicacion']['rutas'])) {
+           if ($programa->tipo_programa && in_array($programa->programa, $sesion['aplicacion']['rutas'])) {
 
-//              $sesion['programas'][$programa->tipo_programa][$programa->id_modulo][] = $programa;
+             $sesion['programas'][$programa->tipo_programa][$programa->id_modulo][] = $programa;
 
-//              $programa->favorito &&
-//              $sesion['programas']['favoritos'][] = $programa;
+             $programa->favorito &&
+             $sesion['programas']['favoritos'][] = $programa;
 
-//              $programa->generico &&
-//              $sesion['programas']['genericos'][] = $programa->programa;
+             $programa->generico &&
+             $sesion['programas']['genericos'][] = $programa->programa;
 
-//            }
+           }
 
-//          }
+         }
 
-//        }
+       }
 
-//        $sesion['programas']['favoritos'] = [];
+       $sesion['programas']['favoritos'] = [];
 
-//        foreach (DB::select('EXEC p_traer_programas ?, ?, ?, ?', [$usuario->id_usuario, 'FAVORITOS', '', 0]) as $indice => $programa) {
+       foreach (DB::select('EXEC p_traer_programas ?, ?, ?, ?', [$usuario->id_usuario, 'FAVORITOS', '', 0]) as $indice => $programa) {
 
-//          switch ($programa->tipo_programa) {
+         switch ($programa->tipo_programa) {
 
-//            case 'R': $programa->tipo_programa = 'registros'; break;
+           case 'R': $programa->tipo_programa = 'registros'; break;
 
-//            case 'P': $programa->tipo_programa = 'procesos'; break;
+           case 'P': $programa->tipo_programa = 'procesos'; break;
 
-//            case 'C': $programa->tipo_programa = 'reportes'; break;
+           case 'C': $programa->tipo_programa = 'reportes'; break;
 
-//            default: $programa->tipo_programa = null; break;
+           default: $programa->tipo_programa = null; break;
 
-//          }
+         }
 
-//          if ($api) {
+         if ($api) {
 
-//            if ($programa->aplicacion_movil && $programa->tipo_programa)
-//              $sesion['programas']['favoritos'][$programa->tipo_programa][] = $programa;
+           if ($programa->aplicacion_movil && $programa->tipo_programa)
+             $sesion['programas']['favoritos'][$programa->tipo_programa][] = $programa;
 
-//          } else if ($programa->tipo_programa && in_array($programa->programa, $sesion['aplicacion']['rutas'])) {
+         } else if ($programa->tipo_programa && in_array($programa->programa, $sesion['aplicacion']['rutas'])) {
 
-//            $programa->referencia = $programa->descripcion;
+           $programa->referencia = $programa->descripcion;
 
-//            $sesion['programas']['favoritos'][] = $programa;
+           $sesion['programas']['favoritos'][] = $programa;
 
-//          }
+         }
 
-//        }
-
-
-//        return $sesion;
-//     }
+       }
 
 
-    public function traerDatosSesion(Request $request)
-    {
-        info('sesion');
-
-        $api = $request->is('api/*');
-
-        if ($api && $request->programa !== 'autenticacion.iniciar')
-            session()->put('usuario', (object) ['id_usuario' => $request->id_usuario]);
-
-        $usuario = User::where('id_usuario', session('usuario')->id_usuario)->first();
-
-        $sesion = [
-            'usuario' => $usuario,
-            'modulos' => DB::select('EXEC [dbo].[p_traer_registros_combinados] ?, ?, ?', [$usuario->id_usuario, 'MODULOS', '']),
-            'programas' => [
-                'registros' => [],
-                'procesos' => [],
-                'reportes' => [],
-                'favoritos' => [],
-                'genericos' => []
-            ],
-            'empresa' => DB::select('EXEC [dbo].[p_traer_registros] @id_usuario = ?, @renglon = ?', [$usuario->id_usuario, 'DATOS_INICIO_SESION', '']),
-            'aplicacion' => [
-                'rutas' => []
-            ]
-        ];
-
-        foreach (
-            DB::select('EXEC [dbo].[p_traer_configuraciones] ?, ?, ?', [$usuario->id_usuario, '', '']) AS $indice => $configuracion
-        )
-            $sesion['configuracion'][$configuracion->campo] = $configuracion->valor;
-
-        if (count($sesion['empresa']))
-            $sesion['empresa'] = $sesion['empresa'][0];
-
-        foreach (DB::select('EXEC p_traer_programas ?, ?, ?, ?', [$usuario->id_usuario, 'ASIGNADOS', '', 0]) as $indice => $programa) {
-            switch ($programa->tipo_programa) {
-                case 'R': $programa->tipo_programa = 'registros'; break;
-                case 'P': $programa->tipo_programa = 'procesos'; break;
-                case 'C': $programa->tipo_programa = 'reportes'; break;
-                default: $programa->tipo_programa = null; break;
-            }
-
-            if ($programa->tipo_programa) {
-                $sesion['programas'][$programa->tipo_programa][$programa->id_modulo][] = $programa;
-            }
-        }
-
-        $sesion['programas']['favoritos'] = [];
-
-        foreach (DB::select('EXEC p_traer_programas ?, ?, ?, ?', [$usuario->id_usuario, 'FAVORITOS', '', 0]) as $indice => $programa) {
-            switch ($programa->tipo_programa) {
-                case 'R': $programa->tipo_programa = 'registros'; break;
-                case 'P': $programa->tipo_programa = 'procesos'; break;
-                case 'C': $programa->tipo_programa = 'reportes'; break;
-                default: $programa->tipo_programa = null; break;
-            }
-
-            if ($api) {
-                if ($programa->aplicacion_movil && $programa->tipo_programa)
-                    $sesion['programas']['favoritos'][$programa->tipo_programa][] = $programa;
-            } else if ($programa->tipo_programa && in_array($programa->programa, $sesion['aplicacion']['rutas'])) {
-                $programa->referencia = $programa->descripcion;
-                $sesion['programas']['favoritos'][] = $programa;
-            }
-        }
-
-        return $sesion;
+       return $sesion;
     }
+
+
+    // public function traerDatosSesion(Request $request)
+    // {
+    //     info('sesion');
+
+    //     $api = $request->is('api/*');
+
+    //     if ($api && $request->programa !== 'autenticacion.iniciar')
+    //         session()->put('usuario', (object) ['id_usuario' => $request->id_usuario]);
+
+    //     $usuario = User::where('id_usuario', session('usuario')->id_usuario)->first();
+
+    //     $sesion = [
+    //         'usuario' => $usuario,
+    //         'modulos' => DB::select('EXEC [dbo].[p_traer_registros_combinados] ?, ?, ?', [$usuario->id_usuario, 'MODULOS', '']),
+    //         'programas' => [
+    //             'registros' => [],
+    //             'procesos' => [],
+    //             'reportes' => [],
+    //             'favoritos' => [],
+    //             'genericos' => []
+    //         ],
+    //         'empresa' => DB::select('EXEC [dbo].[p_traer_registros] @id_usuario = ?, @renglon = ?', [$usuario->id_usuario, 'DATOS_INICIO_SESION', '']),
+    //         'aplicacion' => [
+    //             'rutas' => []
+    //         ]
+    //     ];
+
+    //     foreach (
+    //         DB::select('EXEC [dbo].[p_traer_configuraciones] ?, ?, ?', [$usuario->id_usuario, '', '']) AS $indice => $configuracion
+    //     )
+    //         $sesion['configuracion'][$configuracion->campo] = $configuracion->valor;
+
+    //     if (count($sesion['empresa']))
+    //         $sesion['empresa'] = $sesion['empresa'][0];
+
+    //     foreach (DB::select('EXEC p_traer_programas ?, ?, ?, ?', [$usuario->id_usuario, 'ASIGNADOS', '', 0]) as $indice => $programa) {
+    //         switch ($programa->tipo_programa) {
+    //             case 'R': $programa->tipo_programa = 'registros'; break;
+    //             case 'P': $programa->tipo_programa = 'procesos'; break;
+    //             case 'C': $programa->tipo_programa = 'reportes'; break;
+    //             default: $programa->tipo_programa = null; break;
+    //         }
+
+    //         if ($programa->tipo_programa) {
+    //             $sesion['programas'][$programa->tipo_programa][$programa->id_modulo][] = $programa;
+    //         }
+    //     }
+
+    //     $sesion['programas']['favoritos'] = [];
+
+    //     foreach (DB::select('EXEC p_traer_programas ?, ?, ?, ?', [$usuario->id_usuario, 'FAVORITOS', '', 0]) as $indice => $programa) {
+    //         switch ($programa->tipo_programa) {
+    //             case 'R': $programa->tipo_programa = 'registros'; break;
+    //             case 'P': $programa->tipo_programa = 'procesos'; break;
+    //             case 'C': $programa->tipo_programa = 'reportes'; break;
+    //             default: $programa->tipo_programa = null; break;
+    //         }
+
+    //         if ($api) {
+    //             if ($programa->aplicacion_movil && $programa->tipo_programa)
+    //                 $sesion['programas']['favoritos'][$programa->tipo_programa][] = $programa;
+    //         } else if ($programa->tipo_programa && in_array($programa->programa, $sesion['aplicacion']['rutas'])) {
+    //             $programa->referencia = $programa->descripcion;
+    //             $sesion['programas']['favoritos'][] = $programa;
+    //         }
+    //     }
+
+    //     return $sesion;
+    // }
 
     public static function validarProcedimiento($procedimiento)
     {
@@ -277,6 +347,7 @@ class GeneralController extends Controller
             'p_traer_encabezado_consultas',
             'p_traer_entidades',
             'p_traer_unico_registro',
+
             'p_traer_programas',
         ];
 

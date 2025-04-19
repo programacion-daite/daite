@@ -80,7 +80,7 @@ export function NavMain() {
                                             programa.visible && (
                                                 <Link
                                                     key={index}
-                                                    href="#"
+                                                    href={route(programa.programa)}
                                                     data-programa-id={programa.id_programa}
                                                     {...(programa.favorito ? { 'data-programa-favorito': '' } : {})}
                                                     className={cn(

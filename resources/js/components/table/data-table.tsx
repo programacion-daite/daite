@@ -1,20 +1,14 @@
-// src/components/modal/TablaDatos.tsx
-import React from 'react';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { flexRender, ColumnDef ,getCoreRowModel, getFilteredRowModel, useReactTable } from '@tanstack/react-table';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { AgGridReact } from 'ag-grid-react';
+import { ColDef, GridApi, GridReadyEvent, RowClickedEvent, RowDoubleClickedEvent,themeQuartz, ModuleRegistry, AllCommunityModule } from 'ag-grid-community';
 import { TableItem } from '@/types/table';
-import { cn } from '@/lib/utils';
+import { debounce } from 'lodash';
 
-interface DataTableProps {
-  data: TableItem[];
-  columns: ColumnDef<TableItem>[];
+interface AgGridTableProps {
+  rowData: TableItem[];
+  columnDefs: ColDef<TableItem>[];
+  defaultColDef?: Record<string, unknown>;
+  loading: boolean;
   searchTerm: string;
   setSearchTerm: (value: string) => void;
   selectedItem: TableItem | null;
@@ -22,89 +16,116 @@ interface DataTableProps {
   onDoubleClick: (item: TableItem) => void;
 }
 
-export const DataTable = React.memo(({
-  data,
-  columns,
+export const AgGridTable = React.memo(({
+  rowData,
+  columnDefs,
+  defaultColDef,
+  loading,
   searchTerm,
   setSearchTerm,
   selectedItem,
   onRowClick,
   onDoubleClick,
-}: DataTableProps) => {
-  const tableInstance = useReactTable({
-    data,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    state: {
-      globalFilter: searchTerm,
-    },
-    onGlobalFilterChange: setSearchTerm,
-  });
+}: AgGridTableProps) => {
+  const gridRef = useRef<AgGridReact>(null);
+  const [gridApi, setGridApi] = useState<GridApi | null>(null);
 
-  const { getHeaderGroups, getRowModel } = tableInstance;
+  ModuleRegistry.registerModules([AllCommunityModule]);
+
+// to use myTheme in an application, pass it to the theme grid option
+const myTheme = themeQuartz
+	.withParams({
+        accentColor: "#005CAC",
+        backgroundColor: "#FFFFFF",
+        borderColor: "#03009826",
+        browserColorScheme: "light",
+        cellHorizontalPaddingScale: 1,
+        cellTextColor: "#000000",
+        fontFamily: "inherit",
+        fontSize: 11,
+        foregroundColor: "#000000",
+        headerBackgroundColor: "#005CAC",
+        headerFontFamily: [
+            "-apple-system",
+            "Nunito"
+        ],
+        headerFontSize: 11,
+        headerFontWeight: 600,
+        headerTextColor: "#FFFFFF",
+        headerVerticalPaddingScale: 0.7,
+        oddRowBackgroundColor: "#BFD6EA",
+        rowVerticalPaddingScale: 0.9,
+        spacing: 5
+    });
+
+
+  // Aplica el filtro global cuando cambia searchTerm
+//   useEffect(() => {
+//     if (gridApi) {
+//       (gridApi as any).setQuickFilter(searchTerm);
+//     }
+//   }, [searchTerm, gridApi]);
+
+  const onGridReady = useCallback((params: GridReadyEvent) => {
+    setGridApi(params.api);
+
+  }, []);
+
+  // Método para manejar click en fila
+  const handleRowClicked = useCallback((event: RowClickedEvent) => {
+    onRowClick(event.data);
+  }, [onRowClick]);
+
+  // Método para manejar doble click en fila
+  const handleRowDoubleClicked = useCallback((event: RowDoubleClickedEvent) => {
+    onDoubleClick(event.data);
+  }, [onDoubleClick]);
+
+  // Mantén la fila seleccionada cuando cambien los datos
+  useEffect(() => {
+    if (gridApi && selectedItem) {
+      const rowIndex = rowData.findIndex(item => item === selectedItem);
+      if (rowIndex >= 0) {
+        gridApi.forEachNode(node => {
+          if (node.rowIndex === rowIndex) {
+            node.setSelected(true);
+          }
+        });
+      }
+    }
+  }, [selectedItem, rowData, gridApi]);
+
+  // Función de búsqueda personalizada
+  const onFilterTextBoxChanged = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+  }, [setSearchTerm]);
 
   return (
     <>
       <div className="relative flex-1 rounded-md border border-gray-200 shadow-sm h-[450px]">
-        <div className="absolute inset-0 overflow-auto">
-          <Table className="relative w-full border-collapse table-auto">
-            <TableHeader className="sticky top-0 z-10">
-              {getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <TableHead
-                      key={header.id}
-                      className="h-3 border-r border-blue-700 bg-[#0066b3] px-2 py-1 text-left text-xs font-semibold text-white last:border-r-0"
-                      style={{
-                        width: header.column.columnDef.meta?.width || 'auto',
-                      }}
-                    >
-                      {flexRender(header.column.columnDef.header, header.getContext())}
-                    </TableHead>
-                  ))}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {data.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={columns.length} className="h-10 text-center text-xs text-gray-500">
-                    <span className="text-xs">No se encontraron resultados</span>
-                  </TableCell>
-                </TableRow>
-              ) : (
-                getRowModel().rows.map((row, index) => (
-                  <TableRow
-                    key={row.id}
-                    className={cn(
-                      "cursor-pointer border-b border-gray-200 px-2 py-1 text-xs hover:bg-indigo-600",
-                      selectedItem === row.original
-                        ? "bg-blue-100"
-                        : index % 2 === 0
-                          ? "bg-white"
-                          : "bg-[#f0f7ff]"
-                    )}
-                    onClick={() => onRowClick(row.original)}
-                    onDoubleClick={() => onDoubleClick(row.original)}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell
-                        key={cell.id}
-                        className="truncate border-r border-gray-200 px-2 py-1 last:border-r-0"
-                      >
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
+        {loading ? (
+          <div className="absolute inset-0 flex items-center justify-center bg-white/80">
+            <div className="text-xs">Cargando datos...</div>
+          </div>
+        ) : null}
+
+        <AgGridReact
+            ref={gridRef}
+            rowData={rowData}
+            columnDefs={columnDefs}
+            defaultColDef={defaultColDef}
+            onGridReady={onGridReady}
+            onRowClicked={handleRowClicked}
+            onRowDoubleClicked={handleRowDoubleClicked}
+            rowSelection={'single'}
+            animateRows={true}
+            theme={myTheme}
+            domLayout="normal"
+          />
+
       </div>
       <div className="mt-1 text-xs text-gray-500">
-        Total de registros: {getRowModel().rows.length}
+        Total de registros: {rowData.length}
       </div>
     </>
   );

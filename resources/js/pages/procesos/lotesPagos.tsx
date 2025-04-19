@@ -46,13 +46,14 @@ export default function LotesPagos() {
     const inertiaForm = useForm(initialData);
     const { data, errors, handleInputChange, handleComponentChange, resetForm } = useInertiaFormWrapper(inertiaForm);
 
-    const [searchTerm, setSearchTerm] = useState<string>('');
     const [selectedItem, setSelectedItem] = useState<TableItem | null>(null);
 
+    // Los parametros de las columnas
     const columnsParamValue = { programa: 'registros.seguimientos' };
+
+    // Los parametros de los datos
     const dataParamValue = { renglon: '', desde_fecha: '20240101', tipo_reporte: '00'};
 
-    // 3. Usa un objeto fijo para los parámetros de la tabla
     const tableParamsValue = {
         open: true,
         columnsRoute: 'traerEncabezadoRegistros',
@@ -101,35 +102,14 @@ export default function LotesPagos() {
 
                             <div className="col-span-4 h-2 rounded-md bg-orange-500"></div>
 
-                            {/* Campo de búsqueda */}
-                            <div className="col-span-4">
-                                <div className="flex gap-2">
-                                    <FormField
-                                        component={InputLabel}
-                                        label="Buscar"
-                                        id="buscar"
-                                        name="buscar"
-                                        data={data}
-                                        errors={errors}
-                                        handleInputChange={handleInputChange}
-                                        handleComponentChange={handleComponentChange}
-                                    />
-                                    <Button type="button" className="h-9 bg-[#0066b3] hover:bg-[#005091]">
-                                        Buscar
-                                    </Button>
-                                </div>
-                            </div>
-
                             {/* Formulario de Lotes de Pagos */}
 
-                            <div className="w-full h-[450px]">
+                            <div className="w-full">
                                 <AgGridTable
                                     rowData={rowData}
                                     columnDefs={columnDefs}
                                     defaultColDef={defaultColDef}
                                     loading={loading}
-                                    searchTerm={searchTerm}
-                                    setSearchTerm={setSearchTerm}
                                     selectedItem={selectedItem}
                                     onRowClick={handleRowClick}
                                     onDoubleClick={handleDoubleClick}

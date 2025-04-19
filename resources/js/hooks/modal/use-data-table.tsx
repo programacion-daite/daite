@@ -25,7 +25,6 @@ export function useAgGridData({
   const [loading, setLoading] = useState(false);
   const localeText = useMemo(() => TABLE_LANGUAGE_ES, []);
 
-  // Usamos JSON.stringify para evitar el problema del bucle infinito
   const memoizedColumnsParams = useMemo(() => parametrosColumna, [JSON.stringify(parametrosColumna)]);
   const memoizedDataParams = useMemo(() => parametrosDatos, [JSON.stringify(parametrosDatos)]);
 
@@ -115,7 +114,6 @@ export function useAgGridData({
     }
   }
 
-
   const columnDefs = useMemo<ColDef<TableItem>[]>(() => {
     return columns
       .filter((col) => col.visible === '1')
@@ -123,6 +121,7 @@ export function useAgGridData({
         field: col.columna,
         headerName: col.titulo,
         wrapText: true,
+        sumar: col.sumar,
         // autoHeight: 15,
         flex: 1,
         // width: col.ancho ? parseInt(col.ancho) : 130,
@@ -154,6 +153,7 @@ export function useAgGridData({
     animateRows: true,
     suppressCellFocus: true,
     rowSelection: 'single',
+    suppressPropertyNamesCheck: true,
     columnSize:"autoSize",
     columnSizeOptions:{"skipHeader": true},
     // headerHeight: 30,

@@ -1,132 +1,152 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { AgGridReact } from 'ag-grid-react';
-import { ColDef, GridApi, GridReadyEvent, RowClickedEvent, RowDoubleClickedEvent,themeQuartz, ModuleRegistry, AllCommunityModule } from 'ag-grid-community';
-import { TableItem } from '@/types/table';
-import { debounce } from 'lodash';
+    import React, { useCallback, useEffect, useRef, useState } from 'react';
+    import { AgGridReact } from 'ag-grid-react';
+    import {
+    ColDef,
+    GridApi,
+    GridReadyEvent,
+    RowClickedEvent,
+    RowDoubleClickedEvent,
+    themeQuartz,
+    ModuleRegistry,
+    AllCommunityModule,
+    } from 'ag-grid-community';
+    import { TableItem } from '@/types/table';
+    import { InputLabel } from '../ui/input-label';
+    import { TABLE_LANGUAGE_ES } from '@/utils/table-language';
+    import { numericFormat } from '@/lib/utils';
 
-interface AgGridTableProps {
-  rowData: TableItem[];
-  columnDefs: ColDef<TableItem>[];
-  defaultColDef?: Record<string, unknown>;
-  loading: boolean;
-  searchTerm: string;
-  setSearchTerm: (value: string) => void;
-  selectedItem: TableItem | null;
-  onRowClick: (item: TableItem) => void;
-  onDoubleClick: (item: TableItem) => void;
-}
+    // Registrar módulos de AG Grid solo una vez
+    ModuleRegistry.registerModules([AllCommunityModule]);
 
-export const AgGridTable = React.memo(({
-  rowData,
-  columnDefs,
-  defaultColDef,
-  loading,
-  searchTerm,
-  setSearchTerm,
-  selectedItem,
-  onRowClick,
-  onDoubleClick,
-}: AgGridTableProps) => {
-  const gridRef = useRef<AgGridReact>(null);
-  const [gridApi, setGridApi] = useState<GridApi | null>(null);
-
-  ModuleRegistry.registerModules([AllCommunityModule]);
-
-// to use myTheme in an application, pass it to the theme grid option
-const myTheme = themeQuartz
-	.withParams({
-        accentColor: "#005CAC",
-        backgroundColor: "#FFFFFF",
-        borderColor: "#03009826",
-        browserColorScheme: "light",
-        cellHorizontalPaddingScale: 1,
-        cellTextColor: "#000000",
-        fontFamily: "inherit",
-        fontSize: 11,
-        foregroundColor: "#000000",
-        headerBackgroundColor: "#005CAC",
-        headerFontFamily: [
-            "-apple-system",
-            "Nunito"
-        ],
-        headerFontSize: 11,
-        headerFontWeight: 600,
-        headerTextColor: "#FFFFFF",
-        headerVerticalPaddingScale: 0.7,
-        oddRowBackgroundColor: "#BFD6EA",
-        rowVerticalPaddingScale: 0.9,
-        spacing: 5
+    // Tema personalizado para la cuadrícula
+    const myTheme = themeQuartz.withParams({
+    accentColor: '#005CAC',
+    backgroundColor: '#FFFFFF',
+    borderColor: '#03009826',
+    browserColorScheme: 'light',
+    cellHorizontalPaddingScale: 1,
+    cellTextColor: '#000000',
+    fontFamily: 'inherit',
+    fontSize: 11,
+    foregroundColor: '#000000',
+    headerBackgroundColor: '#005CAC',
+    headerFontFamily: ['-apple-system', 'Nunito'],
+    headerFontSize: 11,
+    headerFontWeight: 600,
+    headerTextColor: '#FFFFFF',
+    headerVerticalPaddingScale: 0.7,
+    oddRowBackgroundColor: '#BFD6EA',
+    rowVerticalPaddingScale: 0.9,
+    spacing: 5,
     });
 
+    interface AgGridTableProps {
+    rowData: TableItem[];
+    columnDefs: ColDef<TableItem>[];
+    defaultColDef?: Partial<ColDef<TableItem>>;
+    loading: boolean;
+    selectedItem: TableItem | null;
+    onRowClick: (item: TableItem) => void;
+    onDoubleClick: (item: TableItem) => void;
+    }
 
-  // Aplica el filtro global cuando cambia searchTerm
-//   useEffect(() => {
-//     if (gridApi) {
-//       (gridApi as any).setQuickFilter(searchTerm);
-//     }
-//   }, [searchTerm, gridApi]);
+    export const AgGridTable: React.FC<AgGridTableProps> = React.memo(({
+    rowData,
+    columnDefs,
+    defaultColDef,
+    selectedItem,
+    onRowClick,
+    onDoubleClick,
+    }) => {
+    const gridRef = useRef<AgGridReact>(null);
+    const [gridApi, setGridApi] = useState<GridApi | null>(null);
+    const [filterText, setFilterText] = useState('');
 
-  const onGridReady = useCallback((params: GridReadyEvent) => {
-    setGridApi(params.api);
+    const onGridReady = useCallback((params: GridReadyEvent) => {
+        setGridApi(params.api);
+        const allColIds = params.columnApi.getAllColumns()?.map(col => col.getColId()) || [];
+        params.columnApi.autoSizeColumns(allColIds, false);
+    }, []);
 
-  }, []);
+    useEffect(() => {
+        if (gridApi) {
+        gridApi?.setGridOption('quickFilterText', filterText);
+        }
+    }, [filterText, gridApi]);
 
-  // Método para manejar click en fila
-  const handleRowClicked = useCallback((event: RowClickedEvent) => {
-    onRowClick(event.data);
-  }, [onRowClick]);
-
-  // Método para manejar doble click en fila
-  const handleRowDoubleClicked = useCallback((event: RowDoubleClickedEvent) => {
-    onDoubleClick(event.data);
-  }, [onDoubleClick]);
-
-  // Mantén la fila seleccionada cuando cambien los datos
-  useEffect(() => {
-    if (gridApi && selectedItem) {
-      const rowIndex = rowData.findIndex(item => item === selectedItem);
-      if (rowIndex >= 0) {
-        gridApi.forEachNode(node => {
-          if (node.rowIndex === rowIndex) {
-            node.setSelected(true);
+    useEffect(() => {
+        if (!gridApi) return;
+        const footer: Record<string, any> = {};
+        columnDefs.forEach(col => {
+          const field = col.field;
+          const sumar = (col as any).sumar;
+          if (!field || sumar === 0 || sumar == null) return;
+          if (sumar === 'filas') {
+            footer[field] = rowData.length;
+          } else if (sumar === 1) {
+            const sum = rowData.reduce((acc, data) => {
+              const val = Number((data as any)[field]);
+              return acc + (isNaN(val) ? 0 : val);
+            }, 0);
+            footer[field] = numericFormat(sum, 2);
           }
         });
-      }
-    }
-  }, [selectedItem, rowData, gridApi]);
+        gridApi.setGridOption('pinnedBottomRowData', [footer]);
+      }, [gridApi, rowData, columnDefs]);
 
-  // Función de búsqueda personalizada
-  const onFilterTextBoxChanged = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-  }, [setSearchTerm]);
+    useEffect(() => {
+        if (!gridApi || !selectedItem) return;
+        gridApi.forEachNode(node => node.setSelected(node.data === selectedItem));
+    }, [gridApi, selectedItem]);
 
-  return (
-    <>
-      <div className="relative flex-1 rounded-md border border-gray-200 shadow-sm h-[450px]">
-        {loading ? (
-          <div className="absolute inset-0 flex items-center justify-center bg-white/80">
-            <div className="text-xs">Cargando datos...</div>
-          </div>
-        ) : null}
+    const handleRowClicked = useCallback(
+        (e: RowClickedEvent) => onRowClick(e.data),
+        [onRowClick]
+    );
 
-        <AgGridReact
+    const handleRowDoubleClicked = useCallback(
+        (e: RowDoubleClickedEvent) => onDoubleClick(e.data),
+        [onDoubleClick]
+    );
+
+    return (
+        <>
+            <div className="p-2 flex items-center space-x-2">
+                <InputLabel
+                label="Buscar"
+                id="buscar"
+                name="buscar"
+                value={filterText}
+                onChange={e => setFilterText(e.target.value)}
+                />
+        </div>
+
+        <div className="flex flex-col w-full h-[450px] border border-gray-200 rounded-md shadow-sm">
+        {/* Input de búsqueda */}
+        <div className="flex-1 relative">
+            <AgGridReact
             ref={gridRef}
+            localeText={TABLE_LANGUAGE_ES}
             rowData={rowData}
             columnDefs={columnDefs}
             defaultColDef={defaultColDef}
             onGridReady={onGridReady}
             onRowClicked={handleRowClicked}
             onRowDoubleClicked={handleRowDoubleClicked}
-            rowSelection={'single'}
-            animateRows={true}
+            rowSelection="single"
+            animateRows={false}
             theme={myTheme}
-            domLayout="auto"
-          />
+            domLayout="normal"
+            pagination
+            paginationPageSize={50} // Paginación con 50 filas
+            rowBuffer={10}          // Virtualización de filas
+            />
+        </div>
+        <div className="mt-1 text-xs text-gray-500">
+            Total de registros: {rowData.length}
+        </div>
+        </div>
 
-      </div>
-      <div className="mt-1 text-xs text-gray-500">
-        Total de registros: {rowData.length}
-      </div>
-    </>
-  );
-});
+        </>
+    );
+    });

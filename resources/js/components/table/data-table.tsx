@@ -76,14 +76,19 @@
 
     useEffect(() => {
         if (!gridApi) return;
+
         const footer: Record<string, any> = {};
+
         columnDefs.forEach(col => {
           const field = col.field;
-          const sumar = (col as any).sumar;
-          if (!field || sumar === 0 || sumar == null) return;
+          // Accedemos a sumar desde el context
+          const sumar = col.context?.sumar;
+
+          if (!field || !sumar || sumar === 0) return;
+
           if (sumar === 'filas') {
             footer[field] = rowData.length;
-          } else if (sumar === 1) {
+          } else if (sumar === 1 || sumar === '1') {
             const sum = rowData.reduce((acc, data) => {
               const val = Number((data as any)[field]);
               return acc + (isNaN(val) ? 0 : val);
@@ -91,6 +96,7 @@
             footer[field] = numericFormat(sum, 2);
           }
         });
+
         gridApi.setGridOption('pinnedBottomRowData', [footer]);
       }, [gridApi, rowData, columnDefs]);
 
@@ -140,10 +146,16 @@
             pagination
             paginationPageSize={50} // Paginación con 50 filas
             rowBuffer={10}          // Virtualización de filas
+            getRowStyle={({ node }) =>
+                node.rowPinned === 'bottom'
+                  ? {
+                      backgroundColor: '#005CAC',    // mismo headerBackgroundColor
+                      color: '#FFFFFF',              // mismo headerTextColor
+                      fontWeight: 600,               // mismo headerFontWeight
+                    }
+                  : undefined
+              }
             />
-        </div>
-        <div className="mt-1 text-xs text-gray-500">
-            Total de registros: {rowData.length}
         </div>
         </div>
 

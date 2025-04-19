@@ -1,21 +1,26 @@
 import { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
-import { ColDef, GridOptions, GridReadyEvent, RowClickedEvent, RowDoubleClickedEvent } from 'ag-grid-community';
+import { ColDef, GridOptions } from 'ag-grid-community';
 import { ColumnConfig, TableItem } from '@/types/table';
 import { TABLE_LANGUAGE_ES } from '@/utils/table-language';
 import { numericFormat } from '@/lib/utils';
+import { ValueFormatterParams } from 'ag-grid-community';
 
 interface UseAgGridDataProps {
-  open: boolean;
+  loadColumns: boolean;
+  fetchData: boolean;
   columnsRoute: string;
   dataRoute: string;
   parametrosColumna?: Record<string, unknown>;
   parametrosDatos?: Record<string, unknown>;
 }
 
+type TipoDato = 'int' | 'numeric' | 'datetime' | 'date' | 'string';
+
 export function useAgGridData({
-  open,
+  loadColumns,
   columnsRoute,
+  fetchData,
   dataRoute,
   parametrosColumna,
   parametrosDatos,
@@ -29,7 +34,7 @@ export function useAgGridData({
   const memoizedDataParams = useMemo(() => parametrosDatos, [JSON.stringify(parametrosDatos)]);
 
   useEffect(() => {
-    if (!open || !columnsRoute) return;
+    if (!loadColumns || !columnsRoute) return;
 
     const fetchColumns = async () => {
       try {
@@ -51,12 +56,12 @@ export function useAgGridData({
     };
 
     fetchColumns();
-  }, [open, columnsRoute, memoizedColumnsParams]);
+  }, [loadColumns, columnsRoute, memoizedColumnsParams]);
 
   useEffect(() => {
-    if (!open || !dataRoute) return;
+    if (!fetchData || !dataRoute) return;
 
-    const fetchData = async () => {
+    const fetchTableData = async () => {
       setLoading(true);
       try {
         const response = await axios.post(
@@ -78,39 +83,42 @@ export function useAgGridData({
       }
     };
 
-    fetchData();
-  }, [open, dataRoute, memoizedDataParams]);
+    fetchTableData();
+  }, [fetchData, dataRoute, memoizedDataParams]);
 
-  function getValueFormatterByType(tipo: string): ((params: any) => string | number) | undefined {
+  function getValueFormatterByType<TData = unknown, TValue = unknown>(
+    tipo: TipoDato
+  ): ((params: ValueFormatterParams<TData, TValue>) => string | number) | undefined {
     switch (tipo) {
       case 'int':
-        return (params) => {
-            const val = parseInt(params.value).toString();
-            return val;
-        }
-        break
+        return (params: ValueFormatterParams<TData, TValue>) => {
+          const val = parseInt(params.value as string).toString();
+          return val;
+        };
 
       case 'numeric':
-        return (params) => {
-          const val = numericFormat(params.value, 2);
+        return (params: ValueFormatterParams<TData, TValue>) => {
+          const val = numericFormat(params.value as number | string, 2);
           return val;
         };
 
       case 'datetime':
-        return (params) => {
+        return (params: ValueFormatterParams<TData, TValue>) => {
           if (!params.value) return '';
-          const date = new Date(params.value);
-          return date.toLocaleDateString(); // solo fecha
+          const date = new Date(params.value as string | number | Date);
+          return date.toLocaleDateString();
         };
 
       case 'date':
-        return (params) => {
+        return (params: ValueFormatterParams<TData, TValue>) => {
           if (!params.value) return '';
-          return new Date(params.value).toLocaleDateString('en-GB').replaceAll('.', '/');
+          return new Date(params.value as string | number | Date)
+            .toLocaleDateString('en-GB')
+            .replaceAll('.', '/');
         };
 
       default:
-        return undefined; // Sin formateo
+        return undefined;
     }
   }
 
@@ -121,7 +129,6 @@ export function useAgGridData({
         field: col.columna,
         headerName: col.titulo,
         wrapText: true,
-        sumar: col.sumar,
         // autoHeight: 15,
         flex: 1,
         // width: col.ancho ? parseInt(col.ancho) : 130,
@@ -131,6 +138,9 @@ export function useAgGridData({
         //   fontWeight: col.negrita === '1' ? 'bold' : 'normal',
         //   fontSize: '11px',
         //   lineHeight: '1.1',
+        },
+        context:{
+            sumar: col.sumar
         },
         valueFormatter: getValueFormatterByType(col.tipo)
       }));
@@ -153,7 +163,6 @@ export function useAgGridData({
     animateRows: true,
     suppressCellFocus: true,
     rowSelection: 'single',
-    suppressPropertyNamesCheck: true,
     columnSize:"autoSize",
     columnSizeOptions:{"skipHeader": true},
     // headerHeight: 30,

@@ -1,26 +1,33 @@
 import { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
-import { ColumnDef, Row } from '@tanstack/react-table';
+import { ColDef, GridOptions, GridReadyEvent, RowClickedEvent, RowDoubleClickedEvent } from 'ag-grid-community';
 import { ColumnConfig, TableItem } from '@/types/table';
+import { TABLE_LANGUAGE_ES } from '@/utils/table-language';
+import { numericFormat } from '@/lib/utils';
 
-interface UseDataTableProps {
+interface UseAgGridDataProps {
   open: boolean;
-  columnsRoute: string; // ruta para columnas
-  dataRoute: string;    // ruta para datos
-  columnsParams?: Record<string, unknown>; // parámetros personalizados para columnas
-  dataParams?: Record<string, unknown>;    // parámetros personalizados para datos
+  columnsRoute: string;
+  dataRoute: string;
+  parametrosColumna?: Record<string, unknown>;
+  parametrosDatos?: Record<string, unknown>;
 }
 
-export function useDataTable({
+export function useAgGridData({
   open,
   columnsRoute,
   dataRoute,
-  columnsParams,
-  dataParams,
-}: UseDataTableProps) {
+  parametrosColumna,
+  parametrosDatos,
+}: UseAgGridDataProps) {
   const [columns, setColumns] = useState<ColumnConfig[]>([]);
-  const [data, setData] = useState<TableItem[]>([]);
+  const [rowData, setRowData] = useState<TableItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const localeText = useMemo(() => TABLE_LANGUAGE_ES, []);
+
+  // Usamos JSON.stringify para evitar el problema del bucle infinito
+  const memoizedColumnsParams = useMemo(() => parametrosColumna, [JSON.stringify(parametrosColumna)]);
+  const memoizedDataParams = useMemo(() => parametrosDatos, [JSON.stringify(parametrosDatos)]);
 
   useEffect(() => {
     if (!open || !columnsRoute) return;
@@ -29,7 +36,7 @@ export function useDataTable({
       try {
         const response = await axios.post(
           route(columnsRoute),
-          columnsParams ?? {},
+          memoizedColumnsParams ?? {},
           {
             headers: { 'Content-Type': 'application/json' },
             withCredentials: true,
@@ -45,7 +52,7 @@ export function useDataTable({
     };
 
     fetchColumns();
-  }, [open, columnsRoute, columnsParams]);
+  }, [open, columnsRoute, memoizedColumnsParams]);
 
   useEffect(() => {
     if (!open || !dataRoute) return;
@@ -55,7 +62,7 @@ export function useDataTable({
       try {
         const response = await axios.post(
           route(dataRoute),
-          dataParams ?? {},
+          memoizedDataParams ?? {},
           {
             headers: { 'Content-Type': 'application/json' },
             withCredentials: true,
@@ -64,7 +71,7 @@ export function useDataTable({
 
         const resultado = response.data[0].original;
         if (!Array.isArray(resultado)) throw new Error('La respuesta de datos no es válida');
-        setData(resultado);
+        setRowData(resultado);
       } catch (error) {
         console.error('Error al cargar datos:', error);
       } finally {
@@ -73,38 +80,91 @@ export function useDataTable({
     };
 
     fetchData();
-  }, [open, dataRoute, dataParams]);
+  }, [open, dataRoute, memoizedDataParams]);
 
-  const tableColumns = useMemo<ColumnDef<TableItem>[]>(() => {
+  function getValueFormatterByType(tipo: string): ((params: any) => string | number) | undefined {
+    switch (tipo) {
+      case 'int':
+        return (params) => {
+            const val = parseInt(params.value).toString();
+            return val;
+        }
+        break
+
+      case 'numeric':
+        return (params) => {
+          const val = numericFormat(params.value, 2);
+          return val;
+        };
+
+      case 'datetime':
+        return (params) => {
+          if (!params.value) return '';
+          const date = new Date(params.value);
+          return date.toLocaleDateString(); // solo fecha
+        };
+
+      case 'date':
+        return (params) => {
+          if (!params.value) return '';
+          return new Date(params.value).toLocaleDateString('en-GB').replaceAll('.', '/');
+        };
+
+      default:
+        return undefined; // Sin formateo
+    }
+  }
+
+
+  const columnDefs = useMemo<ColDef<TableItem>[]>(() => {
     return columns
       .filter((col) => col.visible === '1')
       .map((col) => ({
-        accessorKey: col.columna,
-        header: col.titulo,
-        meta: {
-          width: col.ancho || 'auto',
+        field: col.columna,
+        headerName: col.titulo,
+        wrapText: true,
+        autoHeight: true,
+        flex: 1,
+        // width: col.ancho ? parseInt(col.ancho) : 130,
+        cellStyle: {
+          textAlign: col.alineacion === 'derecha' ? 'right' : col.alineacion === 'izquierda' ? 'left' : 'center',
+          fontWeight: 'bold',
+        //   fontWeight: col.negrita === '1' ? 'bold' : 'normal',
+        //   fontSize: '11px',
+        //   lineHeight: '1.1',
         },
-        cell: ({ row }: { row: Row<TableItem> }) => {
-          const value = row.getValue(col.columna);
-          return (
-            <div
-              style={{
-                textAlign: col.alineacion as 'left' | 'center' | 'right',
-                fontWeight: col.negrita === '1' ? 'bold' : 'normal',
-                fontSize: '11px',
-                lineHeight: '1.2',
-              }}
-            >
-              {value as React.ReactNode}
-            </div>
-          );
-        },
+        valueFormatter: getValueFormatterByType(col.tipo)
       }));
   }, [columns]);
 
+  const defaultColDef = useMemo(() => {
+    return {
+      resizable: true,
+      sortable: true,
+      filter: true,
+      wrapHeaderText: true,
+    };
+  }, []);
+
+  const gridOptions = useMemo<GridOptions<TableItem>>(() => ({
+    localeText: localeText,
+    columnDefs,
+    rowData,
+    defaultColDef,
+    animateRows: true,
+    suppressCellFocus: true,
+    rowSelection: 'single',
+    columnSize:"autoSize",
+    columnSizeOptions:{"skipHeader": true},
+    // headerHeight: 30,
+    // rowHeight: 24,
+  }), [columnDefs, rowData, defaultColDef, localeText]);
+
   return {
-    data,
+    rowData,
+    columnDefs,
+    defaultColDef,
     loading,
-    tableColumns,
+    gridOptions
   };
 }

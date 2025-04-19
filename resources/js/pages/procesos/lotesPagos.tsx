@@ -2,15 +2,17 @@ import FormBody from '@/components/form/form-body';
 import { FormField } from '@/components/form/form-field';
 import FormHeader from '@/components/form/form-header';
 import { LotesPagosForm } from '@/components/lotesPagos/lotesPagosForm';
-import { DataTable } from '@/components/table/data-table';
+import { AgGridTable } from '@/components/table/data-table';
 import { Button } from '@/components/ui/button';
 import { InputLabel } from '@/components/ui/input-label';
 import { useInertiaFormWrapper } from '@/hooks/form/use-form';
+import { useDeepMemo } from '@/hooks/general/use-deepmemo';
+import { useAgGridData } from '@/hooks/modal/use-data-table';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
+import { TableItem } from '@/types/table';
 import { Head, useForm } from '@inertiajs/react';
 import React, { useState } from 'react';
-import { useDataTable } from '@/hooks/modal/use-data-table';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -41,23 +43,35 @@ const initialData: LotesPagosData = {
 };
 
 export default function LotesPagos() {
-    // Usar el hook useForm de Inertia
     const inertiaForm = useForm(initialData);
     const { data, errors, handleInputChange, handleComponentChange, resetForm } = useInertiaFormWrapper(inertiaForm);
-    const { data: lotesPagos, tableColumns } =
-    // useDataTable({
-    // columnsRoute: 'traerEncabezadoConsultas',
-    // dataRoute: 'traerEntidades',
-    // columnsParams: {
-    //     renglon: 'CLIENTES',
-    // },
-    // dataParams: {
-    //     renglon: 'CLIENTE',
-    // },
-    // open: true
-    // });
 
-    const [searchTerm, setSearchTerm] = useState('');
+    const [searchTerm, setSearchTerm] = useState<string>('');
+    const [selectedItem, setSelectedItem] = useState<TableItem | null>(null);
+
+    const columnsParamValue = { programa: 'registros.seguimientos' };
+    const dataParamValue = { renglon: '', desde_fecha: '20240101', tipo_reporte: '00'};
+
+    // 3. Usa un objeto fijo para los parámetros de la tabla
+    const tableParamsValue = {
+        open: true,
+        columnsRoute: 'traerEncabezadoRegistros',
+        dataRoute: 'traerLotesPagos',
+        parametrosColumna: columnsParamValue,
+        parametrosDatos: dataParamValue,
+    };
+
+    const stableTableParams = useDeepMemo(tableParamsValue, tableParamsValue);
+
+    const { rowData, columnDefs, defaultColDef, loading } = useAgGridData(stableTableParams);
+
+    const handleRowClick = (item: TableItem) => {
+        setSelectedItem(item);
+    };
+
+    const handleDoubleClick = (item: TableItem) => {
+        console.log('Double clicked item:', item);
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -77,7 +91,6 @@ export default function LotesPagos() {
 
                     <FormBody onSubmit={handleSubmit}>
                         <div className="space-x-4">
-
                             <LotesPagosForm
                                 data={data}
                                 errors={errors}
@@ -109,15 +122,17 @@ export default function LotesPagos() {
 
                             {/* Formulario de Lotes de Pagos */}
 
-                            <div className="col-span-4">
-                                <DataTable
-                                    data={lotesPagos}
-                                    columns={tableColumns}
+                            <div className="w-full h-[450px]">
+                                <AgGridTable
+                                    rowData={rowData}
+                                    columnDefs={columnDefs}
+                                    defaultColDef={defaultColDef}
+                                    loading={loading}
                                     searchTerm={searchTerm}
                                     setSearchTerm={setSearchTerm}
-                                    selectedItem={null}
-                                    onRowClick={() => {}}
-                                    onDoubleClick={() => {}}
+                                    selectedItem={selectedItem}
+                                    onRowClick={handleRowClick}
+                                    onDoubleClick={handleDoubleClick}
                                 />
                             </div>
                         </div>

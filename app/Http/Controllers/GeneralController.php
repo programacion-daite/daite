@@ -44,6 +44,58 @@ class GeneralController extends Controller
         ]);
     }
 
+    public function traerEncabezadoRegistros(Request $request)
+    {
+        info('traerEncabezadoConsultas');
+
+        $request->merge([
+            'procedimiento' => 'p_traer_encabezado_registros',
+        ]);
+
+        self::validarProcedimiento($request->get('procedimiento'));
+
+        $resultado = Helpers::ejecutarProcedimiento($request);
+
+        return response()->json([
+            $resultado
+        ]);
+    }
+
+
+    public function traerEncabezadoProcesos(Request $request)
+    {
+        info('traerEncabezadoConsultas');
+
+        $request->merge([
+            'procedimiento' => 'p_traer_encabezado_procesos',
+        ]);
+
+        self::validarProcedimiento($request->get('procedimiento'));
+
+        $resultado = Helpers::ejecutarProcedimiento($request);
+
+        return response()->json([
+            $resultado
+        ]);
+    }
+
+    public function traerEncabezadoReportes(Request $request)
+    {
+        info('traerEncabezadoConsultas');
+
+        $request->merge([
+            'procedimiento' => 'p_traer_encabezado_reportes',
+        ]);
+
+        self::validarProcedimiento($request->get('procedimiento'));
+
+        $resultado = Helpers::ejecutarProcedimiento($request);
+
+        return response()->json([
+            $resultado
+        ]);
+    }
+
     public function traerEntidades(Request $request)
     {
         info('traerEntidades');
@@ -51,6 +103,24 @@ class GeneralController extends Controller
 
         $request->merge([
             'procedimiento' => 'p_traer_entidades',
+        ]);
+
+        self::validarProcedimiento($request->get('procedimiento'));
+
+        $resultado = Helpers::ejecutarProcedimiento($request);
+
+        return response()->json([
+            $resultado
+        ]);
+    }
+
+    public function traerLotesPagos(Request $request)
+    {
+        info('traerEntidades');
+        info($request->all());
+
+        $request->merge([
+            'procedimiento' => 'p_traer_seguimientos',
         ]);
 
         self::validarProcedimiento($request->get('procedimiento'));

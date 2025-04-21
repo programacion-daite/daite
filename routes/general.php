@@ -48,4 +48,10 @@ Route::middleware('auth')->group(function () {
     Route::get('traerDatosSesion', [GeneralController::class, 'traerDatosSesion'])
         ->name('traerDatosSesion');
 
+    Route::post('esquema', [GeneralController::class, 'esquema'])
+        ->name('esquema');
+
+    Route::post('registrosConsultaPrincipal', [GeneralController::class, 'registrosConsultaPrincipal'])
+        ->name('registrosConsultaPrincipal');
+
 });

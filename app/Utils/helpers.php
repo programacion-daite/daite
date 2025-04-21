@@ -10,7 +10,7 @@ use Illuminate\Contracts\Routing\ResponseFactory;
 class Helpers {
 
     private static $esquema = 'dbo';
-    private static function esquema(Request $request): array {
+    public static function esquema(Request $request): array {
 
         $entidad = (object) [
             'esquema' => $request-> esquema ?? self::$esquema,

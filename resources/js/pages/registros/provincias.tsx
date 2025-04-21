@@ -11,6 +11,7 @@ import { BreadcrumbItem } from '@/types';
 import { TableItem } from '@/types/table';
 import { Head, useForm } from '@inertiajs/react';
 import React, { useState } from 'react';
+import ProvinciasPage from '@/components/table/dynamic-table';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -45,27 +46,6 @@ export default function LotesPagos() {
     const { data, errors, handleInputChange, handleComponentChange, resetForm } = useInertiaFormWrapper(inertiaForm);
 
     const [selectedItem, setSelectedItem] = useState<TableItem | null>(null);
-    const [cargarDatosInicio, setCargarDatosInicio] = useState(false);
-
-    // Los parametros de las columnas
-    const columnsParamValue = { programa: 'registros.seguimientos' };
-
-    // Los parametros de los datos
-    const dataParamValue = { renglon: '', desde_fecha: '20240101', tipo_reporte: '00'};
-
-    const tableParamsValue = {
-        loadColumns: true,
-        fetchData: cargarDatosInicio,
-        columnsRoute: 'traerEncabezadoRegistros',
-        dataRoute: 'traerLotesPagos',
-        parametrosColumna: columnsParamValue,
-        parametrosDatos: dataParamValue,
-        isGeneric: false
-    };
-
-    const stableTableParams = useDeepMemo(tableParamsValue, tableParamsValue);
-
-    const { rowData, columnDefs, defaultColDef, loading } = useAgGridData(stableTableParams);
 
     const handleRowClick = (item: TableItem) => {
         setSelectedItem(item);
@@ -76,7 +56,6 @@ export default function LotesPagos() {
     };
 
     const handleSubmit = () => {
-        setCargarDatosInicio(true);
     };
 
     const handleClear = () => {
@@ -90,55 +69,26 @@ export default function LotesPagos() {
                 <div className="w-full">
 
                     <FormHeader
-                        title="Lotes de Pagos"
+                        title="Registro de Provincias"
                         onSave={() => handleSubmit()}
                         onClear={handleClear}
                         onBack={() => window.history.back()}
                         formId="lotesPagosForm"
 
                         saveButtonProps={{
-                            children: 'Buscar',
-                            type: 'submit',
-                            form: 'lotesPagosForm',
-                            className: 'bg-indigo-600 hover:bg-indigo-700 h-8',
+                            children: 'Crear',
                         }}
                     >
-
-                        <Button
-                            variant="outline"
-                            className="h-8"
-                            onClick={() => console.log('Botón EXTRA!')}
-                        >
-                            Enviar a ePagos
-                        </Button>
 
                     </FormHeader>
 
 
                     <FormBody onSubmit={handleSubmit}>
                         <div className="space-x-3 ">
-                            <LotesPagosForm
-                                data={data}
-                                errors={errors}
-                                handleInputChange={handleInputChange}
-                                handleComponentChange={handleComponentChange}
-                                className="grid grid-cols-1 gap-4 md:grid-cols-5"
-                            />
-
-                            <div className="col-span-4 h-2 rounded-md bg-orange-500 mt-2"></div>
-
                             {/* Formulario de Lotes de Pagos */}
 
                             <div className="w-full">
-                                <AgGridTable
-                                    rowData={rowData}
-                                    columnDefs={columnDefs}
-                                    defaultColDef={defaultColDef}
-                                    loading={loading}
-                                    selectedItem={selectedItem}
-                                    onRowClick={handleRowClick}
-                                    onDoubleClick={handleDoubleClick}
-                                />
+                            <ProvinciasPage/>
                             </div>
                         </div>
                     </FormBody>

@@ -5,6 +5,8 @@ import { ColumnConfig, TableItem } from '@/types/table';
 import { TABLE_LANGUAGE_ES } from '@/utils/table-language';
 import { numericFormat } from '@/lib/utils';
 import { ValueFormatterParams } from 'ag-grid-community';
+import { Button } from '@/components/ui/button';
+import { Pencil } from 'lucide-react';
 
 interface UseAgGridDataProps {
   loadColumns: boolean;
@@ -13,9 +15,27 @@ interface UseAgGridDataProps {
   dataRoute: string;
   parametrosColumna?: Record<string, unknown>;
   parametrosDatos?: Record<string, unknown>;
+  isGeneric: boolean;
 }
 
 type TipoDato = 'int' | 'numeric' | 'datetime' | 'date' | 'string';
+
+const editButton = (params: any) => {
+    return (
+        <Button
+            variant="link"
+            className="text-blue-500"
+            onClick={() => {
+                console.log('Edit button clicked for row:', params.data);
+                // Aquí puedes manejar la lógica para editar la fila
+            }}
+            data-id={params.data.id_provincia}
+        >
+            <Pencil />
+        </Button>
+    )
+};
+
 
 export function useAgGridData({
   loadColumns,
@@ -24,6 +44,7 @@ export function useAgGridData({
   dataRoute,
   parametrosColumna,
   parametrosDatos,
+  isGeneric = false,
 }: UseAgGridDataProps) {
   const [columns, setColumns] = useState<ColumnConfig[]>([]);
   const [rowData, setRowData] = useState<TableItem[]>([]);
@@ -47,7 +68,7 @@ export function useAgGridData({
           }
         );
 
-        const resultado = response.data[0].original;
+        const resultado = response.data[0].original ?? response.data[0];
         if (!Array.isArray(resultado)) throw new Error('La respuesta de columnas no es válida');
         setColumns(resultado);
       } catch (error) {
@@ -123,28 +144,81 @@ export function useAgGridData({
   }
 
   const columnDefs = useMemo<ColDef<TableItem>[]>(() => {
-    return columns
-      .filter((col) => col.visible === '1')
-      .map((col) => ({
-        field: col.columna,
-        headerName: col.titulo,
-        wrapText: true,
-        // autoHeight: 15,
-        flex: 1,
-        // width: col.ancho ? parseInt(col.ancho) : 130,
-        cellStyle: {
-          textAlign: col.alineacion === 'derecha' ? 'right' : col.alineacion === 'izquierda' ? 'left' : 'center',
-          fontWeight: 'bold',
-        //   fontWeight: col.negrita === '1' ? 'bold' : 'normal',
-        //   fontSize: '11px',
-        //   lineHeight: '1.1',
-        },
-        context:{
-            sumar: col.sumar
-        },
-        valueFormatter: getValueFormatterByType(col.tipo)
-      }));
-  }, [columns]);
+    if (isGeneric) {
+        return [
+            ...columns
+              .filter((col) => isGeneric || col.visible === '1')
+              .map((col) => ({
+                field: col.nombre,
+                headerName: col.nombre.replace('_', ' '),
+                headerClass: 'capitalize',
+                wrapText: true,
+                flex: 1,
+                cellStyle: {
+                  textAlign:
+                    col.alineacion === 'derecha'
+                      ? 'right'
+                      : col.alineacion === 'izquierda'
+                      ? 'left'
+                      : 'left',
+                  fontWeight: 'bold',
+                },
+                context: {
+                  sumar: col.sumar ?? col.nombre === 'id_provincia' ? 'filas' : '0',
+                },
+                valueFormatter: getValueFormatterByType(col.tipo),
+              })),
+
+            {
+              field: 'acciones',
+              headerName: '',
+              width: 100,
+              pinned: 'right',
+              cellRenderer: (params: any) => {
+                return (
+                  <Button
+                    variant="link"
+                    className="text-blue-500"
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      console.log('Edit button clicked for row:', params.data);
+                    }}
+                    data-id={params.data.id_provincia}
+                  >
+                    <Pencil className="w-4 h-4 text-green-600" />
+                  </Button>
+                );
+              },
+              cellStyle: { textAlign: 'center' },
+              suppressExport: true,
+            }
+          ];
+    } else {
+      return columns
+        .filter((col) => col.visible === '1')
+        .map((col) => ({
+          field: col.columna,
+          headerName: col.titulo,
+          wrapText: true,
+          flex: 1,
+          cellStyle: {
+            textAlign:
+              col.alineacion === 'derecha'
+                ? 'right'
+                : col.alineacion === 'izquierda'
+                ? 'left'
+                : 'center',
+            fontWeight: 'bold',
+          },
+          context: {
+            sumar: col.sumar,
+          },
+          valueFormatter: getValueFormatterByType(col.tipo),
+        }));
+    }
+  }, [columns, isGeneric]);
 
   const defaultColDef = useMemo(() => {
     return {

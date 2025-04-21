@@ -8,9 +8,8 @@ Route::get('/', fn() => redirect()->route('dashboard'));
 
 Route::middleware(['auth', 'verified'])->group(function () {
 
-    Route::get('dashboard', fn() => Inertia::render('dashboard'))
-        ->name('dashboard');
-
+    Route::get('inicio', fn() => Inertia::render('dashboard'))
+        ->name('inicio');
 
     Route::prefix('procesos')->group(function () {
         Route::get('lotesPagos', fn() => Inertia::render('procesos/lotesPagos'))
@@ -20,6 +19,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('registros')->group(function () {
         Route::get('beneficiarios', fn() => Inertia::render('registros/beneficiarios'))
             ->name('beneficiarios');
+
+        Route::get('provincias', fn() => Inertia::render('registros/provincias'))
+        ->name('registros.provincias');
+
     });
 
 });

@@ -8,7 +8,7 @@ import { ArrowLeft } from 'lucide-react';
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Inicio',
-        href: '/dashboard',
+        href: '/inicio',
     },
 ];
 

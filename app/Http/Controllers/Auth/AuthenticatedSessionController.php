@@ -55,7 +55,7 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         // Redirige al dashboard (o a la ruta deseada) utilizando redirect()->intended
-        return redirect()->intended(route('dashboard', false));
+        return redirect()->intended(route('inicio', false));
     }
 
 

@@ -8,6 +8,7 @@ import { InputLabel } from '@/components/ui/input-label'
 import { AsyncSearchSelect } from '@/components/async-select'
 import { FormDataType } from '@/types/form'
 import MaskedInput from '../ui/masked-input'
+import { cn, pluralize } from '@/lib/utils'
 
 DatePicker.displayName = 'DatePicker'
 DynamicSelect.displayName = 'DynamicSelect'
@@ -22,7 +23,7 @@ interface Campo {
   parametros?: Record<string, any>
   placeholder?: string
   componente?: 'InputLabel' | 'DynamicSelect' | 'DatePicker' | 'AsyncSearchSelect' | 'MaskedInput'
-  className?: string
+  classname?: string
 }
 
 interface ModalFormProps {
@@ -32,6 +33,7 @@ interface ModalFormProps {
   campos: Campo[]
   datosIniciales?: Record<string, any>
   onSubmit: (data: Record<string, any>) => void
+  title?: string
 }
 
 export const ModalForm: React.FC<ModalFormProps> = ({
@@ -40,7 +42,8 @@ export const ModalForm: React.FC<ModalFormProps> = ({
   modo,
   campos,
   datosIniciales = {},
-  onSubmit
+  onSubmit,
+  title = ''
 }) => {
   const [formData, setFormData] = React.useState<FormDataType>({})
   const [errors, setErrors] = React.useState<Record<string, string | undefined>>({})
@@ -66,7 +69,6 @@ export const ModalForm: React.FC<ModalFormProps> = ({
   }
 
   const handleSubmit = () => {
-    // Aquí podrías agregar validaciones si necesitas
     onSubmit(formData)
     onClose()
   }
@@ -89,8 +91,8 @@ export const ModalForm: React.FC<ModalFormProps> = ({
   return (
     <Dialog open={abierto} onOpenChange={onClose}>
       <DialogContent>
-        <DialogHeader className=''>
-          <DialogTitle>{modo === 'crear' ? 'Crear Registro' : 'Editar Registro'}</DialogTitle>
+        <DialogHeader className='capitalize'>
+          <DialogTitle>{modo === 'crear' ? `Creación de ${title}` : `Modificacion de ${title}`}</DialogTitle>
         </DialogHeader>
 
         <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
@@ -108,7 +110,7 @@ export const ModalForm: React.FC<ModalFormProps> = ({
                 errors={errors}
                 handleInputChange={handleInputChange}
                 handleComponentChange={handleComponentChange}
-                className="col-span-1"
+                className={cn(campo.classname, "col-span-1")}
               />
             )
           })}

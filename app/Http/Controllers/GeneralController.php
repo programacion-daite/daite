@@ -180,6 +180,24 @@ class GeneralController extends Controller
         ]);
     }
 
+    public function registrarRegistros(Request $request)
+    {
+        info('registrarRegistros');
+        \Log::info($request->all());
+
+        $request->merge([
+            'procedimiento' => 'p_registrar_registros',
+        ]);
+
+        self::validarProcedimiento($request->get('procedimiento'));
+
+        $resultado = Helpers::ejecutarProcedimiento($request);
+
+        return response()->json([
+            $resultado
+        ]);
+    }
+
     public function traerDatosSesion(Request $request)
     {
         info('sesion');
@@ -320,6 +338,7 @@ class GeneralController extends Controller
             'p_traer_unico_registro',
             'p_traer_registros_consulta_principal',
             'p_traer_programas',
+            'p_registrar_registros'
         ];
 
         if (!in_array($procedimiento, $procedimientoPermitidos)) {

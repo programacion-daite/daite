@@ -31,7 +31,7 @@ export const InputLabel = memo(({
 }: InputLabelProps) => {
   return (
     <div className="space-y-2 input-label">
-      <Label htmlFor={id}>{label} {required && <span className="text-red-500">*</span>}</Label>
+      <Label htmlFor={id} className={className}>{label} {required && <span className="text-red-500">*</span>}</Label>
       <Input
         id={id}
         type={type}

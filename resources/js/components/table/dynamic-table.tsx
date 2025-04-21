@@ -1,4 +1,4 @@
-// ProvinciasPage.tsx
+// Dynamic Table.tsx
 
 import React, { useState } from 'react';
 import { useAgGridData } from '@/hooks/modal/use-data-table';
@@ -6,18 +6,23 @@ import { AgGridTable } from './data-table';
 import { TableItem } from '@/types/table';
 import { useDeepMemo } from '@/hooks/general/use-deepmemo';
 
-const ProvinciasPage = () => {
+type DynamicTableProps = {
+    tabla?: string;
+    id_primario?: string;
+};
+
+export const DynamicTable = ({tabla, id_primario}: DynamicTableProps) => {
   const [selectedItem, setSelectedItem] = useState<TableItem | null>(null);
 
    // Los parametros de las columnas
     const columnsParamValue = {
-        tabla: 'provincias'
+        tabla: tabla
     };
 
     // Los parametros de los datos
     const dataParamValue = {
-        origen_registros: 'provincias',
-        campo_ordenar: 'id_provincia'
+        origen_registros: tabla,
+        campo_ordenar: id_primario
     };
 
     const tableParamsValue = {
@@ -32,15 +37,13 @@ const ProvinciasPage = () => {
 
     const stableTableParams = useDeepMemo(tableParamsValue, tableParamsValue);
 
-
-  const {
-    rowData,
-    columnDefs,
-    defaultColDef,
-    loading,
-    gridOptions
-  } = useAgGridData(stableTableParams);
-
+    const {
+        rowData,
+        columnDefs,
+        defaultColDef,
+        loading,
+        gridOptions
+    } = useAgGridData(stableTableParams);
 
   const handleRowClick = (item: TableItem) => {
     console.log('Fila seleccionada:', item);
@@ -66,4 +69,3 @@ const ProvinciasPage = () => {
   );
 };
 
-export default ProvinciasPage;

@@ -60,7 +60,7 @@ export function FormHeader({
         <ArrowLeft className="h-4 w-4" />
       </Button>
 
-      <h2 className="text-xl font-semibold text-[#0066b3]">{title}</h2>
+      <h2 className="text-xl font-semibold text-[#0066b3] capitalize">{title}</h2>
 
       <div className="flex gap-2">
         {/* Guardar / Buscar / etc. */}

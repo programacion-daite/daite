@@ -48,7 +48,7 @@ export function NavMain() {
     return (
         <div className="flex items-center">
             <Link
-                href="/dashboard"
+                href="/inicio"
                 className="flex items-center gap-1 rounded-md px-3 py-2 text-sm font-bold text-white hover:bg-blue-600"
             >
                 <Home className="h-4 w-4" />

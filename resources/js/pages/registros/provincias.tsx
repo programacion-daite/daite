@@ -10,6 +10,7 @@ import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { TableItem } from '@/types/table';
 import { Head, useForm } from '@inertiajs/react';
+import { ModalForm } from '@/components/form/modal-form';
 import React, { useState } from 'react';
 import ProvinciasPage from '@/components/table/dynamic-table';
 
@@ -44,6 +45,7 @@ const initialData: LotesPagosData = {
 export default function LotesPagos() {
     const inertiaForm = useForm(initialData);
     const { data, errors, handleInputChange, handleComponentChange, resetForm } = useInertiaFormWrapper(inertiaForm);
+    const [modalAbierto, setModalAbierto] = useState(false);
 
     const [selectedItem, setSelectedItem] = useState<TableItem | null>(null);
 
@@ -56,6 +58,7 @@ export default function LotesPagos() {
     };
 
     const handleSubmit = () => {
+        setModalAbierto(true);
     };
 
     const handleClear = () => {
@@ -94,6 +97,23 @@ export default function LotesPagos() {
                     </FormBody>
                 </div>
             </div>
+
+            <ModalForm
+        abierto={modalAbierto}
+        onClose={() => setModalAbierto(false)}
+        modo="crear"
+        datosIniciales={{}}
+        onSubmit={(datos) => console.log('Submit desde Modal:', datos)}
+        campos={[
+          {
+            nombre: 'id_provincia',
+            label: 'Número de Lote',
+            tipo: 'text',
+            componente: 'InputLabel',
+          },
+        ]}
+      />
+
         </AppLayout>
     );
 }

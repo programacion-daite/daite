@@ -23,16 +23,18 @@ type TipoDato = 'int' | 'numeric' | 'datetime' | 'date' | 'string';
 const editButton = (params: any) => {
     return (
         <Button
-            variant="link"
-            className="text-blue-500"
-            onClick={() => {
-                console.log('Edit button clicked for row:', params.data);
-                // Aquí puedes manejar la lógica para editar la fila
-            }}
-            data-id={params.data.id_provincia}
-        >
-            <Pencil />
-        </Button>
+        variant="link"
+        className="text-blue-500"
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          console.log('Edit button clicked for row:', params.data);
+        }}
+        data-id={params.data.id_provincia}
+      >
+        <Pencil className="w-4 h-4 text-green-600" />
+      </Button>
     )
 };
 
@@ -175,22 +177,8 @@ export function useAgGridData({
               width: 100,
               pinned: 'right',
               cellRenderer: (params: any) => {
-                return (
-                  <Button
-                    variant="link"
-                    className="text-blue-500"
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
-                      console.log('Edit button clicked for row:', params.data);
-                    }}
-                    data-id={params.data.id_provincia}
-                  >
-                    <Pencil className="w-4 h-4 text-green-600" />
-                  </Button>
-                );
-              },
+                return editButton(params)
+            },
               cellStyle: { textAlign: 'center' },
               suppressExport: true,
             }

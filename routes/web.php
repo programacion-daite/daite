@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\GeneralController;
 
-Route::get('/', fn() => redirect()->route('dashboard'));
+Route::get('/', fn() => redirect()->route('inicio'));
 
 Route::middleware(['auth', 'verified'])->group(function () {
 

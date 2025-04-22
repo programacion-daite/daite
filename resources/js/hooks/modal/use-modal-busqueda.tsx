@@ -116,21 +116,21 @@
 //   };
 // }
 
-// src/hooks/modal/useModalBusqueda.ts
-import { useState } from 'react';
-import { TableItem } from '@/types/table';
+// // src/hooks/modal/useModalBusqueda.ts
+// import { useState } from 'react';
+// import { TableItem } from '@/types/table';
 
-export function useModalBusqueda() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [open, setOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<TableItem | null>(null);
+// export function useModalBusqueda() {
+//   const [searchTerm, setSearchTerm] = useState('');
+//   const [open, setOpen] = useState(false);
+//   const [selectedItem, setSelectedItem] = useState<TableItem | null>(null);
 
-  return {
-    searchTerm,
-    setSearchTerm,
-    open,
-    setOpen,
-    selectedItem,
-    setSelectedItem,
-  };
-}
+//   return {
+//     searchTerm,
+//     setSearchTerm,
+//     open,
+//     setOpen,
+//     selectedItem,
+//     setSelectedItem,
+//   };
+// }

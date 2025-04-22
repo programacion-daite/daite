@@ -1,28 +1,47 @@
-// Dynamic Table.tsx
-
-import React, { useState } from 'react';
-import { useAgGridData } from '@/hooks/modal/use-data-table';
-import { AgGridTable } from './data-table';
-import { TableItem } from '@/types/table';
 import { useDeepMemo } from '@/hooks/general/use-deepmemo';
+import { useAgGridData } from '@/hooks/modal/use-data-table';
+import { TableItem } from '@/types/table';
+import { forwardRef, useImperativeHandle, useRef, useState, useEffect } from 'react';
+import { AgGridTable, AgGridTableRef } from './data-table';
+import { useTable } from '@/contexts/tableContext';
 
 type DynamicTableProps = {
     tabla?: string;
     id_primario?: string;
-};
-
-export const DynamicTable = ({tabla, id_primario}: DynamicTableProps) => {
-  const [selectedItem, setSelectedItem] = useState<TableItem | null>(null);
-
-   // Los parametros de las columnas
-    const columnsParamValue = {
-        tabla: tabla
+    onRowClick?: (item: TableItem) => void;
+    onDoubleClick?: (item: TableItem) => void;
+    styleConfig?: {
+        theme?: string;
+        headerColor?: string;
+        rowColor?: string;
+        oddRowColor?: string;
     };
+} & React.RefAttributes<DynamicTableRef>;
 
-    // Los parametros de los datos
+export interface DynamicTableRef {
+    executeGridAction: (action: 'refreshCells' | 'applyFilter' | 'refreshData', params?: unknown) => void;
+}
+
+export const DynamicTable = forwardRef<DynamicTableRef, DynamicTableProps>(({
+    tabla,
+    id_primario,
+    onRowClick,
+    onDoubleClick,
+    styleConfig = {
+        theme: 'ag-theme-quartz',
+        headerColor: '#005CAC',
+        rowColor: '#FFFFFF',
+        oddRowColor: '#BFD6EA'
+    }
+}, ref) => {
+    const { shouldRefresh } = useTable();
+    const [selectedItem, setSelectedItem] = useState<TableItem | null>(null);
+    const agGridTableRef = useRef<AgGridTableRef>(null);
+
+    const columnsParamValue = { tabla };
     const dataParamValue = {
         origen_registros: tabla,
-        campo_ordenar: id_primario
+        campo_ordenar: id_primario,
     };
 
     const tableParamsValue = {
@@ -33,39 +52,59 @@ export const DynamicTable = ({tabla, id_primario}: DynamicTableProps) => {
         parametrosColumna: columnsParamValue,
         parametrosDatos: dataParamValue,
         isGeneric: true,
+        styleConfig
     };
 
     const stableTableParams = useDeepMemo(tableParamsValue, tableParamsValue);
 
-    const {
-        rowData,
-        columnDefs,
-        defaultColDef,
-        loading,
-        gridOptions
-    } = useAgGridData(stableTableParams);
+    const { rowData, columnDefs, defaultColDef, loading, refreshData } = useAgGridData(stableTableParams);
 
-  const handleRowClick = (item: TableItem) => {
-    console.log('Fila seleccionada:', item);
-    setSelectedItem(item);
-  };
+    const handleRowClick = (item: TableItem) => {
+        setSelectedItem(item);
+        onRowClick?.(item);
+    };
 
-  const handleRowDoubleClick = (item: TableItem) => {
-    alert(`Doble clic en: ${item.nombre}`);
-  };
+    const handleRowDoubleClick = (item: TableItem) => {
+        onDoubleClick?.(item);
+    };
 
-  return (
-    <div>
-      <AgGridTable
-        rowData={rowData}
-        columnDefs={columnDefs}
-        defaultColDef={defaultColDef}
-        loading={loading}
-        selectedItem={selectedItem}
-        onRowClick={handleRowClick}
-        onDoubleClick={handleRowDoubleClick}
-      />
-    </div>
-  );
-};
+    // Actualizar la tabla cuando cambia shouldRefresh
+    useEffect(() => {
+        if (shouldRefresh !== undefined) {
+            console.log('Actualizando tabla desde DynamicTable');
+            refreshData();
+        }
+    }, [shouldRefresh, refreshData]);
 
+    useImperativeHandle(
+        ref,
+        () => ({
+            executeGridAction: (action, params) => {
+                if (action === 'refreshData') {
+                    console.log('Ejecutando refreshData desde executeGridAction');
+                    refreshData();
+                } else if (agGridTableRef.current) {
+                    agGridTableRef.current.executeGridAction(action, params);
+                }
+            }
+        }),
+        [refreshData],
+    );
+
+    return (
+        <div className={`${styleConfig.theme} h-full w-full`}>
+            <AgGridTable
+                rowData={rowData}
+                columnDefs={columnDefs}
+                defaultColDef={defaultColDef}
+                loading={loading}
+                selectedItem={selectedItem}
+                onRowClick={handleRowClick}
+                onDoubleClick={handleRowDoubleClick}
+                ref={agGridTableRef}
+            />
+        </div>
+    );
+});
+
+DynamicTable.displayName = 'DynamicTable';

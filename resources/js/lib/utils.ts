@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import type { CampoBaseDatos } from '@/types/form';
 
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
@@ -129,3 +130,123 @@ export function capitalize(texto: string, delimitador: string = ' '): string {
     return resultado.join(delimitador);
 }
 
+
+/**
+ * Construye un objeto JSON en el formato específico requerido para el API
+ * @param datos Los datos del formulario
+ * @param tabla El nombre de la tabla para la operación
+ * @returns Un objeto con la estructura esperada por el backend
+ */
+export const construirJSONGenerico = (datos: Record<string, any>, tabla: string) => {
+    // Obtener las claves (campos) del objeto de datos
+    const campos = Object.keys(datos);
+
+    const camposExcluidos = ['json', '_token'];
+
+    // Filtrar campos que no deben incluirse en el JSON
+    const camposFiltrados = campos.filter(campo => !camposExcluidos.includes(campo));
+
+    // Obtener los valores correspondientes a los campos filtrados
+    const valores = camposFiltrados
+        .map(campo => {
+            const valor = datos[campo]?.toString() || '';
+
+            // Eliminar comas en cualquier campo y reemplazarlas por un espacio
+            const valorSinComas = valor.replaceAll(",", " ").toUpperCase();
+
+            // Si el valor está vacío, reemplazarlo por "0"
+            return valorSinComas === "" ? "0" : valorSinComas;
+        })
+        .join(","); // Unir los valores en una cadena separada por comas
+
+    // Retornar el objeto JSON
+    return {
+        tabla: tabla,
+        campos: camposFiltrados.join(","), // Campos filtrados como string
+        valores: valores, // Valores correspondientes a los campos filtrados como string
+    };
+};
+
+// Procesar campo desde la base de datos para generar estructura adecuada
+export const procesarCampo = (campo: any, id_primario: string): CampoBaseDatos => {
+    // Si el campo ya tiene todas las propiedades, lo devolvemos
+    if (campo.nombre && campo.label && campo.tipo) {
+        return campo;
+    }
+
+    // Normalizar el nombre del campo
+    const nombre = campo.nombre || campo.id || '';
+    const esForanea = nombre.startsWith('id_') && nombre !== id_primario;
+    const esPrimaria = nombre === id_primario;
+
+    // Obtener label del campo
+    let label = campo.titulo || capitalize(nombre.replace('id_', '').replace(/_/g, ' '));
+    if (esPrimaria) {
+        label = `ID ${label}`;
+    }
+
+    // Determinar tipo de componente
+    let componente: any = 'InputLabel';
+    const tipo = campo.tipo || 'text';
+
+    if (esForanea) {
+        componente = 'DynamicSelect';
+    } else if (tipo === 'bit') {
+        componente = 'DynamicSelect';
+    } else if (tipo === 'datetime') {
+        componente = 'DatePicker';
+    } else if (/telefono|celular|whatsapp|cedula|rnc|identificacion/i.test(nombre)) {
+        componente = 'MaskedInput';
+    }
+
+    // Determinar tabla de referencia para campos foráneos
+    let tablaReferencia = '';
+    if (esForanea) {
+        tablaReferencia = pluralize(nombre.replace('id_', ''));
+    }
+
+    // Configurar parámetros para componentes específicos
+    let parametros: Record<string, any> = {};
+
+    if (componente === 'DynamicSelect') {
+        if (tipo === 'bit') {
+            parametros = {
+                options: [
+                    { value: '0', label: 'No' },
+                    { value: '1', label: 'Si' }
+                ]
+            };
+        } else if (tablaReferencia) {
+            parametros = {
+                route: 'registrosConsultaPrincipal',
+                params: {
+                    origen_registros: tablaReferencia,
+                    campo_ordenar: `id_${tablaReferencia.replace(/s$/, '')}`
+                },
+                valueField: `id_${tablaReferencia.replace(/s$/, '')}`,
+                labelField: tablaReferencia.replace(/s$/, '')
+            };
+        }
+    } else if (componente === 'MaskedInput') {
+        if (/telefono|celular|whatsapp/.test(nombre)) {
+            parametros = { mask: 'telefono' };
+        } else if (/cedula|rnc|identificacion/.test(nombre)) {
+            parametros = { mask: 'cedula' };
+        } else {
+            parametros = { mask: 'entero' };
+        }
+    }
+
+    // Crear estructura del campo
+    return {
+        nombre,
+        tipo,
+        label,
+        componente,
+        foranea: esForanea,
+        tabla_referencia: tablaReferencia,
+        parametros,
+        classname: esPrimaria ? 'hidden' : 'col-span-1',
+        requerido: campo.requerido || false
+    };
+};

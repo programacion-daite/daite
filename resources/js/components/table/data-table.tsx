@@ -12,7 +12,7 @@ import {
     themeQuartz,
 } from 'ag-grid-community';
 import { AgGridReact } from 'ag-grid-react';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { InputLabel } from '../ui/input-label';
 
 // Registrar módulos de AG Grid solo una vez
@@ -50,8 +50,13 @@ interface AgGridTableProps {
     onDoubleClick: (item: TableItem) => void;
 }
 
-export const AgGridTable: React.FC<AgGridTableProps> = React.memo(
-    ({ rowData, columnDefs, defaultColDef, selectedItem, onRowClick, onDoubleClick }) => {
+export interface AgGridTableRef {
+    executeGridAction: (action: 'refreshCells' | 'applyFilter', params?: unknown) => void;
+    setRowData?: (data: TableItem[]) => void;
+}
+
+export const AgGridTable = forwardRef<AgGridTableRef, AgGridTableProps>(
+    ({ rowData, columnDefs, defaultColDef, selectedItem, onRowClick, onDoubleClick }, ref) => {
         const gridRef = useRef<AgGridReact>(null);
         const [gridApi, setGridApi] = useState<GridApi | null>(null);
         const [filterText, setFilterText] = useState('');
@@ -103,6 +108,32 @@ export const AgGridTable: React.FC<AgGridTableProps> = React.memo(
 
         const handleRowDoubleClicked = useCallback((e: RowDoubleClickedEvent) => onDoubleClick(e.data), [onDoubleClick]);
 
+        useImperativeHandle(
+            ref,
+            () => ({
+                executeGridAction: (action: 'refreshCells' | 'applyFilter', params?: unknown) => {
+                    if (!gridApi) return;
+
+                    switch (action) {
+                        case 'refreshCells':
+                            console.log('se refrescaron')
+                            gridApi.refreshCells({ force: true });
+                            break;
+                        // case 'applyFilter':
+                        //  // Implementa lógica para aplicar filtros si es necesario
+                        //  break;
+                        default:
+                            console.warn(`Acción no soportada: ${action}`);
+                    }
+                },
+                setRowData: (data: TableItem[]) => {
+                    if (!gridApi) return;
+                    gridApi.setGridOption('rowData', data);
+                },
+            }),
+            [gridApi],
+        );
+
         return (
             <>
                 <div className="flex items-center space-x-2 p-2">
@@ -144,3 +175,5 @@ export const AgGridTable: React.FC<AgGridTableProps> = React.memo(
         );
     },
 );
+
+AgGridTable.displayName = 'AgGridTable';

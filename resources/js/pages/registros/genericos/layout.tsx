@@ -1,6 +1,6 @@
 import FormBody from '@/components/form/form-body';
 import { FormHeader } from '@/components/form/form-header';
-import { ModalForm } from '@/components/form/modal-form';
+import { ModalForm } from '@/components/form/dynamic-form';
 import { DynamicTable } from '@/components/table/dynamic-table';
 import { useInertiaFormWrapper } from '@/hooks/form/use-form';
 import AppLayout from '@/layouts/app-layout';

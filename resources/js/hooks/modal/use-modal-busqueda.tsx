@@ -116,7 +116,6 @@
 //   };
 // }
 
-// src/hooks/modal/useModalBusqueda.ts
 import { useState } from 'react';
 import { TableItem } from '@/types/table';
 

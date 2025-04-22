@@ -24,7 +24,7 @@ export interface ModalBusquedaProps {
 
 export interface TableItem {
     id: number;
-    [key: string]: string | number; // for dynamic columns
+    [key: string]: string | any;
 }
 
 export interface TableColumnMeta {

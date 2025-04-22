@@ -48,14 +48,16 @@ export const ModalForm: React.FC<ModalFormProps> = ({
   const [formData, setFormData] = React.useState<FormDataType>({})
   const [errors, setErrors] = React.useState<Record<string, string | undefined>>({})
 
+  // Actualizar los datos del formulario cuando cambian las props
   useEffect(() => {
-    if (modo === 'editar' && datosIniciales) {
-      setFormData(datosIniciales)
-    } else {
-      const inicial = campos.reduce((acc, campo) => ({ ...acc, [campo.nombre]: '' }), {})
-      setFormData(inicial)
+    // Siempre inicializar con los datos que vienen de props
+    if (modo === 'editar' && datosIniciales && Object.keys(datosIniciales).length > 0) {
+      setFormData(datosIniciales);
+    } else if (modo === 'crear') {
+      const inicial = campos.reduce((acc, campo) => ({ ...acc, [campo.nombre]: '' }), {});
+      setFormData(inicial);
     }
-  }, [modo, datosIniciales, campos])
+  }, [datosIniciales, modo, campos, abierto]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -70,7 +72,10 @@ export const ModalForm: React.FC<ModalFormProps> = ({
 
   const handleSubmit = () => {
     onSubmit(formData)
-    onClose()
+  }
+
+  const handleClose = () => {
+    onClose();  // Cerrar el modal
   }
 
   const obtenerComponente = (nombre: string) => {
@@ -89,7 +94,7 @@ export const ModalForm: React.FC<ModalFormProps> = ({
   }
 
   return (
-    <Dialog open={abierto} onOpenChange={onClose}>
+    <Dialog open={abierto} onOpenChange={handleClose}>
       <DialogContent>
         <DialogHeader className='capitalize'>
           <DialogTitle>{modo === 'crear' ? `Creación de ${title}` : `Modificacion de ${title}`}</DialogTitle>
@@ -117,8 +122,8 @@ export const ModalForm: React.FC<ModalFormProps> = ({
         </div>
 
         <div className="flex justify-between mt-4 space-x-2">
-          <Button variant="outline" onClick={onClose}>Cancelar</Button>
-          <Button onClick={handleSubmit}>
+          <Button variant="outline" onClick={handleClose} className='cursor-pointer'>Cancelar</Button>
+          <Button onClick={handleSubmit} className='cursor-pointer'>
             {modo === 'crear' ? 'Crear' : 'Guardar cambios'}
           </Button>
         </div>

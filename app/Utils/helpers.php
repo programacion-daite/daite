@@ -7,19 +7,21 @@ use Illuminate\Http\Request;
 use Inertia\Response;
 use Illuminate\Contracts\Routing\ResponseFactory;
 
-class Helpers {
+class Helpers
+{
 
     private static $esquema = 'dbo';
-    public static function esquema(Request $request): array {
+    public static function esquema(Request $request): array
+    {
 
         $entidad = (object) [
-            'esquema' => $request-> esquema ?? self::$esquema,
+            'esquema' => $request->esquema ?? self::$esquema,
             'nombre' =>
-              $request->funcion ??
-              $request->procedimiento ??
-              $request->tabla,
+                $request->funcion ??
+                $request->procedimiento ??
+                $request->tabla,
             'sentencia' => $request->funcion || $request->procedimiento
-              ? "
+                ? "
                 SELECT
                   ordinal_position AS posicion,
                   data_type AS tipo,
@@ -34,7 +36,7 @@ class Helpers {
                 ORDER BY
                   ordinal_position
                 "
-              : "
+                : "
                 SELECT
                   ordinal_position AS posicion,
                   data_type AS tipo,
@@ -54,45 +56,46 @@ class Helpers {
         //   return abort(422)
         // ;
 
-        return DB::select('SET NOCOUNT ON;'.$entidad->sentencia, [$entidad->esquema, $entidad->nombre]);
+        return DB::select('SET NOCOUNT ON;' . $entidad->sentencia, [$entidad->esquema, $entidad->nombre]);
 
     }
 
-      public static function EjecutarProcedimiento(Request $request): Response|ResponseFactory| \Illuminate\Http\Response {
+    public static function EjecutarProcedimiento(Request $request): Response|ResponseFactory|\Illuminate\Http\Response
+    {
 
         $api = $request->is('api/*');
 
         $entidad = (object) [
-                'esquema' => $request-> esquema ?? self::$esquema,
-                'nombre' => $request->procedimiento ?? $request->funcion,
-                'parametros' => self::esquema($request)
+            'esquema' => $request->esquema ?? self::$esquema,
+            'nombre' => $request->procedimiento ?? $request->funcion,
+            'parametros' => self::esquema($request)
         ];
 
-            $peticion = (object) [
-                'parametros' => null,
-                'ataduras' => null,
-                'consulta' => null,
-                'datos' => null
-            ];
+        $peticion = (object) [
+            'parametros' => null,
+            'ataduras' => null,
+            'consulta' => null,
+            'datos' => null
+        ];
 
         if (empty($entidad->parametros) && $entidad->nombre != 'p_registrar_registros') {
-                \Log::info("LA ENTIDAD NO TIENE PARAMETROS $entidad->nombre");
-                return abort(422);
-            }
+            \Log::info("LA ENTIDAD NO TIENE PARAMETROS $entidad->nombre");
+            return abort(422);
+        }
 
         foreach ($entidad->parametros as $indice => $parametro) {
 
-                $parametro->posicion = intval($parametro->posicion);
+            $parametro->posicion = intval($parametro->posicion);
 
-          if ($parametro->cantidad_maxima_caracteres) {
+            if ($parametro->cantidad_maxima_caracteres) {
 
-            $parametro->cantidad_maxima_caracteres =
-              intval($parametro->cantidad_maxima_caracteres)
-            ;
+                $parametro->cantidad_maxima_caracteres =
+                    intval($parametro->cantidad_maxima_caracteres)
+                ;
 
-            $parametro->cantidad_maxima_caracteres === -1 && $parametro->cantidad_maxima_caracteres = null;
+                $parametro->cantidad_maxima_caracteres === -1 && $parametro->cantidad_maxima_caracteres = null;
 
-          }
+            }
 
 
             if (
@@ -104,144 +107,146 @@ class Helpers {
                 $request[$parametro->nombre] = session('usuario')->id_usuario ?? 1;
             }
 
-          switch ($parametro->tipo) {
+            switch ($parametro->tipo) {
 
-            case 'bit':
-              $request[$parametro->nombre] =
-                boolval($request[$parametro->nombre])
-              ;
-            break;
+                case 'bit':
+                    $request[$parametro->nombre] =
+                        boolval($request[$parametro->nombre])
+                    ;
+                    break;
 
-            case 'int':
-              $request[$parametro->nombre] =
-                intval($request[$parametro->nombre])
-              ;
-            break;
+                case 'int':
+                    $request[$parametro->nombre] =
+                        intval($request[$parametro->nombre])
+                    ;
+                    break;
 
-            case 'decimal':
-              $request[$parametro->nombre] = floatval(
-                str_replace(',', '', $request[$parametro->nombre])
-              );
-            break;
+                case 'decimal':
+                    $request[$parametro->nombre] = floatval(
+                        str_replace(',', '', $request[$parametro->nombre])
+                    );
+                    break;
 
-            case 'numeric':
-              $request[$parametro->nombre] = floatval(
-                str_replace(',', '', $request[$parametro->nombre])
-              );
-            break;
+                case 'numeric':
+                    $request[$parametro->nombre] = floatval(
+                        str_replace(',', '', $request[$parametro->nombre])
+                    );
+                    break;
 
-            case 'datetime':
-              $request[$parametro->nombre] = date(
-                'Y-m-d H:i:s',
-                strtotime($request[$parametro->nombre])
-              );
-            break;
+                case 'datetime':
+                    $request[$parametro->nombre] = date(
+                        'Y-m-d H:i:s',
+                        strtotime($request[$parametro->nombre])
+                    );
+                break;
 
-            default:
+                default:
 
-              if ($request->hasFile($parametro->nombre))
-                $request[$parametro->nombre] =
-                  $request->file($parametro->nombre)->store('archivos/imagenes');
-              else if (
-                $entidad->nombre !== 'p_registrar_programas' &&
-                strpos($parametro->nombre, 'json') === false &&
-                strpos($parametro->nombre, 'campo') === false &&
-                strpos($parametro->nombre, 'sql') === false
-              )
-                $request[$parametro->nombre] = strtoupper($request[$parametro->nombre])
-              ;
+                    if ($request->hasFile($parametro->nombre))
+                        $request[$parametro->nombre] =
+                            $request->file($parametro->nombre)->store('archivos/imagenes');
+                    else if (
+                        $entidad->nombre !== 'p_registrar_programas' &&
+                        strpos($parametro->nombre, 'json') === false &&
+                        strpos($parametro->nombre, 'campo') === false &&
+                        strpos($parametro->nombre, 'sql') === false
+                    )
+                        $request[$parametro->nombre] = strtoupper($request[$parametro->nombre])
+                        ;
 
-              if (
-                strpos($parametro->nombre, 'desde') === 0 ||
-                strpos($parametro->nombre, 'hasta') === 0 ||
-                strpos($parametro->nombre, 'fecha') === 0
-              )
-                $request[$parametro->nombre] = str_replace('-', '', $request[$parametro->nombre])
-              ;
+                    if (
+                        strpos($parametro->nombre, 'desde') === 0 ||
+                        strpos($parametro->nombre, 'hasta') === 0 ||
+                        strpos($parametro->nombre, 'fecha') === 0
+                    )
+                        $request[$parametro->nombre] = str_replace('-', '', $request[$parametro->nombre])
+                        ;
 
-            break;
+                    break;
 
-          }
+            }
 
-          if (
-            $request[$parametro->nombre] &&
-            $parametro->cantidad_maxima_caracteres &&
-            strlen($request[$parametro->nombre]) > $parametro->cantidad_maxima_caracteres
-          )
-            return response([(object) [
-              'mensaje' => strtoupper("
+            if (
+                $request[$parametro->nombre] &&
+                $parametro->cantidad_maxima_caracteres &&
+                strlen($request[$parametro->nombre]) > $parametro->cantidad_maxima_caracteres
+            )
+                return response([
+                    (object) [
+                        'mensaje' => strtoupper("
                 ¡El campo [$parametro->nombre] no puede exceder de [$parametro->cantidad_maxima_caracteres] digitos!
               "),
-              'campo' => $parametro->nombre,
-              'codigo_estado' => 400
-            ]], 400)
-          ;
+                        'campo' => $parametro->nombre,
+                        'codigo_estado' => 400
+                    ]
+                ], 400)
+                ;
 
-          $peticion->parametros[] = $request[$parametro->nombre] ?? '';
+            $peticion->parametros[] = $request[$parametro->nombre] ?? '';
 
-          $peticion->ataduras[] = '?';
+            $peticion->ataduras[] = '?';
 
         }
 
         $peticion->consulta = $request->procedimiento
-                ? "SET NOCOUNT ON; EXEC $entidad->esquema.$entidad->nombre"
-                : "SET NOCOUNT ON; SELECT $entidad->esquema.$entidad->nombre"
-            ;
+            ? "SET NOCOUNT ON; EXEC $entidad->esquema.$entidad->nombre"
+            : "SET NOCOUNT ON; SELECT $entidad->esquema.$entidad->nombre"
+        ;
 
         setcookie('Consulta', null, -1);
 
         if (!$api && session('usuario') && session('usuario')->depurador) {
 
-          $parametros = array_map(function($parametro) {
+            $parametros = array_map(function ($parametro) {
 
-            return (
-              !is_int($parametro) &&
-              !is_float($parametro)
-            )
-              ? "'$parametro'"
-              : $parametro
-            ;
+                return (
+                    !is_int($parametro) &&
+                    !is_float($parametro)
+                )
+                    ? "'$parametro'"
+                    : $parametro
+                ;
 
-          }, $peticion->parametros);
+            }, $peticion->parametros);
 
-          setcookie(
-            'Consulta',
-            $peticion->consulta . implode(', ', $parametros)
-          );
+            setcookie(
+                'Consulta',
+                $peticion->consulta . implode(', ', $parametros)
+            );
 
         }
 
-            if ($request->retorna ?? true)
-                $peticion->datos = $request->procedimiento
-                    ? DB::select(
-                            $peticion->consulta . ' ' . implode(', ', $peticion->ataduras),
-                            $peticion->parametros
-                        )
-                    : DB::select(
-                            $peticion->consulta . ' (' . implode(', ', $peticion->ataduras) . ')',
-                            $peticion->parametros
-                        )
-                ;
-            else
-                $peticion->datos = $request->procedimiento
-                    ? DB::statement(
-                            $peticion->consulta . ' ' . implode(', ', $peticion->ataduras),
-                            $peticion->parametros
-                        )
-                    : DB::statement(
-                            $peticion->consulta . '(' . implode(', ', $peticion->ataduras) . ')',
-                            $peticion->parametros
-                        )
-                ;
+        if ($request->retorna ?? true)
+            $peticion->datos = $request->procedimiento
+                ? DB::select(
+                    $peticion->consulta . ' ' . implode(', ', $peticion->ataduras),
+                    $peticion->parametros
+                )
+                : DB::select(
+                    $peticion->consulta . ' (' . implode(', ', $peticion->ataduras) . ')',
+                    $peticion->parametros
+                )
+            ;
+        else
+            $peticion->datos = $request->procedimiento
+                ? DB::statement(
+                    $peticion->consulta . ' ' . implode(', ', $peticion->ataduras),
+                    $peticion->parametros
+                )
+                : DB::statement(
+                    $peticion->consulta . '(' . implode(', ', $peticion->ataduras) . ')',
+                    $peticion->parametros
+                )
+            ;
 
         $respuesta = response(
-          $peticion->datos,
-          $peticion->datos[0]?->codigo_estado ?? 200
+            $peticion->datos,
+            $peticion->datos[0]?->codigo_estado ?? 200
         );
 
         return $respuesta;
 
-      }
+    }
 
 }
 

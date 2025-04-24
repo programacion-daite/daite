@@ -37,7 +37,7 @@
 
         <title inertia>{{ config('app.name', 'Daite') }}</title>
 
-        <link rel="shortcut icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+        <link rel="shortcut icon" type="image/x-icon" href="https://www.daite.com.do/archivos/imagenes/daite/icono.png">
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
 

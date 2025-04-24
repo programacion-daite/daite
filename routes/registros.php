@@ -11,18 +11,18 @@ Route::middleware(['auth'])->group(function () {
         ->group(function () {
 
         Route::get('beneficiarios', fn() => Inertia::render('registros/beneficiarios'))
-            ->name('registros.beneficiarios');
+        ->name('registros.beneficiarios');
 
-        Route::get('provincias', fn() => Inertia::render('registros/genericos/provincias'))
-            ->name('registros.provincias');
-        
-        Route::get('actividades', fn() => Inertia::render('registros/genericos/actividades'))
-            ->name('registros.actividades');
-        
-            Route::get('generos', fn() => Inertia::render('registros/genericos/generos'))
-            ->name('registros.generos');
+        Route::get('provincias', fn() => Inertia::render('registros/administracion/provincias'))
+        ->name('registros.provincias');
 
-        Route::get('distritos', fn() => Inertia::render('registros/genericos/distritos'))
+        Route::get('actividades', fn() => Inertia::render('registros/administracion/actividades'))
+        ->name('registros.actividades');
+
+        Route::get('generos', fn() => Inertia::render('registros/administracion/generos'))
+        ->name('registros.generos');
+
+        Route::get('distritos', fn() => Inertia::render('registros/administracion/distritos'))
         ->name('registros.distritos');
 
     });

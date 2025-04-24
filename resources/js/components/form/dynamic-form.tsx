@@ -27,7 +27,6 @@ function RegistroDinamicoContent({ tabla, id_primario }: RegistroDinamicoProps) 
     const campos = useEsquema(tabla, id_primario);
     const { modalAbierto, setModalAbierto, modo, selectedItem, abrirModalCrear, abrirModalEditar } = useRegistroModal();
 
-    // Estados simplificados
     const titulo = `Registros de ${capitalize(tabla.replace(/_/g, ' '))}`;
     const [resultadoModal, setResultadoModal] = useState({
         abierto: false,
@@ -35,10 +34,8 @@ function RegistroDinamicoContent({ tabla, id_primario }: RegistroDinamicoProps) 
         esExito: false
     });
 
-    // Estado para mantener los datos solo cuando hay error
     const [lastErrorData, setLastErrorData] = useState<Record<string, unknown> | null>(null);
 
-    // Función para mostrar el resultado
     const mostrarResultado = (mensaje: string, esExito: boolean) => {
         setResultadoModal({
             abierto: true,

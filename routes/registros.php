@@ -13,10 +13,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('beneficiarios', fn() => Inertia::render('registros/beneficiarios'))
         ->name('registros.beneficiarios');
 
-        Route::get('provincias', fn() => Inertia::render('registros/administracion/provincias'))
-        ->name('registros.provincias');
+        Route::get('provincias', fn() => Inertia::render('registros/genericos/provincias'))
+            ->name('registros.provincias');
 
-        Route::get('distritos', fn() => Inertia::render('registros/administracion/distritos'))
+        Route::get('distritos', fn() => Inertia::render('registros/genericos/distritos'))
         ->name('registros.distritos');
 
         Route::get('actividades', fn() => Inertia::render('registros/administracion/actividades'))

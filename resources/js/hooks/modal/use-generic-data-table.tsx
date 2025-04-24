@@ -171,7 +171,7 @@ export function useGenericTable({
 
             // Definición de columna
             const colDef: ColDef<TableItem> = {
-                field: col.nombre ?? '', // Mantener el campo original para datos
+                field: displayField ?? '', // Mantener el campo original para datos
                 headerName: (displayField ?? '').replace(/_/g, ' '),
                 headerClass: 'capitalize',
                 cellStyle: {

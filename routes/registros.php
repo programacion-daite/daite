@@ -15,6 +15,12 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('provincias', fn() => Inertia::render('registros/genericos/provincias'))
             ->name('registros.provincias');
+        
+        Route::get('actividades', fn() => Inertia::render('registros/genericos/actividades'))
+            ->name('registros.actividades');
+        
+            Route::get('generos', fn() => Inertia::render('registros/genericos/generos'))
+            ->name('registros.generos');
 
     });
 

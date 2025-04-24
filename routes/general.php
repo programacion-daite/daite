@@ -24,6 +24,9 @@ Route::middleware('auth')->group(function () {
     Route::post('traerEntidades', [GeneralController::class, 'traerEntidades'])
         ->name('traerEntidades');
 
+    Route::match(['get', 'post'],'traerLotesPagos', [GeneralController::class, 'traerLotesPagos'])
+    ->name('traerEntidades');
+
     Route::post('traerLotesPagos', [GeneralController::class, 'traerLotesPagos'])
         ->name('traerEntidades');
 

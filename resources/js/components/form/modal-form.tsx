@@ -96,8 +96,10 @@ export const ModalForm: React.FC<ModalFormProps> = ({
   return (
     <Dialog open={abierto} onOpenChange={handleClose}>
       <DialogContent>
-        <DialogHeader className='capitalize'>
-          <DialogTitle>{modo === 'crear' ? `Creación de ${title}` : `Modificacion de ${title}`}</DialogTitle>
+      <DialogHeader className="">
+          <DialogTitle className="text-xl font-medium text-white-800 capitalize">
+            {modo === "crear" ? `Creación de ${title}` : `Modificación de ${title}`}
+          </DialogTitle>
         </DialogHeader>
 
         <div className="grid grid-cols-1 md:grid-cols-1 gap-4">

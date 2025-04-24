@@ -26,7 +26,6 @@ class GeneralController extends Controller
         ]);
     }
 
-
     public function traerEncabezadoConsultas(Request $request)
     {
         info('traerEncabezadoConsultas');
@@ -60,7 +59,6 @@ class GeneralController extends Controller
             $resultado
         ]);
     }
-
 
     public function traerEncabezadoProcesos(Request $request)
     {
@@ -169,6 +167,23 @@ class GeneralController extends Controller
 
         $request->merge([
             'procedimiento' => 'p_traer_registros_consulta_principal',
+        ]);
+
+        self::validarProcedimiento($request->get('procedimiento'));
+
+        $resultado = Helpers::ejecutarProcedimiento($request);
+
+        return response()->json([
+            $resultado
+        ]);
+    }
+    
+    public function traerRegistrosCombinados(Request $request) {
+        info('traerRegistrosCombinados');
+        \Log::info($request->all());
+
+        $request->merge([
+            'procedimiento' => 'p_traer_registros_combinados',
         ]);
 
         self::validarProcedimiento($request->get('procedimiento'));
@@ -338,7 +353,8 @@ class GeneralController extends Controller
             'p_traer_unico_registro',
             'p_traer_registros_consulta_principal',
             'p_traer_programas',
-            'p_registrar_registros'
+            'p_registrar_registros',
+            'p_traer_registros_combinados'
         ];
 
         if (!in_array($procedimiento, $procedimientoPermitidos)) {

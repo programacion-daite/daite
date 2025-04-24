@@ -22,6 +22,9 @@ Route::middleware(['auth'])->group(function () {
             Route::get('generos', fn() => Inertia::render('registros/genericos/generos'))
             ->name('registros.generos');
 
+        Route::get('distritos', fn() => Inertia::render('registros/genericos/distritos'))
+        ->name('registros.distritos');
+
     });
 
 });

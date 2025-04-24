@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\GeneralController;
 
+// Aqui iran las rutas que son generales para todas las pantallas (traerFiltros y demas)
 Route::middleware('auth')->group(function () {
 
     Route::post('traerFiltros', [GeneralController::class, 'traerFiltros'])
@@ -34,14 +35,18 @@ Route::middleware('auth')->group(function () {
         ->name('traerUnicaEntidad');
 
     Route::get('traerDatosSesion', [GeneralController::class, 'traerDatosSesion'])
-    ->name('traerDatosSesion');
+        ->name('traerDatosSesion');
 
     Route::match(['get', 'post'], 'esquema', [GeneralController::class, 'esquema'])
-    ->name('esquema');
+        ->name('esquema');
 
-    Route::post('registrosConsultaPrincipal', [GeneralController::class, 'registrosConsultaPrincipal'])
-        ->name('registrosConsultaPrincipal');
+    Route::post('RegistrosConsultaPrincipal', [GeneralController::class, 'RegistrosConsultaPrincipal'])
+        ->name('RegistrosConsultaPrincipal');
+
+    Route::post('traerRegistrosCombinados', [GeneralController::class, 'traerRegistrosCombinados'])
+        ->name('traerRegistrosCombinados');
 
     Route::post('registrarRegistros', [GeneralController::class, 'registrarRegistros'])
         ->name('registrarRegistros');
+
 });

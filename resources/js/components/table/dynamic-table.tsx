@@ -1,8 +1,8 @@
 import { useDeepMemo } from '@/hooks/general/use-deepmemo';
-import { useAgGridData } from '@/hooks/modal/use-data-table';
 import { TableItem } from '@/types/table';
 import { forwardRef, useImperativeHandle, useRef, useState, useEffect } from 'react';
 import { AgGridTable, AgGridTableRef } from './data-table';
+import { useGenericTable } from '@/hooks/modal/use-generic-data-table';
 import { useTable } from '@/contexts/tableContext';
 
 type DynamicTableProps = {
@@ -38,26 +38,14 @@ export const DynamicTable = forwardRef<DynamicTableRef, DynamicTableProps>(({
     const [selectedItem, setSelectedItem] = useState<TableItem | null>(null);
     const agGridTableRef = useRef<AgGridTableRef>(null);
 
-    const columnsParamValue = { tabla };
-    const dataParamValue = {
-        origen_registros: tabla,
-        campo_ordenar: id_primario,
-    };
-
     const tableParamsValue = {
-        loadColumns: true,
-        columnsRoute: 'esquema',
-        fetchData: true,
-        dataRoute: 'registrosConsultaPrincipal',
-        parametrosColumna: columnsParamValue,
-        parametrosDatos: dataParamValue,
-        isGeneric: true,
-        styleConfig
+        primaryId: id_primario,
+        tableName: tabla
     };
 
     const stableTableParams = useDeepMemo(tableParamsValue, tableParamsValue);
 
-    const { rowData, columnDefs, defaultColDef, loading, refreshData } = useAgGridData(stableTableParams);
+    const { rowData, columnDefs, defaultColDef, loading, refreshData } = useGenericTable(stableTableParams);
 
     const handleRowClick = (item: TableItem) => {
         setSelectedItem(item);
@@ -81,7 +69,6 @@ export const DynamicTable = forwardRef<DynamicTableRef, DynamicTableProps>(({
         () => ({
             executeGridAction: (action, params) => {
                 if (action === 'refreshData') {
-                    console.log('Ejecutando refreshData desde executeGridAction');
                     refreshData();
                 } else if (agGridTableRef.current) {
                     agGridTableRef.current.executeGridAction(action, params);

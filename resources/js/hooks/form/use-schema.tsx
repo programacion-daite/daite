@@ -12,8 +12,8 @@ export const useEsquema = (tabla: string, idPrimario: string) => {
       try {
         const response = await axios.get(route('esquema'), { params: { tabla } });
         const camposFiltrados = response.data[0]
-          .filter((campo: any) => !['id_usuario', 'fecha_registro', 'fecha_actualizado', 'id_estado'].includes(campo.nombre))
-          .map((campo: any) => procesarCampo(campo, idPrimario));
+          .filter((campo: CampoBaseDatos) => !['id_usuario', 'fecha_registro', 'fecha_actualizado', 'id_estado'].includes(campo.nombre))
+          .map((campo: CampoBaseDatos) => procesarCampo(campo, idPrimario));
 
         setCampos(camposFiltrados);
       } catch (e) {

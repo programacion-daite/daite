@@ -147,11 +147,15 @@ export const construirJSONGenerico = (datos: Record<string, any>, tabla: string)
 
     // Obtener los valores correspondientes a los campos filtrados
     const valores = camposFiltrados
-        .map(campo => {
+        .map((campo: string, index: number) => {
             const valor = datos[campo]?.toString() || '';
 
             // Eliminar comas en cualquier campo y reemplazarlas por un espacio
             const valorSinComas = valor.replaceAll(",", " ").toUpperCase();
+
+            if(index === 0) {
+                return valorSinComas === '' ? '0' : valorSinComas;
+            }
 
             // Si el valor está vacío, reemplazarlo por "0"
             return valorSinComas === '' ? '' : valorSinComas;

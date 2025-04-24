@@ -169,9 +169,8 @@ export function useGenericTable({
                 sumarModo = '1';
             }
 
-            // Definición de columna
             const colDef: ColDef<TableItem> = {
-                field: displayField ?? '', // Mantener el campo original para datos
+                field: displayField ?? '',
                 headerName: (displayField ?? '').replace(/_/g, ' '),
                 headerClass: 'capitalize',
                 cellStyle: {

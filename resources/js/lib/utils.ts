@@ -1,6 +1,8 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import type { CampoBaseDatos } from '@/types/form';
+import { TipoDato } from '@/types/table';
+import { ValueFormatterParams } from 'ag-grid-community';
 
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
@@ -130,7 +132,6 @@ export function capitalize(texto: string, delimitador: string = ' '): string {
     return resultado.join(delimitador);
 }
 
-
 /**
  * Construye un objeto JSON en el formato específico requerido para el API
  * @param datos Los datos del formulario
@@ -138,12 +139,10 @@ export function capitalize(texto: string, delimitador: string = ' '): string {
  * @returns Un objeto con la estructura esperada por el backend
  */
 export const construirJSONGenerico = (datos: Record<string, any>, tabla: string) => {
-    // Obtener las claves (campos) del objeto de datos
     const campos = Object.keys(datos);
 
     const camposExcluidos = ['json', '_token'];
 
-    // Filtrar campos que no deben incluirse en el JSON
     const camposFiltrados = campos.filter(campo => !camposExcluidos.includes(campo));
 
     // Obtener los valores correspondientes a los campos filtrados
@@ -155,7 +154,7 @@ export const construirJSONGenerico = (datos: Record<string, any>, tabla: string)
             const valorSinComas = valor.replaceAll(",", " ").toUpperCase();
 
             // Si el valor está vacío, reemplazarlo por "0"
-            return valorSinComas === "" ? "0" : valorSinComas;
+            return valorSinComas === '' ? '' : valorSinComas;
         })
         .join(","); // Unir los valores en una cadena separada por comas
 
@@ -249,4 +248,29 @@ export const procesarCampo = (campo: any, id_primario: string): CampoBaseDatos =
         classname: esPrimaria ? 'hidden' : 'col-span-1',
         requerido: campo.requerido || false
     };
+};
+
+
+// Función para obtener el formateador de valores según el tipo de dato para la tabla
+export const getValueFormatterByType = <TData, TValue>(tipo: TipoDato): ((params: ValueFormatterParams<TData, TValue>) => string | number) | undefined => {
+    switch (tipo) {
+        case 'int':
+            //!! TODO: No se formatea el valor para enteros (params) => parseInt(params.value as string).toString()
+            return undefined;
+        case 'numeric':
+            return (params) => numericFormat(params.value as number | string, 2);
+        case 'datetime':
+            return (params) => {
+                if (!params.value) return '';
+                return new Date(params.value as string | number | Date).toLocaleDateString();
+            };
+        case 'date':
+            return (params) => {
+                if (!params.value) return '';
+                return new Date(params.value as string | number | Date).toLocaleDateString('en-GB').replaceAll('.', '/');
+            };
+        case 'string':
+        default:
+            return undefined;
+    }
 };

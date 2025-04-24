@@ -12,6 +12,7 @@ export interface ColumnConfig {
     sumar: string
     agrupar: string
     campo_atributos: string
+    nombre?: string
 }
 
 export interface ModalBusquedaProps {
@@ -24,15 +25,11 @@ export interface ModalBusquedaProps {
 
 export interface TableItem {
     id: number;
-    [key: string]: string | any;
+    [key: string]: string | number | boolean | null | undefined;
 }
 
 export interface TableColumnMeta {
     width?: string;
 }
 
-declare module '@tanstack/react-table' {
-    interface ColumnMeta<TData extends TableItem, TValue> {
-      width?: string;
-    }
-}
+type TipoDato = 'int' | 'numeric' | 'datetime' | 'date' | 'string';

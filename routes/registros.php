@@ -16,6 +16,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('provincias', fn() => Inertia::render('registros/genericos/provincias'))
             ->name('registros.provincias');
 
+        Route::get('distritos', fn() => Inertia::render('registros/genericos/distritos'))
+        ->name('registros.distritos');
+
     });
 
 });

@@ -12,7 +12,7 @@ import {
     themeQuartz,
 } from 'ag-grid-community';
 import { AgGridReact } from 'ag-grid-react';
-import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState, useMemo } from 'react';
 import { InputLabel } from '../ui/input-label';
 
 // Registrar módulos de AG Grid solo una vez
@@ -57,9 +57,70 @@ export interface AgGridTableRef {
 
 export const AgGridTable = forwardRef<AgGridTableRef, AgGridTableProps>(
     ({ rowData, columnDefs, defaultColDef, selectedItem, onRowClick, onDoubleClick }, ref) => {
+
         const gridRef = useRef<AgGridReact>(null);
         const [gridApi, setGridApi] = useState<GridApi | null>(null);
         const [filterText, setFilterText] = useState('');
+        const footerLoggedRef = useRef(false);
+
+        // Estabilizar rowData y columnDefs para reducir re-renderizados
+        const stableRowData = useMemo(() => rowData, [JSON.stringify(rowData)]);
+        const stableColumnDefs = useMemo(() => columnDefs, [JSON.stringify(columnDefs)]);
+
+        // Calcular el footer una vez y memorizarlo
+        const footerData = useMemo(() => {
+            if (!stableRowData.length || !stableColumnDefs.length) return {};
+
+            const footer: Record<string, any> = {};
+            let loggedMessage = false;
+
+            stableColumnDefs.forEach((col) => {
+                const field = col.field;
+                const sumar = col.context?.sumar;
+
+                if (!field || !sumar || sumar === '0' || sumar === 0) return;
+
+                // Solo loguear la primera vez en esta sesión
+                if (!footerLoggedRef.current && !loggedMessage) {
+                    console.log("Calculando footer por primera vez");
+                    loggedMessage = true;
+                }
+
+                if (sumar === 'filas') {
+                    footer[field] = stableRowData.length;
+                } else if (sumar === 1 || sumar === '1') {
+                    const sum = stableRowData.reduce((acc, data) => {
+                        const rawValue = data[field as keyof TableItem];
+                        const val = Number(rawValue);
+
+                        if (isNaN(val) && !footerLoggedRef.current) {
+                            console.warn(`Valor NaN detectado en campo ${field}:`, rawValue);
+                        }
+
+                        return acc + (isNaN(val) ? 0 : val);
+                    }, 0);
+                    footer[field] = numericFormat(sum, 2);
+                }
+            });
+
+            if (!footerLoggedRef.current && Object.keys(footer).length > 0) {
+                console.log("Footer data calculado:", footer);
+                footerLoggedRef.current = true;
+            }
+
+            return footer;
+        }, [stableRowData, stableColumnDefs]);
+
+        // Actualizar el footer solo cuando el API de la grilla esté lista
+        // o cuando los datos del footer cambien
+        useEffect(() => {
+            if (!gridApi) return;
+
+            // Solo actualizar si hay datos en el footer
+            if (Object.keys(footerData).length > 0) {
+                gridApi.setGridOption('pinnedBottomRowData', [footerData]);
+            }
+        }, [gridApi, footerData]);
 
         const onGridReady = useCallback((params: GridReadyEvent) => {
             setGridApi(params.api);
@@ -83,13 +144,22 @@ export const AgGridTable = forwardRef<AgGridTableRef, AgGridTableProps>(
                 // Accedemos a sumar desde el context
                 const sumar = col.context?.sumar;
 
-                if (!field || !sumar || sumar === 0) return;
+                if (!field || !sumar || sumar === '0' || sumar === 0) return;
+
+                console.log(`Sumando campo ${field}, modo: ${sumar}`);
 
                 if (sumar === 'filas') {
                     footer[field] = rowData.length;
                 } else if (sumar === 1 || sumar === '1') {
                     const sum = rowData.reduce((acc, data) => {
-                        const val = Number((data as any)[field]);
+                        // Añadimos un log para ver qué valores estamos sumando
+                        const rawValue = (data as any)[field];
+                        const val = Number(rawValue);
+
+                        if (isNaN(val)) {
+                            console.warn(`Valor NaN detectado en campo ${field}:`, rawValue);
+                        }
+
                         return acc + (isNaN(val) ? 0 : val);
                     }, 0);
                     footer[field] = numericFormat(sum, 2);

@@ -82,7 +82,7 @@ export const AgGridTable = forwardRef<AgGridTableRef, AgGridTableProps>(
 
                 // Solo loguear la primera vez en esta sesión
                 if (!footerLoggedRef.current && !loggedMessage) {
-                    console.log("Calculando footer por primera vez");
+
                     loggedMessage = true;
                 }
 
@@ -104,7 +104,7 @@ export const AgGridTable = forwardRef<AgGridTableRef, AgGridTableProps>(
             });
 
             if (!footerLoggedRef.current && Object.keys(footer).length > 0) {
-                console.log("Footer data calculado:", footer);
+
                 footerLoggedRef.current = true;
             }
 
@@ -124,8 +124,8 @@ export const AgGridTable = forwardRef<AgGridTableRef, AgGridTableProps>(
 
         const onGridReady = useCallback((params: GridReadyEvent) => {
             setGridApi(params.api);
-            const allColIds = params.columnApi.getAllColumns()?.map((col) => col.getColId()) || [];
-            params.columnApi.autoSizeColumns(allColIds, false);
+            // const allColIds = params.columnApi.getAllColumns()?.map((col) => col.getColId()) || [];
+            // params.columnApi.autoSizeColumns(allColIds, false);
         }, []);
 
         useEffect(() => {
@@ -146,7 +146,7 @@ export const AgGridTable = forwardRef<AgGridTableRef, AgGridTableProps>(
 
                 if (!field || !sumar || sumar === '0' || sumar === 0) return;
 
-                console.log(`Sumando campo ${field}, modo: ${sumar}`);
+
 
                 if (sumar === 'filas') {
                     footer[field] = rowData.length;
@@ -186,7 +186,7 @@ export const AgGridTable = forwardRef<AgGridTableRef, AgGridTableProps>(
 
                     switch (action) {
                         case 'refreshCells':
-                            console.log('se refrescaron')
+
                             gridApi.refreshCells({ force: true });
                             break;
                         // case 'applyFilter':

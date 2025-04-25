@@ -1,18 +1,15 @@
-import FormBody from '@/components/form/form-body';
-import { FormHeader } from '@/components/form/form-header';
 import { ResultModal } from '@/components/modal/result-modal';
-import { DynamicTable } from '@/components/table/dynamic-table';
 import { useRegistroModal } from '@/hooks/form/use-modal-register';
 import { useEsquema } from '@/hooks/form/use-schema';
 import AppLayout from '@/layouts/app-layout';
-import { capitalize, construirJSONGenerico } from '@/lib/utils';
 import type { RegistroDinamicoProps } from '@/types/form';
 import { TableItem } from '@/types/table';
 import { Head } from '@inertiajs/react';
-import axios from 'axios';
-import { useReducer, useCallback } from 'react';
+import { useCallback } from 'react';
 import { ModalForm } from './modal-form';
-import { TableProvider, useTable } from '@/contexts/tableContext';
+import { TableProvider } from '@/contexts/tableContext';
+import { DynamicTableSection } from './dynamic-table-section';
+import { useDynamicForm } from '@/hooks/form/use-dynamic-form';
 
 export default function RegistroDinamico({ tabla, id_primario }: RegistroDinamicoProps) {
     return (
@@ -22,174 +19,52 @@ export default function RegistroDinamico({ tabla, id_primario }: RegistroDinamic
     );
 }
 
-// Definir el estado inicial y tipo
-interface FormState {
-    resultado: {
-        abierto: boolean;
-        mensaje: string;
-        esExito: boolean;
-    };
-    formData: Record<string, unknown> | null;
-    isSubmitting: boolean;
-}
-
-type FormAction =
-    | { type: 'SHOW_RESULT'; mensaje: string; esExito: boolean }
-    | { type: 'HIDE_RESULT' }
-    | { type: 'SET_FORM_DATA'; data: Record<string, unknown> | null }
-    | { type: 'SUBMIT_START' }
-    | { type: 'SUBMIT_END' };
-
-// Reducer para manejar todos los estados relacionados con el formulario
-function formReducer(state: FormState, action: FormAction): FormState {
-    switch (action.type) {
-        case 'SHOW_RESULT':
-            return {
-                ...state,
-                resultado: {
-                    abierto: true,
-                    mensaje: action.mensaje,
-                    esExito: action.esExito
-                }
-            };
-        case 'HIDE_RESULT':
-            return {
-                ...state,
-                resultado: {
-                    ...state.resultado,
-                    abierto: false
-                }
-            };
-        case 'SET_FORM_DATA':
-            return {
-                ...state,
-                formData: action.data
-            };
-        case 'SUBMIT_START':
-            return {
-                ...state,
-                isSubmitting: true
-            };
-        case 'SUBMIT_END':
-            return {
-                ...state,
-                isSubmitting: false
-            };
-        default:
-            return state;
-    }
-}
-
 function RegistroDinamicoContent({ tabla, id_primario }: RegistroDinamicoProps) {
-    const { setIsLoading, refreshTable } = useTable();
     const campos = useEsquema(tabla, id_primario);
-    const { modalAbierto, setModalAbierto, modo, selectedItem, abrirModalCrear, abrirModalEditar } = useRegistroModal();
+    const {
+        modalAbierto,
+        setModalAbierto,
+        modo,
+        selectedItem,
+        abrirModalCrear,
+        abrirModalEditar
+    } = useRegistroModal();
 
-    // Usar useReducer para manejar múltiples estados relacionados
-    const [formState, dispatch] = useReducer(formReducer, {
-        resultado: {
-            abierto: false,
-            mensaje: '',
-            esExito: false
-        },
-        formData: null,
-        isSubmitting: false
-    });
-
-    const titulo = `Registros de ${capitalize(tabla.replace(/_/g, ' '))}`;
-
-    // Funciones memoizadas para evitar recreaciones innecesarias
-    const mostrarResultado = useCallback((mensaje: string, esExito: boolean) => {
-        dispatch({ type: 'SHOW_RESULT', mensaje, esExito });
-    }, []);
-
-    const cerrarResultado = useCallback(() => {
-        dispatch({ type: 'HIDE_RESULT' });
-    }, []);
-
-    const handleSubmit = useCallback(async (datos: Record<string, unknown>) => {
-        // Construir JSON para enviar
-        const jsonData = construirJSONGenerico(datos, tabla);
-        const params = { json: JSON.stringify(jsonData) };
-
-        setIsLoading(true);
-        dispatch({ type: 'SUBMIT_START' });
-
-        try {
-            const response = await axios.post(route('registrarRegistros'), params);
-            const data = response.data[0].original[0];
-
-            if (data.codigo_estado !== '200') {
-                // ERROR - Guardar datos para preservarlos
-                dispatch({ type: 'SET_FORM_DATA', data: datos });
-                mostrarResultado(data.mensaje, false);
-            } else {
-                // ÉXITO - Limpiar todo y cerrar
-                dispatch({ type: 'SET_FORM_DATA', data: null });
-                mostrarResultado('Datos guardados correctamente', true);
-                refreshTable();
-                setModalAbierto(false);
-            }
-        } catch (error) {
-            console.error('Error al enviar datos:', error);
-            // ERROR - Guardar datos para preservarlos
-            dispatch({ type: 'SET_FORM_DATA', data: datos });
-            mostrarResultado('Error al enviar los datos. Por favor, inténtelo de nuevo.', false);
-        } finally {
-            setIsLoading(false);
-            dispatch({ type: 'SUBMIT_END' });
-        }
-    }, [tabla, setIsLoading, refreshTable, setModalAbierto, mostrarResultado]);
+    const {
+        formState,
+        handleSubmit,
+        cerrarResultado,
+        resetFormData
+    } = useDynamicForm(tabla, setModalAbierto);
 
     // Función para abrir formulario nuevo
     const handleOpenNewForm = useCallback(() => {
-        dispatch({ type: 'SET_FORM_DATA', data: null });
+        resetFormData();
         abrirModalCrear();
-    }, [abrirModalCrear]);
+    }, [abrirModalCrear, resetFormData]);
 
     // Función para abrir formulario de edición
     const handleOpenEditForm = useCallback((item: TableItem) => {
-        dispatch({ type: 'SET_FORM_DATA', data: null });
+        resetFormData();
         abrirModalEditar(item);
-    }, [abrirModalEditar]);
+    }, [abrirModalEditar, resetFormData]);
 
     // Función para cerrar el modal
     const handleCloseModal = useCallback(() => {
-        dispatch({ type: 'SET_FORM_DATA', data: null });
+        resetFormData();
         setModalAbierto(false);
-    }, [setModalAbierto]);
+    }, [setModalAbierto, resetFormData]);
 
     return (
         <AppLayout>
-            <Head title={titulo} />
+            <Head title={`Registros de ${tabla.replace(/_/g, ' ')}`} />
             <div className="flex h-full w-full flex-1 flex-col gap-4 rounded-xl p-4">
-                <div className="w-full">
-                    <FormHeader
-                        title={titulo}
-                        onSave={handleOpenNewForm}
-                        onClear={() => {}}
-                        onBack={() => window.history.back()}
-                        formId={`${tabla}Form`}
-                        saveButtonProps={{ children: 'Crear' }}
-                    />
-                    <FormBody
-                        onSubmit={(e) => {
-                            e.preventDefault();
-                            handleOpenNewForm();
-                        }}
-                    >
-                        <div className="space-x-3">
-                            <div className="w-full">
-                                <DynamicTable
-                                    tabla={tabla}
-                                    id_primario={id_primario}
-                                    onRowClick={handleOpenEditForm}
-                                    onDoubleClick={handleOpenEditForm}
-                                />
-                            </div>
-                        </div>
-                    </FormBody>
-                </div>
+                <DynamicTableSection
+                    tabla={tabla}
+                    id_primario={id_primario}
+                    onNewClick={handleOpenNewForm}
+                    onEditClick={handleOpenEditForm}
+                />
             </div>
 
             <ModalForm
@@ -197,10 +72,10 @@ function RegistroDinamicoContent({ tabla, id_primario }: RegistroDinamicoProps) 
                 onClose={handleCloseModal}
                 modo={modo}
                 title={tabla}
-                // Si hay datos de formulario guardados, usarlos; si no, usar los del item seleccionado
                 datosIniciales={formState.formData || selectedItem || {}}
                 onSubmit={handleSubmit}
                 campos={campos}
+                campoEnfocar={formState.campoEnfocar || undefined}
             />
 
             <ResultModal

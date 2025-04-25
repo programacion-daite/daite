@@ -1,137 +1,159 @@
-import { useEffect, useState } from "react";
-import DOMPurify from "dompurify";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-} from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Loader2, RefreshCw } from "lucide-react";
-import { Label } from "@radix-ui/react-label";
-import axios from "axios";
-import { memo } from "react";
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@radix-ui/react-label';
+import axios from 'axios';
+import DOMPurify from 'dompurify';
+import { Loader2, RefreshCw } from 'lucide-react';
+import { memo, useCallback, useEffect, useState, useMemo, useRef } from 'react';
 
 interface DynamicSelectProps {
-  id: string;
-  label: string;
-  name: string;
-  defaultValue?: string;
-  parametros?: Record<string, string>;
-  disabled?: boolean;
-  onValueChange?: (value: string) => void;
-  placeholder?: string;
-  withRefresh?: boolean;
-  error?: string;
-  required?: boolean;
+    id: string;
+    label: string;
+    name: string;
+    defaultValue?: string;
+    value?: string;
+    parametros?: Record<string, string>;
+    disabled?: boolean;
+    onValueChange?: (value: string) => void;
+    placeholder?: string;
+    withRefresh?: boolean;
+    error?: string;
+    required?: boolean;
 }
 
-export const DynamicSelect = memo(({
-  id,
-  label,
-  defaultValue = "",
-  parametros = {},
-  disabled = false,
-  onValueChange,
-  placeholder = "",
-  withRefresh = true,
-}: DynamicSelectProps) => {
-  const [options, setOptions] = useState<{ valor: string; descripcion: string }[]>([]);
-  const [value, setValue] = useState(defaultValue);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+export const DynamicSelect = memo(
+    ({
+        id,
+        label,
+        defaultValue = '',
+        value = '',
+        parametros = {},
+        disabled = false,
+        onValueChange,
+        placeholder = '',
+        withRefresh = true,
+    }: DynamicSelectProps) => {
+        const [options, setOptions] = useState<{ valor: string; descripcion: string }[]>([]);
+        const [loading, setLoading] = useState(false);
+        const [error, setError] = useState('');
+        const prevParamsRef = useRef<string>();
 
-  const fetchOptions = async () => {
-    setLoading(true);
-    setError("");
+        // Memoizar el valor actual
+        const currentValue = useMemo(() => value || defaultValue, [value, defaultValue]);
 
-    try {
-      const body = {
-        ...parametros
-      };
+        // Memoizar los parámetros serializados
+        const serializedParams = useMemo(() => JSON.stringify(parametros), [parametros]);
 
-      const response = await axios.post(route('traerFiltros'), body, {
-        headers: {
-          "Content-Type": "application/json"
-        },
-        withCredentials: true,
-      });
+        const fetchOptions = useCallback(async () => {
+            // Evitar fetchs duplicados con los mismos parámetros
+            if (prevParamsRef.current === serializedParams && options.length > 0) {
+                return;
+            }
 
-      if (response.status !== 200) throw new Error("Error al cargar los datos");
+            setLoading(true);
+            setError('');
 
-      const data = await response.data[0].original
+            try {
+                const body = {
+                    ...parametros,
+                };
 
-      if (!Array.isArray(data)) {
-        throw new Error("La respuesta no es válida");
-      }
+                const response = await axios.post(route('traerOpciones'), body, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    withCredentials: true,
+                });
 
-      // Sanitize and set options
-      const sanitized = data.map((registro) => ({
-        valor: DOMPurify.sanitize(registro.valor?.toString() || "_empty"),
-        descripcion: DOMPurify.sanitize(registro.descripcion?.toString() || ""),
-      }));
+                if (response.status !== 200) throw new Error('Error al cargar los datos');
 
-      setOptions(sanitized);
+                const data = body?.isGeneric ? response.data[0].original[0].original : response.data[0];
 
-      // Si hay valor predeterminado
-      const predeterminado = sanitized.find((opt) => opt.valor === defaultValue);
-      if (predeterminado) {
-        setValue(predeterminado.valor);
-      }
+                if (!Array.isArray(data)) {
+                    throw new Error('La respuesta no es válida');
+                }
 
-    } catch (err) {
-      console.error(err);
-      setError("No se pudieron cargar las opciones");
-    }
+                // Sanitize and set options
+                const sanitized = data.map((registro) => ({
+                    valor: DOMPurify.sanitize(registro.valor?.toString() || '_empty'),
+                    descripcion: DOMPurify.sanitize(registro.descripcion?.toString() || ''),
+                }));
 
-    setLoading(false);
-  };
+                setOptions(sanitized);
+                prevParamsRef.current = serializedParams;
+            } catch (err) {
+                console.error(err);
+                setError('No se pudieron cargar las opciones');
+            }
 
-  useEffect(() => {
-    fetchOptions();
-  }, []);
+            setLoading(false);
+        }, [serializedParams, options.length, parametros]);
 
-  const handleChange = (newValue: string) => {
-    setValue(newValue);
-    if (onValueChange) onValueChange(newValue);
-  };
+        // Efecto para cargar opciones iniciales
+        useEffect(() => {
+            fetchOptions();
+        }, [serializedParams, fetchOptions]);
 
-  return (
-    <div className="w-full input-label">
-      <Label htmlFor={id}>{label}</Label>
-      <div className="flex items-center gap-2">
-        <Select value={value} onValueChange={handleChange} disabled={disabled || loading}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder={placeholder} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              {options.map((opt) => (
-                <SelectItem key={opt.valor} value={opt.valor} className="min-h-[2rem] focus:text-white">
-                  {opt.descripcion}
+        // Memoizar el manejador de cambios
+        const handleChange = useCallback((newValue: string) => {
+            if (onValueChange) {
+                onValueChange(newValue);
+            }
+        }, [onValueChange]);
+
+        // Memoizar las opciones renderizadas
+        const renderedOptions = useMemo(() =>
+            options.map((opt) => (
+                <SelectItem
+                    key={opt.valor}
+                    value={opt.valor}
+                    className="min-h-[2rem] focus:text-white"
+                >
+                    {opt.descripcion}
                 </SelectItem>
-              ))}
-            </SelectGroup>
-          </SelectContent>
-        </Select>
+            ))
+        , [options]);
 
-        {withRefresh && (
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            className="bg-primary"
-            onClick={fetchOptions}
-            disabled={loading}
-          >
-            {loading ? <Loader2 className="h-4 w-4 animate-spin text-white" /> : <RefreshCw className="h-4 w-4 text-white" />}
-          </Button>
-        )}
-      </div>
+        return (
+            <div className="input-label w-full">
+                <Label htmlFor={id}>{label}</Label>
+                <div className="flex items-center gap-2">
+                    <Select
+                        value={currentValue}
+                        onValueChange={handleChange}
+                        disabled={disabled || loading}
+                    >
+                        <SelectTrigger className="w-full">
+                            <SelectValue placeholder={placeholder} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectGroup>
+                                {renderedOptions}
+                            </SelectGroup>
+                        </SelectContent>
+                    </Select>
 
-      {error && <div className="text-red-500 text-sm mt-1">{error}</div>}
-    </div>
-  );
-});
+                    {withRefresh && (
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            className="bg-primary"
+                            onClick={fetchOptions}
+                            disabled={loading}
+                        >
+                            {loading ?
+                                <Loader2 className="h-4 w-4 animate-spin text-white" /> :
+                                <RefreshCw className="h-4 w-4 text-white" />
+                            }
+                        </Button>
+                    )}
+                </div>
+
+                {error && <div className="mt-1 text-sm text-red-500">{error}</div>}
+            </div>
+        );
+    }
+);
+
+DynamicSelect.displayName = 'DynamicSelect';

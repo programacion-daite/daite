@@ -2,12 +2,12 @@
 
 namespace App\Http\Middleware;
 
+use App\Http\Services\SessionService;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use Tighten\Ziggy\Ziggy;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -19,6 +19,23 @@ class HandleInertiaRequests extends Middleware
      * @var string
      */
     protected $rootView = 'app';
+
+    /**
+     * La instancia del servicio de sesión
+     *
+     * @var SessionService
+     */
+    protected $sessionService;
+
+    /**
+     * Constructor del middleware
+     *
+     * @param SessionService $sessionService
+     */
+    public function __construct(SessionService $sessionService)
+    {
+        $this->sessionService = $sessionService;
+    }
 
     /**
      * Determines the current asset version.
@@ -41,17 +58,16 @@ class HandleInertiaRequests extends Middleware
     {
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
 
-        if ($request->session()->has('conexion')) {
-            $user = $request->user();
-            $cacheKey = "sidebar_items_{$user->id_usuario}";
-            $sidebarItems = Cache::remember($cacheKey, 3600, function () use ($user) {
-                return DB::select('EXEC [DBO].[p_traer_programas] @id_usuario = ? ,@renglon = ?', [
-                    $user->id_usuario,
-                    'ASIGNADOS',
-                ]);
-            });
-        }
+        $sesionData = [];
+        $sidebarItems = [];
 
+        if ($request->session()->has('conexion') && $request->user()) {
+            $cacheKey = "sesion_data_{$request->user()->id_usuario}";
+            $sesionData = Cache::remember($cacheKey, 3600, function () use ($request) {
+                return $this->sessionService->obtenerDatosSesion($request);
+            });
+
+        }
 
         return [
             ...parent::share($request),
@@ -64,7 +80,41 @@ class HandleInertiaRequests extends Middleware
                 ...(new Ziggy)->toArray(),
                 'location' => $request->url(),
             ],
-            'sidebarItems' => $sidebarItems ?? [],
+            'sessionData' => $sesionData,
         ];
+    }
+
+    /**
+     * Extrae los elementos para la barra lateral de los datos de sesión
+     *
+     * @param array $sesionData
+     * @return array
+     */
+    protected function obtenerSidebarItems(array $sesionData): array
+    {
+        $items = [];
+
+        if (empty($sesionData['programas'])) {
+            return $items;
+        }
+
+        foreach (['registros', 'procesos', 'reportes'] as $tipo) {
+            if (!empty($sesionData['programas'][$tipo])) {
+                foreach ($sesionData['programas'][$tipo] as $idModulo => $programasModulo) {
+                    foreach ($programasModulo as $programa) {
+                        $items[] = [
+                            'id' => $programa->id_programa,
+                            'name' => $programa->descripcion,
+                            'route' => $programa->programa,
+                            'type' => $tipo,
+                            'module_id' => $idModulo,
+                            'icon' => $programa->icono ?? 'default-icon'
+                        ];
+                    }
+                }
+            }
+        }
+
+        return $items;
     }
 }

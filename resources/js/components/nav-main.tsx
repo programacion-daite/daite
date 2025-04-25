@@ -8,8 +8,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Home, FileText, BarChart, ChevronDown, CreditCard } from "lucide-react";
-import { useEffect, useState } from 'react';
-import axios from 'axios';
 import { SessionData, Modulo, Programa } from '@/types';
 
 type MenuConfig = {
@@ -27,20 +25,9 @@ const MENU_CONFIG: MenuConfig[] = [
 ];
 
 export function NavMain() {
-    const [sessionData, setSessionData] = useState<SessionData | null>(null);
+    const sessionData = usePage().props.sessionData as SessionData;
     const page = usePage();
     const isMobile = useIsMobile();
-
-    useEffect(() => {
-        axios.get(route('traerDatosSesion'))
-            .then((response) => {
-                if (response.status !== 200 || !response.data) {
-                    throw new Error("Error fetching session data");
-                }
-                setSessionData(response.data);
-            })
-            .catch((error: Error) => console.error('Error fetching session data:', error));
-    }, []);
 
     if (!sessionData) return <div>Cargando...</div>;
     if (isMobile) return null;

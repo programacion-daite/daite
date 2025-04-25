@@ -221,13 +221,9 @@ export const procesarCampo = (campo: any, id_primario: string): CampoBaseDatos =
             };
         } else if (tablaReferencia) {
             parametros = {
-                route: 'registrosConsultaPrincipal',
-                params: {
-                    origen_registros: tablaReferencia,
-                    campo_ordenar: `id_${tablaReferencia.replace(/s$/, '')}`
-                },
-                valueField: `id_${tablaReferencia.replace(/s$/, '')}`,
-                labelField: tablaReferencia.replace(/s$/, '')
+                isGeneric: true,
+                table: tablaReferencia,
+                id: `id_${tablaReferencia.replace(/s$/, '')}`
             };
         }
     } else if (componente === 'MaskedInput') {

@@ -81,7 +81,7 @@ export function useGenericTable({
         try {
             const shouldUseMultipleIds = useHasMultipleIds !== undefined ? useHasMultipleIds : hasMultipleIds;
 
-            const routeToUse = shouldUseMultipleIds ? 'traerRegistrosCombinados' : 'RegistrosConsultaPrincipal';
+            const routeToUse = shouldUseMultipleIds ? 'traerRegistrosCombinados' : 'registrosConsultaPrincipal';
             const params = shouldUseMultipleIds
                 ? { renglon: stableTableName }
                 : { origen_registros: stableTableName, campo_ordenar: stablePrimaryId };

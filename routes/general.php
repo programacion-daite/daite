@@ -34,14 +34,14 @@ Route::middleware('auth')->group(function () {
     Route::post('traerUnicaEntidad', [GeneralController::class, 'traerUnicaEntidad'])
         ->name('traerUnicaEntidad');
 
-    Route::get('traerDatosSesion', [GeneralController::class, 'traerDatosSesion'])
-        ->name('traerDatosSesion');
-
     Route::match(['get', 'post'], 'esquema', [GeneralController::class, 'esquema'])
         ->name('esquema');
 
-    Route::post('RegistrosConsultaPrincipal', [GeneralController::class, 'RegistrosConsultaPrincipal'])
-        ->name('RegistrosConsultaPrincipal');
+    Route::post('registrosConsultaPrincipal', [GeneralController::class, 'registrosConsultaPrincipal'])
+        ->name('registrosConsultaPrincipal');
+
+    Route::post('traerOpciones', [GeneralController::class, 'traerOpciones'])
+        ->name('traerOpciones');
 
     Route::post('traerRegistrosCombinados', [GeneralController::class, 'traerRegistrosCombinados'])
         ->name('traerRegistrosCombinados');

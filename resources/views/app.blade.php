@@ -7,7 +7,8 @@
     {{-- <script
   crossOrigin="anonymous"
   src="//unpkg.com/react-scan/dist/auto.global.js"
-></script> --}}
+>
+</script> --}}
 
         {{-- Inline script to detect system dark mode preference and apply it immediately --}}
         <script>

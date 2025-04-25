@@ -14,10 +14,7 @@ Route::middleware(['auth'])->group(function () {
         ->name('registros.beneficiarios');
 
         Route::get('provincias', fn() => Inertia::render('registros/administracion/provincias'))
-            ->name('registros.provincias');
-
-        Route::get('distritos', fn() => Inertia::render('registros/administracion/distritos'))
-        ->name('registros.distritos');
+        ->name('registros.provincias');
 
         Route::get('actividades', fn() => Inertia::render('registros/administracion/actividades'))
         ->name('registros.actividades');
@@ -25,7 +22,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('generos', fn() => Inertia::render('registros/administracion/generos'))
         ->name('registros.generos');
 
-
+        Route::get('distritos', fn() => Inertia::render('registros/administracion/distritos'))
+        ->name('registros.distritos');
 
     });
 

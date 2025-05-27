@@ -7,7 +7,7 @@
 // import AppLayout from '@/layouts/app-layout';
 // import { type BreadcrumbItem } from '@/types';
 // import { Head } from '@inertiajs/react';
-// import { InputWithSearch } from '@/components/input-with-search';
+// import { InputWithSearch } from '@/components/form/input-with-search';
 // import { BeneficiarioItem } from '@/types/entities';
 // import MaskedInput from '@/components/ui/masked-input';
 
@@ -26,7 +26,7 @@
 //             <Head title="Beneficiarios" />
 //             <div className="flex h-full w-full flex-1 flex-col gap-4 rounded-xl p-4">
 //                 <div className="w-full">
-//                     <FormHeader title="Registro de Beneficiarios" onSave={() => {}} onClear={() => {}} formId="beneficiarios-form" />
+//                     <FormHeader title="Registro de Beneficiarios" onSave={() => {}} onClear={() => {}} formId="beneficiarios-form" onBack={() => {}} />
 
 //                     <FormBody onSubmit={() => {}}>
 //                         <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
@@ -47,8 +47,8 @@
 //                                 displayValue={data.cliente ?? ''}
 //                                 field="cliente"
 //                                 table="clientes"
-//                                 onChange={(value, item) => {
-//                                     setData('id_cliente', value);
+//                                 onChange={(value: number, item: BeneficiarioItem) => {
+//                                     setData('id_cliente', value.toString());
 //                                     if (item) {
 //                                         setData('cliente', item.beneficiario);
 //                                     }
@@ -102,10 +102,8 @@
 //                                 label="Numero de Cuenta"
 //                             />
 
-
 //                             <div className="col-span-4 h-2 rounded-md bg-orange-500"></div>
 
-//                             {/* Campo de búsqueda */}
 //                             <div className="col-span-4">
 //                                 <div className="flex gap-2">
 //                                     <InputLabel

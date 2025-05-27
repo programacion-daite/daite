@@ -43,18 +43,15 @@ class AuthenticatedSessionController extends Controller
         $dispositivo = $request->dispositivo ?? $request->header('User-Agent');
         $origen = $request->origen ?? ($request->is('api/*') ? 'MÓVIL' : 'WEB');
 
-        $resultado = $this->tenantAuthService->autenticarUsuario($usuario, $request->contrasena, $dispositivo, $origen);
+        $resultado = $this->tenantAuthService->authenticateUser($usuario, $request->contrasena, $dispositivo, $origen);
 
-        // Si ocurre algún error en la autenticación, se redirige hacia atrás con los errores
         if ($resultado['error']) {
             Log::error('Error al autenticar usuario: ' . json_encode($resultado['data']));
             return redirect()->back()->withErrors(['mensaje' => $resultado['data']->mensaje ?? 'Error de autenticación']);
         }
 
-        // Regenera la sesión para evitar fijación de sesión
         $request->session()->regenerate();
 
-        // Redirige al dashboard (o a la ruta deseada) utilizando redirect()->intended
         return redirect()->intended(route('inicio', false));
     }
 
@@ -64,18 +61,15 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
-        // Limpiar la conexión dinámica antes de cerrar la sesión
+
         $request->session()->forget('conexion');
         $request->session()->forget('usuario');
 
-        // Cerrar la sesión
         Auth::guard('web')->logout();
 
-        // Invalidar la sesión
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        // Redirigir al login
         return redirect()->route('login');
     }
 }

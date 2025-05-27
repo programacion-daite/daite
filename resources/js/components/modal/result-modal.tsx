@@ -15,12 +15,12 @@ import { cn } from "@/lib/utils"
 interface ResultModalProps {
   open: boolean
   onClose: () => void
-  titulo: string
-  mensaje: string
+  title: string
+  message: string
   status: "success" | "error"
 }
 
-export const ResultModal: React.FC<ResultModalProps> = ({ open, onClose, titulo, mensaje, status }) => {
+export const ResultModal: React.FC<ResultModalProps> = ({ open, onClose, title, message, status }) => {
   return (
     <AlertDialog open={open}>
       <AlertDialogContent className="max-w-md border-0 shadow-lg">
@@ -37,9 +37,9 @@ export const ResultModal: React.FC<ResultModalProps> = ({ open, onClose, titulo,
             ) : (
               <XCircle className="h-6 w-6 text-red-500" />
             )}
-            <AlertDialogTitle className="text-xl font-medium">{titulo}</AlertDialogTitle>
+            <AlertDialogTitle className="text-xl font-medium">{title}</AlertDialogTitle>
           </div>
-          <AlertDialogDescription className="pt-2 text-sm text-black">{mensaje}</AlertDialogDescription>
+          <AlertDialogDescription className="pt-2 text-sm text-black">{message}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogAction

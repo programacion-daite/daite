@@ -1,49 +1,37 @@
-import { type ClassValue, clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-import type { CampoBaseDatos } from '@/types/form';
+import type { DatabaseField } from '@/types/form';
 import { TipoDato } from '@/types/table';
 import { ValueFormatterParams } from 'ag-grid-community';
+import { type ClassValue, clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
 export function numericFormat(value: any, decimals = 0) {
+    const formatear = (formattedValue: any) => {
+        if (!formattedValue) formattedValue = 0;
 
-    const formatear = (formattedValue : any) => {
+        formattedValue = Number(String(formattedValue).replaceAll(',', ''));
 
-      if (!formattedValue)
-        formattedValue = 0
-      ;
-
-      formattedValue = Number(
-        String(formattedValue).replaceAll(',', '')
-      );
-
-      return formattedValue.toLocaleString('es-419', {
-        minimumFractionDigits: decimals,
-        maximumFractionDigits: decimals
-      })
-
+        return formattedValue.toLocaleString('es-419', {
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals,
+        });
     };
 
-    return Array.isArray(value)
-      ? value.map((formattedValue) => formatear(formattedValue))
-      : formatear(value)
-
-  }
+    return Array.isArray(value) ? value.map((formattedValue) => formatear(formattedValue)) : formatear(value);
+}
 
 export function pluralize(palabra: string): string {
-
     // ! Declaración de variables
-    let
-      palabraPluralizada = null,
-      ultimaLetra = null,
-      penultimaLetra = null,
-      antepenultimaLetra = null,
-      trasantepenultimaLetra = null,
-      letraAntesY = null,
-      letraAntesZ = null;
+    let palabraPluralizada = null,
+        ultimaLetra = null,
+        penultimaLetra = null,
+        antepenultimaLetra = null,
+        trasantepenultimaLetra = null,
+        letraAntesY = null,
+        letraAntesZ = null;
 
     // ! Asignando valores
     ultimaLetra = palabra.slice(-1);
@@ -52,83 +40,51 @@ export function pluralize(palabra: string): string {
     trasantepenultimaLetra = palabra.slice(-4);
 
     // !
-    if (
-      ultimaLetra === "a" ||
-      ultimaLetra === "e" ||
-      ultimaLetra === "i" ||
-      ultimaLetra === "o" ||
-      ultimaLetra === "u"
-    ) {
-
-      // + Asignando valor
-      palabraPluralizada = palabra + "s"
-
+    if (ultimaLetra === 'a' || ultimaLetra === 'e' || ultimaLetra === 'i' || ultimaLetra === 'o' || ultimaLetra === 'u') {
+        // + Asignando valor
+        palabraPluralizada = palabra + 's';
     }
     // !
-    else if (ultimaLetra === "y") {
+    else if (ultimaLetra === 'y') {
+        // +
+        if (penultimaLetra === 'ay' || penultimaLetra === 'ey' || penultimaLetra === 'oy' || penultimaLetra === 'uy') {
+            // ? Asignando valor
+            palabraPluralizada = palabra + 's';
+        }
+        // +
+        else {
+            // ? Asignando valor
+            letraAntesY = palabra.slice(0, -1);
 
-      // +
-      if (
-        penultimaLetra === "ay" ||
-        penultimaLetra === "ey" ||
-        penultimaLetra === "oy" ||
-        penultimaLetra === "uy"
-      ) {
-
-        // ? Asignando valor
-        palabraPluralizada = palabra + "s"
-
-      }
-      // +
-      else {
-
-        // ? Asignando valor
-        letraAntesY = palabra.slice(0, -1);
-
-        // ? Asignando valor
-        palabraPluralizada = letraAntesY + "ies"
-
-      }
-
+            // ? Asignando valor
+            palabraPluralizada = letraAntesY + 'ies';
+        }
     }
     // !
-    else if (ultimaLetra === "z") {
+    else if (ultimaLetra === 'z') {
+        // + Asignando valor
+        letraAntesZ = palabra.slice(0, -1);
 
-      // + Asignando valor
-      letraAntesZ = palabra.slice(0, -1);
-
-      // + Asignando valor
-      palabraPluralizada = letraAntesZ + "ces"
-
+        // + Asignando valor
+        palabraPluralizada = letraAntesZ + 'ces';
     }
     // !
-    else if (
-        ultimaLetra === "n" && (
-          antepenultimaLetra === "ión" ||
-          trasantepenultimaLetra === "ción"
-    )) {
-
-      // + Asignando valor
-      palabraPluralizada = palabra
-
+    else if (ultimaLetra === 'n' && (antepenultimaLetra === 'ión' || trasantepenultimaLetra === 'ción')) {
+        // + Asignando valor
+        palabraPluralizada = palabra;
     }
     // !
     else {
-
-      // + Asignando valor
-      palabraPluralizada = palabra + "es"
-
+        // + Asignando valor
+        palabraPluralizada = palabra + 'es';
     }
 
-    return palabraPluralizada
-
+    return palabraPluralizada;
 }
 
 export function capitalize(texto: string, delimitador: string = ' '): string {
     const palabras = texto.split(delimitador);
-    const resultado = palabras.map(palabra =>
-      palabra.charAt(0).toUpperCase() + palabra.slice(1).toLowerCase()
-    );
+    const resultado = palabras.map((palabra) => palabra.charAt(0).toUpperCase() + palabra.slice(1).toLowerCase());
     return resultado.join(delimitador);
 }
 
@@ -143,7 +99,7 @@ export const construirJSONGenerico = (datos: Record<string, any>, tabla: string)
 
     const camposExcluidos = ['json', '_token'];
 
-    const camposFiltrados = campos.filter(campo => !camposExcluidos.includes(campo));
+    const camposFiltrados = campos.filter((campo) => !camposExcluidos.includes(campo));
 
     // Obtener los valores correspondientes a los campos filtrados
     const valores = camposFiltrados
@@ -151,46 +107,46 @@ export const construirJSONGenerico = (datos: Record<string, any>, tabla: string)
             const valor = datos[campo]?.toString() || '';
 
             // Eliminar comas en cualquier campo y reemplazarlas por un espacio
-            const valorSinComas = valor.replaceAll(",", " ").toUpperCase();
+            const valorSinComas = valor.replaceAll(',', ' ').toUpperCase();
 
-            if(index === 0) {
+            if (index === 0) {
                 return valorSinComas === '' ? '0' : valorSinComas;
             }
 
             // Si el valor está vacío, reemplazarlo por "0"
             return valorSinComas === '' ? '' : valorSinComas;
         })
-        .join(","); // Unir los valores en una cadena separada por comas
+        .join(','); // Unir los valores en una cadena separada por comas
 
     // Retornar el objeto JSON
     return {
         tabla: tabla,
-        campos: camposFiltrados.join(","), // Campos filtrados como string
+        campos: camposFiltrados.join(','), // Campos filtrados como string
         valores: valores, // Valores correspondientes a los campos filtrados como string
     };
 };
 
-// Procesar campo desde la base de datos para generar estructura adecuada
-export const procesarCampo = (campo: any, id_primario: string): CampoBaseDatos => {
-    // Si el campo ya tiene todas las propiedades, lo devolvemos
-    if (campo.nombre && campo.label && campo.tipo) {
-        return campo;
+// Process field from database to generate appropriate structure
+export const processField = (field: any, primaryId: string): DatabaseField => {
+    // If the field already has all properties, return it
+    if (field.nombre && field.label && field.tipo) {
+        return field;
     }
 
-    // Normalizar el nombre del campo
-    const nombre = campo.nombre || campo.id || '';
-    const esForanea = nombre.startsWith('id_') && nombre !== id_primario;
-    const esPrimaria = nombre === id_primario;
+    // Normalize field name
+    const nombre = field.nombre || field.id || '';
+    const esForanea = nombre.startsWith('id_') && nombre !== primaryId;
+    const esPrimaria = nombre === primaryId;
 
-    // Obtener label del campo
-    let label = campo.titulo || capitalize(nombre.replace('id_', '').replace(/_/g, ' '));
+    // Get field label
+    let label = field.titulo || capitalize(nombre.replace('id_', '').replace(/_/g, ' '));
     if (esPrimaria) {
         label = `ID ${label}`;
     }
 
-    // Determinar tipo de componente
+    // Determine component type
     let componente: any = 'InputLabel';
-    const tipo = campo.tipo || 'text';
+    const tipo = field.tipo || 'text';
 
     if (esForanea) {
         componente = 'DynamicSelect';
@@ -202,13 +158,13 @@ export const procesarCampo = (campo: any, id_primario: string): CampoBaseDatos =
         componente = 'MaskedInput';
     }
 
-    // Determinar tabla de referencia para campos foráneos
+    // Determine reference table for foreign fields
     let tablaReferencia = '';
     if (esForanea) {
         tablaReferencia = pluralize(nombre.replace('id_', ''));
     }
 
-    // Configurar parámetros para componentes específicos
+    // Configure parameters for specific components
     let parametros: Record<string, any> = {};
 
     if (componente === 'DynamicSelect') {
@@ -216,14 +172,14 @@ export const procesarCampo = (campo: any, id_primario: string): CampoBaseDatos =
             parametros = {
                 options: [
                     { value: '0', label: 'No' },
-                    { value: '1', label: 'Si' }
-                ]
+                    { value: '1', label: 'Si' },
+                ],
             };
         } else if (tablaReferencia) {
             parametros = {
                 isGeneric: true,
                 table: tablaReferencia,
-                id: `id_${tablaReferencia.replace(/s$/, '')}`
+                id: `id_${tablaReferencia.replace(/s$/, '')}`,
             };
         }
     } else if (componente === 'MaskedInput') {
@@ -236,7 +192,7 @@ export const procesarCampo = (campo: any, id_primario: string): CampoBaseDatos =
         }
     }
 
-    // Crear estructura del campo
+    // Create field structure
     return {
         nombre,
         tipo,
@@ -246,13 +202,14 @@ export const procesarCampo = (campo: any, id_primario: string): CampoBaseDatos =
         tabla_referencia: tablaReferencia,
         parametros,
         classname: esPrimaria ? 'hidden' : 'col-span-1',
-        requerido: campo.requerido || false
+        requerido: field.requerido || false,
     };
 };
 
-
 // Función para obtener el formateador de valores según el tipo de dato para la tabla
-export const getValueFormatterByType = <TData, TValue>(tipo: TipoDato): ((params: ValueFormatterParams<TData, TValue>) => string | number) | undefined => {
+export const getValueFormatterByType = <TData, TValue>(
+    tipo: TipoDato,
+): ((params: ValueFormatterParams<TData, TValue>) => string | number) | undefined => {
     switch (tipo) {
         case 'int':
             //!! TODO: No se formatea el valor para enteros (params) => parseInt(params.value as string).toString()

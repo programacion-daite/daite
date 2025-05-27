@@ -15,26 +15,36 @@ class SessionService
     private const TIPO_REPORTES = 'C';
 
     /**
+     * Obtiene la conexión del tenant
+     *
+     * @return \Illuminate\Database\Connection
+     */
+    private function getTenantConnection()
+    {
+        return DB::connection('tenant');
+    }
+
+    /**
      * Obtiene los datos completos de la sesión del usuario
      *
      * @param Request $request
      * @return array
      */
-    public function obtenerDatosSesion(Request $request)
+    public function getSessionData(Request $request)
     {
         Log::info('Procesando datos de sesión');
 
         $esApiRequest = $request->is('api/*');
-        $this->gestionarSesionApi($request, $esApiRequest);
+        $this->handleSessionApi($request, $esApiRequest);
 
         $idUsuario = session('usuario')->id_usuario;
-        $usuario = $this->obtenerUsuario($idUsuario);
+        $usuario = $this->getUser($idUsuario);
 
-        $sesion = $this->inicializarSesion($usuario);
-        $this->cargarConfiguraciones($sesion, $idUsuario);
-        $this->procesarDatosEmpresa($sesion);
-        $this->cargarProgramasAsignados($sesion, $idUsuario, $esApiRequest);
-        $this->cargarProgramasFavoritos($sesion, $idUsuario, $esApiRequest);
+        $sesion = $this->initializeSession($usuario);
+        $this->loadConfigurations($sesion, $idUsuario);
+        $this->processCompanyData($sesion);
+        $this->loadAssignedPrograms($sesion, $idUsuario, $esApiRequest);
+        $this->loadFavoritePrograms($sesion, $idUsuario, $esApiRequest);
 
         return $sesion;
     }
@@ -46,7 +56,7 @@ class SessionService
      * @param bool $esApiRequest
      * @return void
      */
-    private function gestionarSesionApi(Request $request, bool $esApiRequest): void
+    private function handleSessionApi(Request $request, bool $esApiRequest): void
     {
         if ($esApiRequest && $request->programa !== 'autenticacion.iniciar') {
             session()->put('usuario', (object) ['id_usuario' => $request->id_usuario]);
@@ -59,9 +69,9 @@ class SessionService
      * @param int $idUsuario
      * @return User
      */
-    private function obtenerUsuario(int $idUsuario): User
+    private function getUser(int $idUsuario): User
     {
-        return User::where('id_usuario', $idUsuario)->firstOrFail();
+        return User::on('tenant')->where('id_usuario', $idUsuario)->firstOrFail();
     }
 
     /**
@@ -70,11 +80,11 @@ class SessionService
      * @param User $usuario
      * @return array
      */
-    private function inicializarSesion(User $usuario): array
+    private function initializeSession(User $usuario): array
     {
         return [
             'usuario' => $usuario,
-            'modulos' => $this->obtenerModulos($usuario->id_usuario),
+            'modulos' => $this->getModules($usuario->id_usuario),
             'programas' => [
                 'registros' => [],
                 'procesos' => [],
@@ -82,7 +92,7 @@ class SessionService
                 'favoritos' => [],
                 'genericos' => []
             ],
-            'empresa' => $this->obtenerDatosEmpresa($usuario->id_usuario),
+            'empresa' => $this->getCompanyData($usuario->id_usuario),
             'configuracion' => []
         ];
     }
@@ -93,9 +103,9 @@ class SessionService
      * @param int $idUsuario
      * @return array
      */
-    private function obtenerModulos(int $idUsuario): array
+    private function getModules(int $idUsuario): array
     {
-        return DB::select('EXEC [dbo].[p_traer_registros_combinados] ?, ?, ?', [$idUsuario, 'MODULOS', '']);
+        return $this->getTenantConnection()->select('EXEC [dbo].[p_traer_registros_combinados] ?, ?, ?', [$idUsuario, 'MODULOS', '']);
     }
 
     /**
@@ -104,21 +114,21 @@ class SessionService
      * @param int $idUsuario
      * @return array
      */
-    private function obtenerDatosEmpresa(int $idUsuario): array
+    private function getCompanyData(int $idUsuario): array
     {
-        return DB::select('EXEC [dbo].[p_traer_registros] @id_usuario = ?, @renglon = ?', [$idUsuario, 'DATOS_INICIO_SESION', '']);
+        return $this->getTenantConnection()->select('EXEC [dbo].[p_traer_registros] @id_usuario = ?, @renglon = ?', [$idUsuario, 'DATOS_INICIO_SESION', '']);
     }
 
     /**
      * Carga las configuraciones del usuario
      *
-     * @param array &$sesion
+     * @param array $sesion
      * @param int $idUsuario
      * @return void
      */
-    private function cargarConfiguraciones(array &$sesion, int $idUsuario): void
+    private function loadConfigurations(array &$sesion, int $idUsuario): void
     {
-        $configuraciones = DB::select('EXEC [dbo].[p_traer_configuraciones] ?, ?, ?', [$idUsuario, '', '']);
+        $configuraciones = $this->getTenantConnection()->select('EXEC [dbo].[p_traer_configuraciones] ?, ?, ?', [$idUsuario, '', '']);
 
         foreach ($configuraciones as $configuracion) {
             $sesion['configuracion'][$configuracion->campo] = $configuracion->valor;
@@ -128,10 +138,10 @@ class SessionService
     /**
      * Procesa los datos de empresa si existen
      *
-     * @param array &$sesion
+     * @param array $sesion
      * @return void
      */
-    private function procesarDatosEmpresa(array &$sesion): void
+    private function processCompanyData(array &$sesion): void
     {
         if (!empty($sesion['empresa'])) {
             $sesion['empresa'] = $sesion['empresa'][0];
@@ -141,27 +151,27 @@ class SessionService
     /**
      * Carga los programas asignados al usuario
      *
-     * @param array &$sesion
+     * @param array $sesion
      * @param int $idUsuario
      * @param bool $esApiRequest
      * @return void
      */
-    private function cargarProgramasAsignados(array &$sesion, int $idUsuario, bool $esApiRequest): void
+    private function loadAssignedPrograms(array &$sesion, int $idUsuario, bool $esApiRequest): void
     {
-        $programas = DB::select('EXEC p_traer_programas ?, ?, ?, ?', [$idUsuario, 'ASIGNADOS', '', 0]);
+        $programas = $this->getTenantConnection()->select('EXEC p_traer_programas ?, ?, ?, ?', [$idUsuario, 'ASIGNADOS', '', 0]);
 
         if (!$esApiRequest) {
             $sesion['aplicacion']['rutas'] = array_keys(app('router')->getRoutes()->getRoutesByName()) ?? [];
         }
 
         foreach ($programas as $indice => $programa) {
-            $tipoPrograma = $this->mapearTipoPrograma($programa->tipo_programa);
+            $tipoPrograma = $this->mapProgramType($programa->tipo_programa);
             $programa->tipo_programa = $tipoPrograma;
 
             if ($esApiRequest) {
-                $this->procesarProgramaParaApi($sesion, $programa);
+                $this->processProgramForApi($sesion, $programa);
             } else {
-                $this->procesarProgramaParaWeb($sesion, $programa, $indice);
+                $this->processProgramForWeb($sesion, $programa, $indice);
             }
         }
     }
@@ -169,24 +179,24 @@ class SessionService
     /**
      * Carga los programas favoritos del usuario
      *
-     * @param array &$sesion
+     * @param array $sesion
      * @param int $idUsuario
      * @param bool $esApiRequest
      * @return void
      */
-    private function cargarProgramasFavoritos(array &$sesion, int $idUsuario, bool $esApiRequest): void
+    private function loadFavoritePrograms(array &$sesion, int $idUsuario, bool $esApiRequest): void
     {
         $sesion['programas']['favoritos'] = [];
-        $programasFavoritos = DB::select('EXEC p_traer_programas ?, ?, ?, ?', [$idUsuario, 'FAVORITOS', '', 0]);
+        $programasFavoritos = $this->getTenantConnection()->select('EXEC p_traer_programas ?, ?, ?, ?', [$idUsuario, 'FAVORITOS', '', 0]);
 
         foreach ($programasFavoritos as $programa) {
-            $tipoPrograma = $this->mapearTipoPrograma($programa->tipo_programa);
+            $tipoPrograma = $this->mapProgramType($programa->tipo_programa);
             $programa->tipo_programa = $tipoPrograma;
 
             if ($esApiRequest) {
-                $this->procesarFavoritoParaApi($sesion, $programa);
+                $this->processFavoriteProgramForApi($sesion, $programa);
             } else {
-                $this->procesarFavoritoParaWeb($sesion, $programa);
+                $this->processFavoriteProgramForWeb($sesion, $programa);
             }
         }
     }
@@ -197,7 +207,7 @@ class SessionService
      * @param string $codigo
      * @return string|null
      */
-    private function mapearTipoPrograma(string $codigo): ?string
+    private function mapProgramType(string $codigo): ?string
     {
         $mapeo = [
             self::TIPO_REGISTROS => 'registros',
@@ -211,11 +221,11 @@ class SessionService
     /**
      * Procesa un programa para formato API
      *
-     * @param array &$sesion
+     * @param array $sesion
      * @param object $programa
      * @return void
      */
-    private function procesarProgramaParaApi(array &$sesion, object $programa): void
+    private function processProgramForApi(array &$sesion, object $programa): void
     {
         if ($programa->aplicacion_movil && $programa->tipo_programa) {
             $sesion['programas'][$programa->tipo_programa][] = $programa;
@@ -229,12 +239,12 @@ class SessionService
     /**
      * Procesa un programa para formato Web
      *
-     * @param array &$sesion
+     * @param array $sesion
      * @param object $programa
      * @param int $indice
      * @return void
      */
-    private function procesarProgramaParaWeb(array &$sesion, object $programa, int $indice): void
+    private function processProgramForWeb(array &$sesion, object $programa, int $indice): void
     {
         if ($programa->tipo_programa && in_array($programa->programa, $sesion['aplicacion']['rutas'])) {
             $sesion['programas'][$programa->tipo_programa][$programa->id_modulo][] = $programa;
@@ -252,11 +262,11 @@ class SessionService
     /**
      * Procesa un programa favorito para formato API
      *
-     * @param array &$sesion
+     * @param array $sesion
      * @param object $programa
      * @return void
      */
-    private function procesarFavoritoParaApi(array &$sesion, object $programa): void
+    private function processFavoriteProgramForApi(array &$sesion, object $programa): void
     {
         if ($programa->aplicacion_movil && $programa->tipo_programa) {
             $sesion['programas']['favoritos'][$programa->tipo_programa][] = $programa;
@@ -266,11 +276,11 @@ class SessionService
     /**
      * Procesa un programa favorito para formato Web
      *
-     * @param array &$sesion
+     * @param array $sesion
      * @param object $programa
      * @return void
      */
-    private function procesarFavoritoParaWeb(array &$sesion, object $programa): void
+    private function processFavoriteProgramForWeb(array &$sesion, object $programa): void
     {
         if ($programa->tipo_programa && in_array($programa->programa, $sesion['aplicacion']['rutas'])) {
             $programa->referencia = $programa->descripcion;

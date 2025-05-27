@@ -1,28 +1,34 @@
-// hooks/useEsquema.ts
-import axios from 'axios';
-import { procesarCampo } from '@/lib/utils';
+// hooks/useSchema.ts
+import { processField } from '@/lib/utils';
 import { useEffect, useState } from 'react';
-import type { CampoBaseDatos } from '@/types/form';
+import type { DatabaseField } from '@/types/form';
+import { ApiClient } from '@/lib/api-client';
 
-export const useEsquema = (tabla: string, idPrimario: string) => {
-  const [campos, setCampos] = useState<CampoBaseDatos[]>([]);
+export const useSchema = (table: string, primaryId: string) => {
+  const [fields, setFields] = useState<DatabaseField[]>([]);
+  const api = ApiClient.getInstance();
 
   useEffect(() => {
-    const cargar = async () => {
+    const load = async () => {
       try {
-        const response = await axios.get(route('esquema'), { params: { tabla } });
-        const camposFiltrados = response.data[0]
-          .filter((campo: CampoBaseDatos) => !['id_usuario', 'fecha_registro', 'fecha_actualizado', 'id_estado'].includes(campo.nombre))
-          .map((campo: CampoBaseDatos) => procesarCampo(campo, idPrimario));
+        const response = await api.get<{ data: DatabaseField[] }>(route('schema'), { table });
 
-        setCampos(camposFiltrados);
+        if (response.success && response.data) {
+          const filteredFields = response.data.data
+            .filter((field: DatabaseField) => !['id_usuario', 'fecha_registro', 'fecha_actualizado', 'id_estado'].includes(field.nombre))
+            .map((field: DatabaseField) => processField(field, primaryId));
+
+          setFields(filteredFields);
+        } else {
+          console.error('Error loading schema:', response.error);
+        }
       } catch (e) {
-        console.error('Error al cargar esquema:', e);
+        console.error('Error loading schema:', e);
       }
     };
 
-    cargar();
-  }, [tabla, idPrimario]);
+    load();
+  }, [table, primaryId]);
 
-  return campos;
+  return fields;
 };

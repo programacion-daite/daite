@@ -4,8 +4,8 @@ import RegistroDinamico from "@/components/form/dynamic-form"
 export default function Generos() {
     return (
         <RegistroDinamico
-            tabla="generos"
-            id_primario="id_genero"
+            table="generos"
+            primaryId="id_genero"
         />
     )
 }

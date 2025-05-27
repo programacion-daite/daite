@@ -11,7 +11,7 @@ Route::middleware('guest')->group(function () {
 
     Route::get('/passwordRequest', function () {
         abort(404);
-    })->name(name: 'password.request');
+    })->name('password.request');
 
     Route::get('/home', function () {
         abort(404);

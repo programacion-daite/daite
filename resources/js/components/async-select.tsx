@@ -1,9 +1,12 @@
-import { forwardRef, useEffect, useState } from 'react';
+import { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import AsyncSelect from 'react-select/async';
-import axios from 'axios';
 import { Loader2, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { Label } from '@radix-ui/react-label';
+import DOMPurify from 'dompurify';
+import { useQuery } from '@tanstack/react-query';
+import { ApiClient } from '@/lib/api-client';
 
 interface Option {
   value: string;
@@ -11,115 +14,154 @@ interface Option {
 }
 
 interface AsyncSearchSelectProps {
+  id: string;
+  label: string;
+  name: string;
   parametros: Record<string, string>;
   placeholder?: string;
   defaultValue?: Option;
-  onChange: (opt: Option | null) => void;
-  error?: boolean;
-  withRefresh?: boolean;        // <— habilita/deshabilita el botón
+  value?: Option;
+  disabled?: boolean;
+  onValueChange?: (value: Option | null) => void;
+  error?: string;
+  withRefresh?: boolean;
+  required?: boolean;
 }
 
 export const AsyncSearchSelect = forwardRef<any, AsyncSearchSelectProps>(
   (
     {
+      id,
+      label,
+      name,
       parametros,
-      placeholder,
+      placeholder = 'Seleccione una opción',
       defaultValue,
-      onChange,
+      value,
+      disabled = false,
+      onValueChange,
       error,
       withRefresh = true,
+      required = false,
     },
     ref
   ) => {
-    // Opciones “por defecto” que aparecerán al abrir el menú
-    const [defaultOptions, setDefaultOptions] = useState<Option[]>([]);
-    const [loadingDefault, setLoadingDefault] = useState(false);
+    const [options, setOptions] = useState<Option[]>([]);
+    const [errorMsg, setErrorMsg] = useState('');
+    const prevParamsRef = useRef<string>();
+    const api = ApiClient.getInstance();
+
+    // Memoizar el valor actual
+    const currentValue = useMemo(() => value || defaultValue, [value, defaultValue]);
+
+    // Memoizar los parámetros serializados
+    const serializedParams = useMemo(() => JSON.stringify(parametros), [parametros]);
+
+    // Query para cargar opciones
+    const { data: queryData, isLoading, refetch } = useQuery({
+      queryKey: ['select-options', parametros],
+      queryFn: async () => {
+        const body = { ...parametros, search: '' };
+        const response = await api.post(route('traerFiltros'), body);
+
+        if (!response.success) {
+          throw new Error(response.error || 'Error al cargar los datos');
+        }
+
+        const data = response.data[0].original;
+        if (!Array.isArray(data)) {
+          throw new Error('La respuesta no es válida');
+        }
+
+        return data.map(r => ({
+          value: DOMPurify.sanitize(r.valor?.toString() || '_empty'),
+          label: DOMPurify.sanitize(r.descripcion?.toString() || ''),
+        }));
+      },
+      enabled: false, // No cargar automáticamente
+    });
 
     // Lógica genérica de fetch según inputValue
-    const loadOptions = async (inputValue: string): Promise<Option[]> => {
-      const body = { ...parametros, search: inputValue };
-      const resp = await axios.post(route('traerFiltros'), body, {
-        headers: { 'Content-Type': 'application/json' },
-        withCredentials: true,
-      });
-      const raw = (resp.data[0].original as Array<{ valor: string; descripcion: string }>);
-
-      return raw.map(r => ({
-        value: r.valor,
-        label: r.descripcion,
-      }));
-    };
-
-    // Fetch inicial y al “refresh”
-    const fetchDefaultOptions = async () => {
-      setLoadingDefault(true);
+    const loadOptions = useCallback(async (inputValue: string): Promise<Option[]> => {
       try {
-        const opts = await loadOptions('');   // carga sin filtro
-        setDefaultOptions(opts);
-      } catch (e) {
-        console.error('Error cargando defaultOptions', e);
-      }
-      setLoadingDefault(false);
-    };
+        const body = { ...parametros, search: inputValue };
+        const response = await api.post(route('traerFiltros'), body);
 
-    // carga inicial (y si cambia `parametros`)
+        if (!response.success) {
+          throw new Error(response.error || 'Error al cargar los datos');
+        }
+
+        const data = response.data[0].original;
+        if (!Array.isArray(data)) {
+          throw new Error('La respuesta no es válida');
+        }
+
+        return data.map(r => ({
+          value: DOMPurify.sanitize(r.valor?.toString() || '_empty'),
+          label: DOMPurify.sanitize(r.descripcion?.toString() || ''),
+        }));
+      } catch (err) {
+        console.error('Error cargando opciones:', err);
+        setErrorMsg('No se pudieron cargar las opciones');
+        return [];
+      }
+    }, [parametros]);
+
+    // Actualizar opciones cuando cambian los parámetros
     useEffect(() => {
-      fetchDefaultOptions();
-    }, [JSON.stringify(parametros)]);
+      if (serializedParams !== prevParamsRef.current) {
+        prevParamsRef.current = serializedParams;
+        refetch();
+      }
+    }, [serializedParams, refetch]);
+
+    // Actualizar opciones cuando cambia queryData
+    useEffect(() => {
+      if (queryData) {
+        setOptions(queryData);
+      }
+    }, [queryData]);
 
     return (
-      <div className="flex items-center gap-2 w-full">
-        <AsyncSelect
-          ref={ref}
-          cacheOptions
-          defaultOptions={defaultOptions}
-          loadOptions={loadOptions}
-          defaultValue={defaultValue}
-          onChange={onChange}
-          isClearable
-          unstyled
-          classNames={{
-            control: ({ isFocused }) =>
-              cn(
-                'flex w-full !min-h-0 rounded-md border border-input bg-background px-3 py-[3px] text-sm shadow-sm transition-colors',
-                'placeholder:text-muted-foreground focus-visible:outline-none',
-                isFocused && 'ring-1 ring-ring',
-                error && 'border-destructive ring-destructive',
-              ),
-            placeholder: () => 'text-muted-foreground',
-            input: () => 'text-sm',
-            menu: () => 'mt-2 rounded-md border bg-popover text-popover-foreground shadow-md py-1',
-            menuList: () => 'text-sm max-h-60 overflow-auto',
-            option: ({ isFocused, isSelected }) =>
-              cn(
-                'relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 outline-none transition-colors',
-                isSelected && 'bg-primary text-primary-foreground',
-                isFocused && !isSelected && 'bg-accent text-accent-foreground',
-                !isFocused && !isSelected && 'text-popover-foreground hover:bg-accent hover:text-accent-foreground',
-              ),
-            noOptionsMessage: () => 'text-muted-foreground p-2 text-sm',
-            clearIndicator: () => 'p-1 text-muted-foreground hover:text-foreground',
-            dropdownIndicator: () => 'p-1 text-muted-foreground hover:text-foreground',
-            indicatorSeparator: () => 'bg-input mx-2 my-2 w-[1px]',
-          }}
-          placeholder={placeholder}
-        />
-
-        {withRefresh && (
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            className="bg-primary"
-            onClick={fetchDefaultOptions}
-            disabled={loadingDefault}
-          >
-            {loadingDefault
-              ? <Loader2 className="h-4 w-4 animate-spin text-white" />
-              : <RefreshCw className="h-4 w-4 text-white" />
-            }
-          </Button>
-        )}
+      <div className="flex flex-col gap-2">
+        <Label htmlFor={id} className={cn("text-sm font-medium", required && "after:content-['*'] after:ml-0.5 after:text-red-500")}>
+          {label}
+        </Label>
+        <div className="flex gap-2">
+          <AsyncSelect
+            ref={ref}
+            id={id}
+            name={name}
+            value={currentValue}
+            onChange={onValueChange}
+            loadOptions={loadOptions}
+            defaultOptions={options}
+            placeholder={placeholder}
+            isDisabled={disabled}
+            className="flex-1"
+            classNamePrefix="async-select"
+            noOptionsMessage={() => "No hay opciones disponibles"}
+            loadingMessage={() => "Cargando..."}
+            isClearable
+          />
+          {withRefresh && (
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              onClick={() => refetch()}
+              disabled={disabled || isLoading}
+            >
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <RefreshCw className="h-4 w-4" />
+              )}
+            </Button>
+          )}
+        </div>
+        {error && <p className="text-sm text-red-500">{error}</p>}
+        {errorMsg && <p className="text-sm text-red-500">{errorMsg}</p>}
       </div>
     );
   }

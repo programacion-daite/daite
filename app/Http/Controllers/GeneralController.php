@@ -1,206 +1,164 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Utils\Helpers;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Models\User;
+use Illuminate\Http\Response;
+use Illuminate\Contracts\Routing\ResponseFactory;
 
 class GeneralController extends Controller
 {
-    public function traerFiltros(Request $request)
+    /**
+     * Lista de procedimientos permitidos
+     */
+    private const ALLOWED_PROCEDURES = [
+        'p_traer_filtros',
+        'p_traer_encabezado_consultas',
+        'p_traer_encabezado_registros',
+        'p_traer_encabezado_procesos',
+        'p_traer_encabezado_reportes',
+        'p_traer_entidades',
+        'p_traer_seguimientos',
+        'p_traer_unico_registro',
+        'p_traer_registros_consulta_principal',
+        'p_traer_programas',
+        'p_registrar_registros',
+        'p_traer_registros_combinados'
+    ];
+
+    /**
+     * Ejecuta un procedimiento almacenado y retorna su resultado
+     *
+     * @param Request $request
+     * @param string $procedure
+     * @return \Illuminate\Http\Response
+     */
+    private function executeProcedure(Request $request, string $procedure): Response|ResponseFactory
     {
-        info('traerFiltros');
-        info($request->all());
+        Log::info("Ejecutando procedimiento: {$procedure}", $request->all());
 
-        $request->merge([
-            'procedimiento' => 'p_traer_filtros',
-        ]);
+        $request->merge(['procedimiento' => $procedure]);
+        $this->validateProcedure($procedure);
 
-        self::validarProcedimiento($request->get('procedimiento'));
+        $data = json_encode($request->all());
 
-        $resultado = Helpers::ejecutarProcedimiento($request);
+        info($data);
 
-        return response()->json([
-            $resultado
-        ]);
+        return Helpers::executeProcedure($data);
     }
 
-    public function traerEncabezadoConsultas(Request $request)
+    /**
+     * Valida que el procedimiento esté en la lista de permitidos
+     *
+     * @param string $procedure
+     * @throws \Exception
+     */
+    private function validateProcedure(string $procedure): void
     {
-        info('traerEncabezadoConsultas');
-
-        $request->merge([
-            'procedimiento' => 'p_traer_encabezado_consultas',
-        ]);
-
-        self::validarProcedimiento($request->get('procedimiento'));
-
-        $resultado = Helpers::ejecutarProcedimiento($request);
-
-        return response()->json([
-            $resultado
-        ]);
+        if (!in_array($procedure, self::ALLOWED_PROCEDURES)) {
+            throw new \Exception('Procedimiento no permitido');
+        }
     }
 
-    public function traerEncabezadoRegistros(Request $request)
+    /**
+     * Obtiene los filtros
+     */
+    public function getFilters(Request $request)
     {
-        info('traerEncabezadoConsultas');
-
-        $request->merge([
-            'procedimiento' => 'p_traer_encabezado_registros',
-        ]);
-
-        self::validarProcedimiento($request->get('procedimiento'));
-
-        $resultado = Helpers::ejecutarProcedimiento($request);
-
-        return response()->json([
-            $resultado
-        ]);
+        return $this->executeProcedure($request, 'p_traer_filtros');
     }
 
-    public function traerEncabezadoProcesos(Request $request)
+    /**
+     * Obtiene el encabezado de consultas
+     */
+    public function getQueryHeader(Request $request)
     {
-        info('traerEncabezadoConsultas');
-
-        $request->merge([
-            'procedimiento' => 'p_traer_encabezado_procesos',
-        ]);
-
-        self::validarProcedimiento($request->get('procedimiento'));
-
-        $resultado = Helpers::ejecutarProcedimiento($request);
-
-        return response()->json([
-            $resultado
-        ]);
+        return $this->executeProcedure($request, 'p_traer_encabezado_consultas');
     }
 
-    public function traerEncabezadoReportes(Request $request)
+    /**
+     * Obtiene el encabezado de registros
+     */
+    public function getRecordsHeader(Request $request)
     {
-        info('traerEncabezadoConsultas');
-
-        $request->merge([
-            'procedimiento' => 'p_traer_encabezado_reportes',
-        ]);
-
-        self::validarProcedimiento($request->get('procedimiento'));
-
-        $resultado = Helpers::ejecutarProcedimiento($request);
-
-        return response()->json([
-            $resultado
-        ]);
+        return $this->executeProcedure($request, 'p_traer_encabezado_registros');
     }
 
-    public function traerEntidades(Request $request)
+    /**
+     * Obtiene el encabezado de procesos
+     */
+    public function getProcessesHeader(Request $request)
     {
-        info('traerEntidades');
-        info($request->all());
-
-        $request->merge([
-            'procedimiento' => 'p_traer_entidades',
-        ]);
-
-        self::validarProcedimiento($request->get('procedimiento'));
-
-        $resultado = Helpers::ejecutarProcedimiento($request);
-
-        return response()->json([
-            $resultado
-        ]);
+        return $this->executeProcedure($request, 'p_traer_encabezado_procesos');
     }
 
-    public function traerLotesPagos(Request $request)
+    /**
+     * Obtiene el encabezado de reportes
+     */
+    public function getReportsHeader(Request $request)
     {
-        info('traerEntidades');
-        info($request->all());
-
-        $request->merge([
-            'procedimiento' => 'p_traer_seguimientos',
-        ]);
-
-        self::validarProcedimiento($request->get('procedimiento'));
-
-        $resultado = Helpers::ejecutarProcedimiento($request);
-
-        return response()->json([
-            $resultado
-        ]);
+        return $this->executeProcedure($request, 'p_traer_encabezado_reportes');
     }
 
-    public function traerUnicaEntidad(Request $request)
+    /**
+     * Obtiene las entidades
+     */
+    public function getEntities(Request $request)
     {
-        info('traerUnicaEntidad');
-
-        $request->merge([
-            'procedimiento' => 'p_traer_unico_registro',
-        ]);
-
-        self::validarProcedimiento($request->get('procedimiento'));
-
-        info($request->all());
-
-        $resultado = Helpers::ejecutarProcedimiento($request);
-
-        return response()->json([
-            $resultado
-        ]);
+        return $this->executeProcedure($request, 'p_traer_entidades');
     }
 
-    public function esquema(Request $request)
+    /**
+     * Obtiene los lotes de pagos
+     */
+    public function getPaymentBatches(Request $request)
     {
-        info('esquema');
-
-        $resultado = Helpers::esquema($request);
-
-        return response()->json([
-            $resultado
-        ]);
+        return $this->executeProcedure($request, 'p_traer_seguimientos');
     }
 
-    public function registrosConsultaPrincipal(Request $request)
+    /**
+     * Obtiene una única entidad
+     */
+    public function getSingleEntity(Request $request)
     {
-        info('registrosConsultaPrincipal');
-        \Log::info($request->all());
-
-        $request->merge([
-            'procedimiento' => 'p_traer_registros_consulta_principal',
-        ]);
-
-
-
-        self::validarProcedimiento($request->get('procedimiento'));
-
-        $resultado = Helpers::ejecutarProcedimiento($request);
-
-        return response()->json([
-            $resultado
-        ]);
+        return $this->executeProcedure($request, 'p_traer_unico_registro');
     }
 
-    public function traerRegistrosCombinados(Request $request) {
-        info('traerRegistrosCombinados');
-        \Log::info($request->all());
-
-        $request->merge([
-            'procedimiento' => 'p_traer_registros_combinados',
-        ]);
-
-        self::validarProcedimiento($request->get('procedimiento'));
-
-        $resultado = Helpers::ejecutarProcedimiento($request);
-
-        return response()->json([
-            $resultado
-        ]);
+    /**
+     * Obtiene el esquema
+     */
+    public function getSchema(Request $request)
+    {
+        info('Obteniendo esquema', $request->all());
+        $result = Helpers::getSchema($request);
+        return response()->json(['data' => $result]);
     }
 
-    public function traerOpciones(Request $request) {
+    /**
+     * Obtiene los registros de la consulta principal
+     */
+    public function getMainQueryRecords(Request $request)
+    {
+        return $this->executeProcedure($request, 'p_traer_registros_consulta_principal');
+    }
 
-        if($request->get('isGeneric')) {
+    /**
+     * Obtiene registros combinados
+     */
+    public function getCombinedRecords(Request $request)
+    {
+        return $this->executeProcedure($request, 'p_traer_registros_combinados');
+    }
 
+    /**
+     * Obtiene las opciones
+     */
+    public function getOptions(Request $request)
+    {
+        if ($request->get('isGeneric')) {
             $id = $request->id;
             $description = str_replace('id_', '', $id);
 
@@ -209,55 +167,18 @@ class GeneralController extends Controller
                 'campos' => "{$id} as valor, {$description} as descripcion",
             ]);
 
-            self::validarProcedimiento($request->get('procedimiento'));
-
-            $resultado =  $this->registrosConsultaPrincipal($request);
-        } else {
-            $resultado = $this->traerFiltros($request);
+            return $this->getMainQueryRecords($request);
         }
 
-        return response()->json([
-            $resultado
-        ]);
+        return $this->getFilters($request);
     }
 
-    public function registrarRegistros(Request $request)
+    /**
+     * Registra registros
+     */
+    public function registerRecords(Request $request)
     {
-        info('registrarRegistros');
-        \Log::info($request->all());
-
-        $request->merge([
-            'procedimiento' => 'p_registrar_registros',
-        ]);
-
-        self::validarProcedimiento($request->get('procedimiento'));
-
-        $resultado = Helpers::ejecutarProcedimiento($request);
-
-        return response()->json([
-            $resultado
-        ]);
+        return $this->executeProcedure($request, 'p_registrar_registros');
     }
-
-    public static function validarProcedimiento($procedimiento)
-    {
-        $procedimientoPermitidos = [
-            'p_traer_filtros',
-            'p_traer_encabezado_consultas',
-            'p_traer_entidades',
-            'p_traer_unico_registro',
-            'p_traer_registros_consulta_principal',
-            'p_traer_programas',
-            'p_registrar_registros',
-            'p_traer_registros_combinados'
-        ];
-
-        if (!in_array($procedimiento, $procedimientoPermitidos)) {
-            return response()->json([
-                'error' => 'Hubo un inconveniente, por favor intente nuevamente'
-            ], 400);
-        }
-    }
-
 }
 

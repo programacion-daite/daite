@@ -24,6 +24,16 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('distritos', fn() => Inertia::render('registros/administracion/distritos'))
         ->name('registros.distritos');
+        
+        Route::get('afps', fn() => Inertia::render('registros/afps'))
+        ->name('registros.afps');
+        
+        Route::get('bancos', fn() => Inertia::render('registros/bancos'))
+        ->name('registros.bancos');
+        
+        Route::get('areas', fn() => Inertia::render('registros/areas'))
+        ->name('registros.areas');
+
 
     });
 

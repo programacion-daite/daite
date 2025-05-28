@@ -127,24 +127,24 @@ export const construirJSONGenerico = (datos: Record<string, any>, tabla: string)
 };
 
 // Process field from database to generate appropriate structure
-export const processField = (field: any, primaryId: string): DatabaseField => {
+export const processField = (field: DatabaseField, primaryId: string): DatabaseField => {
     // If the field already has all properties, return it
     if (field.nombre && field.label && field.tipo) {
         return field;
     }
-
     // Normalize field name
-    const nombre = field.nombre || field.id || '';
-    const esForanea = nombre.startsWith('id_') && nombre !== primaryId;
+    const nombre = field.nombre || field.id || field.campo;
+    const esForanea = field.selector === 'SI';
     const esPrimaria = nombre === primaryId;
+    const isVisible = field.visible === '1';
+    const maxLength = field.longitud || 255;
 
     // Get field label
-    let label = field.titulo || capitalize(nombre.replace('id_', '').replace(/_/g, ' '));
+    let label = field.titulo || capitalize(nombre?.replace('id_', '').replace(/_/g, ' ') || '');
     if (esPrimaria) {
         label = `ID ${label}`;
     }
 
-    // Determine component type
     let componente: any = 'InputLabel';
     const tipo = field.tipo || 'text';
 
@@ -154,14 +154,8 @@ export const processField = (field: any, primaryId: string): DatabaseField => {
         componente = 'DynamicSelect';
     } else if (tipo === 'datetime') {
         componente = 'DatePicker';
-    } else if (/telefono|celular|whatsapp|cedula|rnc|identificacion/i.test(nombre)) {
+    } else if (/telefono|celular|whatsapp|cedula|rnc|identificacion/i.test(nombre || '')) {
         componente = 'MaskedInput';
-    }
-
-    // Determine reference table for foreign fields
-    let tablaReferencia = '';
-    if (esForanea) {
-        tablaReferencia = pluralize(nombre.replace('id_', ''));
     }
 
     // Configure parameters for specific components
@@ -175,33 +169,37 @@ export const processField = (field: any, primaryId: string): DatabaseField => {
                     { value: '1', label: 'Si' },
                 ],
             };
-        } else if (tablaReferencia) {
+        } else {
             parametros = {
-                isGeneric: true,
-                table: tablaReferencia,
-                id: `id_${tablaReferencia.replace(/s$/, '')}`,
+                options: field.json ? JSON.parse(field.json).map((option: { valor: string, descripcion: string }) => ({
+                        value: option.valor.toString(),
+                        label: option.descripcion,
+                    }))
+                    : [],
             };
         }
     } else if (componente === 'MaskedInput') {
-        if (/telefono|celular|whatsapp/.test(nombre)) {
+        if (/telefono|celular|whatsapp/.test(nombre || '')) {
             parametros = { mask: 'telefono' };
-        } else if (/cedula|rnc|identificacion/.test(nombre)) {
+        } else if (/cedula|rnc|identificacion/.test(nombre || '')) {
             parametros = { mask: 'cedula' };
         } else {
             parametros = { mask: 'entero' };
         }
+    } else if (componente === 'InputLabel') {
+        parametros = { maxLength: maxLength };
     }
 
     // Create field structure
     return {
-        nombre,
+        nombre: nombre || '',
         tipo,
         label,
         componente,
         foranea: esForanea,
-        tabla_referencia: tablaReferencia,
         parametros,
-        classname: esPrimaria ? 'hidden' : 'col-span-1',
+        longitud: maxLength.toString(),
+        classname: isVisible ? 'col-span-1' : 'hidden',
         requerido: field.requerido || false,
     };
 };

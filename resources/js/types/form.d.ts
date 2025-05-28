@@ -39,6 +39,17 @@ export type DatabaseField = {
     tabla_referencia?: string;
     procedimiento?: string;
     id?: string;
+    campo?: string
+    tipo?: string
+    longitud?: string
+    visible?: string
+    deshabilitado?: string
+    titulo?: string
+    valor?: string
+    ancho?: string
+    json?: string
+    color?: string
+    selector?: string
 }
 
 export interface ModalFormProps {

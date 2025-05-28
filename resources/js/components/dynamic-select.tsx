@@ -3,7 +3,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { Label } from '@radix-ui/react-label';
 import DOMPurify from 'dompurify';
 import { Loader2, RefreshCw } from 'lucide-react';
-import { memo, useCallback, useEffect, useState, useMemo, useRef } from 'react';
+import { memo, useEffect, useState, useMemo, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ApiClient } from '@/lib/api-client';
 import { cn } from '@/lib/utils';
@@ -37,7 +37,7 @@ export const DynamicSelect = memo(function DynamicSelect({
     error,
     required = false,
 }: DynamicSelectProps) {
-    const [options, setOptions] = useState<{ value: string; label: string }[]>([]);
+    const [options, setOptions] = useState<{ value: string; label: string }[]>(parametros.options as { value: string; label: string }[] || []);
     const [errorMsg, setErrorMsg] = useState('');
     const prevParamsRef = useRef<string>();
     const api = ApiClient.getInstance();

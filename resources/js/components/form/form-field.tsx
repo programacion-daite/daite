@@ -27,6 +27,7 @@ interface FormFieldProps {
   onInput?: (e: React.FormEvent<HTMLInputElement>) => void;
   onValueChange?: (value: string) => void;
   className?: string;
+
 }
 
 export function FormField({
@@ -41,7 +42,8 @@ export function FormField({
     onChange,
     onInput,
     onValueChange,
-    value: props.data[props.name] || ''
+    value: props.data[props.name] || '',
+    ...props.parametros
   };
 
   return <Component {...componentProps} />;

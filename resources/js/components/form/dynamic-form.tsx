@@ -3,7 +3,7 @@ import { useSchemaQuery } from '@/hooks/form/use-schema-query';
 import AppLayout from '@/layouts/app-layout';
 import type { DynamicRecordProps, FormDataType } from '@/types/form';
 import { TableItem } from '@/types/table';
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import { useCallback } from 'react';
 import { ModalForm } from './modal-form';
 import { TableProvider } from '@/contexts/tableContext';
@@ -20,7 +20,8 @@ export default function DynamicRecord({ table, primaryId }: DynamicRecordProps) 
 }
 
 function DynamicRecordContent({ table, primaryId }: DynamicRecordProps) {
-    const { data: fields, isLoading, error } = useSchemaQuery(table, primaryId);
+    const { programa } = usePage().props;
+    const { data: fields, isLoading, error } = useSchemaQuery(table, primaryId, programa as string);
     const registerRecordsMutation = useRegisterRecordsMutation();
 
     const {
@@ -51,20 +52,17 @@ function DynamicRecordContent({ table, primaryId }: DynamicRecordProps) {
                 formData: data
             }) as { message?: string };
 
-            console.log('Response received:', response);
-            console.log('Current modal state:', { isModalOpen, result: result.isOpen });
+            console.log(response);
 
             showSuccess(response.message || `Registro ${modalMode === 'create' ? 'Creado' : 'Actualizado'} correctamente`);
 
-            console.log('After showSuccess:', { isModalOpen, result: result.isOpen });
-
         } catch (error: unknown) {
             console.log('Error occurred:', error);
-            const errorMessage = error instanceof Error ? error.message : 'Error al procesar la solicitud';
-            showError(errorMessage);
+            showError('Error al procesar la solicitud, intenta de nuevo');
             console.error(error);
         }
-    }, [modalMode, selectedItem, primaryId, showSuccess, showError, registerRecordsMutation, table, isModalOpen, result.isOpen]);
+
+    }, [modalMode, selectedItem, primaryId, showSuccess, showError, registerRecordsMutation, table]);
 
     const handleOpenNewForm = useCallback(() => {
         resetForm();
@@ -130,7 +128,7 @@ function DynamicRecordContent({ table, primaryId }: DynamicRecordProps) {
             <ResultModal
                 open={result.isOpen}
                 onClose={handleCloseResult}
-                title={result.isSuccess ? 'Success' : 'Error'}
+                title={result.isSuccess ? 'Exito' : 'Intenta de nuevo'}
                 message={result.message}
                 status={result.isSuccess ? 'success' : 'error'}
             />

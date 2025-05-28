@@ -16,8 +16,10 @@ export type ApiError = {
 export class ApiClient {
   private static instance: ApiClient;
   private axiosInstance: AxiosInstance;
+  private defaultPrograma: string;
 
   private constructor() {
+    this.defaultPrograma = '0';
     this.axiosInstance = axios.create({
       baseURL: '/',
       headers: {
@@ -25,6 +27,21 @@ export class ApiClient {
       },
       withCredentials: true,
     });
+
+    // Interceptor para agregar programa a todos los requests
+    this.axiosInstance.interceptors.request.use(
+      (config) => {
+        if (config.params) {
+          config.params.programa = this.defaultPrograma;
+        } else {
+          config.params = { programa: this.defaultPrograma };
+        }
+        return config;
+      },
+      (error) => {
+        return Promise.reject(error);
+      }
+    );
 
     // Interceptor para manejar errores
     this.axiosInstance.interceptors.response.use(
@@ -43,9 +60,25 @@ export class ApiClient {
     return ApiClient.instance;
   }
 
+  // Método para cambiar el programa por defecto
+  public setDefaultPrograma(programa: string): void {
+    this.defaultPrograma = programa;
+  }
+
   private async request<T>(config: AxiosRequestConfig): Promise<ApiResponse<T>> {
     try {
       const response: AxiosResponse = await this.axiosInstance.request(config);
+
+      if (response.data.length > 0 && response.data[0].codigo_estado === '400') {
+        const error = response.data[0];
+        return {
+          data: response.data as T,
+          success: false,
+          error: error.mensaje,
+          message: error.mensaje
+        };
+      }
+
       return {
         data: response.data,
         success: true,

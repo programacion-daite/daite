@@ -54,10 +54,8 @@ export const useTableData = (
       if (!tableName) throw new Error('Table name is required');
       if (!primaryId) throw new Error('Primary ID is required');
 
-      const routeToUse = hasMultipleIds ? 'combined.records' : 'main.query.records';
-      const params = hasMultipleIds
-        ? { renglon: tableName }
-        : { origen_registros: tableName, campo_ordenar: primaryId };
+      const routeToUse = 'get.register.records';
+      const params = { renglon: tableName }
 
       const response = await api.post<ApiResponse<TableItem[]>>(route(routeToUse), params);
 

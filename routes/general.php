@@ -37,6 +37,12 @@ Route::middleware(['auth', HandleDinamicConnections::class])->group(function () 
     Route::match(['get', 'post'], 'schema', [GeneralController::class, 'getSchema'])
         ->name('schema');
 
+    Route::get('get-register-fields', [GeneralController::class, 'getRegisterFields'])
+        ->name('get.register.fields');
+
+    Route::post('get-register-records', [GeneralController::class, 'getRegisterRecords'])
+        ->name('get.register.records');
+
     Route::post('main-query-records', [GeneralController::class, 'getMainQueryRecords'])
         ->name('main.query.records');
 

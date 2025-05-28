@@ -26,7 +26,9 @@ class GeneralController extends Controller
         'p_traer_registros_consulta_principal',
         'p_traer_programas',
         'p_registrar_registros',
-        'p_traer_registros_combinados'
+        'p_traer_registros_combinados',
+        'p_traer_campos_registros',
+        'p_traer_registros'
     ];
 
     /**
@@ -179,6 +181,22 @@ class GeneralController extends Controller
     public function registerRecords(Request $request)
     {
         return $this->executeProcedure($request, 'p_registrar_registros');
+    }
+
+    /**
+     * Obtiene los campos del esquema
+     */
+    public function getRegisterFields(Request $request)
+    {
+        return $this->executeProcedure($request, 'p_traer_campos_registros');
+    }
+
+    /**
+     * Obtiene los registros
+     */
+    public function getRegisterRecords(Request $request)
+    {
+        return $this->executeProcedure($request, 'p_traer_registros');
     }
 }
 

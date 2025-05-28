@@ -5,19 +5,19 @@ import { TableItem } from '@/types/table';
 import { capitalize } from '@/lib/utils';
 
 interface DynamicTableSectionProps {
-    tabla: string;
-    id_primario: string;
+    table: string;
+    primaryId: string;
     onNewClick: () => void;
     onEditClick: (item: TableItem) => void;
 }
 
 export function DynamicTableSection({
-    tabla,
-    id_primario,
+    table,
+    primaryId,
     onNewClick,
     onEditClick
 }: DynamicTableSectionProps) {
-    const titulo = `Registros de ${capitalize(tabla.replace(/_/g, ' '))}`;
+    const titulo = `Registros de ${capitalize(table.replace(/_/g, ' '))}`;
 
     return (
         <div className="w-full">
@@ -26,7 +26,7 @@ export function DynamicTableSection({
                 onSave={onNewClick}
                 onClear={() => {}}
                 onBack={() => window.history.back()}
-                formId={`${tabla}Form`}
+                formId={`${table}Form`}
                 saveButtonProps={{ children: 'Crear' }}
             />
             <FormBody
@@ -38,8 +38,8 @@ export function DynamicTableSection({
                 <div className="space-x-3">
                     <div className="w-full">
                         <DynamicTable
-                            tabla={tabla}
-                            id_primario={id_primario}
+                            table={table}
+                            primaryId={primaryId}
                             onRowClick={onEditClick}
                             onDoubleClick={onEditClick}
                         />

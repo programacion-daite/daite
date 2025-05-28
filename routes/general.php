@@ -3,50 +3,56 @@
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\GeneralController;
+use App\Http\Middleware\HandleDinamicConnections;
 
-// Aqui iran las rutas que son generales para todas las pantallas (traerFiltros y demas)
-Route::middleware('auth')->group(function () {
+// Rutas generales para todas las pantallas
+Route::middleware(['auth', HandleDinamicConnections::class])->group(function () {
+    // Rutas de filtros y encabezados
+    Route::post('filters', [GeneralController::class, 'getFilters'])
+        ->name('filters');
 
-    Route::post('traerFiltros', [GeneralController::class, 'traerFiltros'])
-        ->name('traerFiltros');
+    Route::post('query-header', [GeneralController::class, 'getQueryHeader'])
+        ->name('query.header');
 
-    Route::post('traerEncabezadoConsultas', [GeneralController::class, 'traerEncabezadoConsultas'])
-        ->name('traerEncabezadoConsultas');
+    Route::post('records-header', [GeneralController::class, 'getRecordsHeader'])
+        ->name('records.header');
 
-    Route::post('traerEncabezadoRegistros', [GeneralController::class, 'traerEncabezadoRegistros'])
-        ->name('traerEncabezadoRegistros');
+    Route::post('processes-header', [GeneralController::class, 'getProcessesHeader'])
+        ->name('processes.header');
 
-    Route::post('traerEncabezadoProcesos', [GeneralController::class, 'traerEncabezadoProcesos'])
-        ->name('traerEncabezadoProcesos');
+    Route::post('reports-header', [GeneralController::class, 'getReportsHeader'])
+        ->name('reports.header');
 
-    Route::post('traerEncabezadoReportes', [GeneralController::class, 'traerEncabezadoReportes'])
-        ->name('traerEncabezadoReportes');
+    // Rutas de entidades y registros
+    Route::post('entities', [GeneralController::class, 'getEntities'])
+        ->name('entities');
 
-    Route::post('traerEntidades', [GeneralController::class, 'traerEntidades'])
-        ->name('traerEntidades');
+    Route::post('payment-batches', [GeneralController::class, 'getPaymentBatches'])
+        ->name('payment.batches');
 
-    Route::match(['get', 'post'],'traerLotesPagos', [GeneralController::class, 'traerLotesPagos'])
-    ->name('traerEntidades');
+    Route::post('single-entity', [GeneralController::class, 'getSingleEntity'])
+        ->name('single.entity');
 
-    Route::post('traerLotesPagos', [GeneralController::class, 'traerLotesPagos'])
-        ->name('traerEntidades');
+    // Rutas de esquema y consultas
+    Route::match(['get', 'post'], 'schema', [GeneralController::class, 'getSchema'])
+        ->name('schema');
 
-    Route::post('traerUnicaEntidad', [GeneralController::class, 'traerUnicaEntidad'])
-        ->name('traerUnicaEntidad');
+    Route::get('get-register-fields', [GeneralController::class, 'getRegisterFields'])
+        ->name('get.register.fields');
 
-    Route::match(['get', 'post'], 'esquema', [GeneralController::class, 'esquema'])
-        ->name('esquema');
+    Route::post('get-register-records', [GeneralController::class, 'getRegisterRecords'])
+        ->name('get.register.records');
 
-    Route::post('registrosConsultaPrincipal', [GeneralController::class, 'registrosConsultaPrincipal'])
-        ->name('registrosConsultaPrincipal');
+    Route::post('main-query-records', [GeneralController::class, 'getMainQueryRecords'])
+        ->name('main.query.records');
 
-    Route::post('traerOpciones', [GeneralController::class, 'traerOpciones'])
-        ->name('traerOpciones');
+    Route::post('options', [GeneralController::class, 'getOptions'])
+        ->name('options');
 
-    Route::post('traerRegistrosCombinados', [GeneralController::class, 'traerRegistrosCombinados'])
-        ->name('traerRegistrosCombinados');
+    Route::post('combined-records', [GeneralController::class, 'getCombinedRecords'])
+        ->name('combined.records');
 
-    Route::post('registrarRegistros', [GeneralController::class, 'registrarRegistros'])
-        ->name('registrarRegistros');
-
+    // Ruta de registro
+    Route::post('register-records', [GeneralController::class, 'registerRecords'])
+        ->name('register.records');
 });

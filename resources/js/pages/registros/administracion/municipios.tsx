@@ -1,11 +1,11 @@
 // import RegistroDinamico from "./layout"
 import RegistroDinamico from "@/components/form/dynamic-form"
 
-export default function Provincias() {
+export default function Municipios() {
     return (
         <RegistroDinamico
-            table="provincias"
-            primaryId="id_provincia"
+            table="municipios"
+            primaryId="id_municipio"
         />
     )
 }

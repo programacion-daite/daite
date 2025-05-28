@@ -25,7 +25,6 @@ export function FormHeader({
   clearButtonProps = {},
   children,
 }: FormHeaderProps) {
-  // 1. Destructure override de children y onClick:
   const {
     children: saveOverrideChildren,
     onClick: saveOverrideOnClick,
@@ -38,7 +37,6 @@ export function FormHeader({
     ...clearRest
   } = clearButtonProps;
 
-  // Props por defecto
   const defaultBack: ButtonProps = {
     variant: 'ghost',
     size: 'icon',
@@ -55,7 +53,6 @@ export function FormHeader({
 
   return (
     <div className="bg-[#e6f0f9] p-4 rounded-t-md flex justify-between items-center w-full">
-      {/* Atrás */}
       <Button {...defaultBack} {...backButtonProps} onClick={onBack}>
         <ArrowLeft className="h-4 w-4" />
       </Button>
@@ -63,22 +60,18 @@ export function FormHeader({
       <h2 className="text-xl font-semibold text-[#0066b3] capitalize">{title}</h2>
 
       <div className="flex gap-2">
-        {/* Guardar / Buscar / etc. */}
         {onSave && (
           <Button
             {...defaultSave}
-            // primero el onClick final, usando el override si existe
             onClick={saveOverrideOnClick ?? onSave}
             {...saveRest}
           >
-            {/* children override o por defecto */}
             {saveOverrideChildren ?? 'Guardar'}
           </Button>
         )}
 
         {children}
 
-        {/* Limpiar */}
         {onClear && (
           <Button
             {...defaultClear}

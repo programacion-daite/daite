@@ -6,8 +6,8 @@ import { useGenericTable } from '@/hooks/modal/use-generic-data-table';
 import { useTable } from '@/contexts/tableContext';
 
 type DynamicTableProps = {
-    tabla?: string;
-    id_primario?: string;
+    table: string;
+    primaryId: string;
     onRowClick?: (item: TableItem) => void;
     onDoubleClick?: (item: TableItem) => void;
     styleConfig?: {
@@ -23,8 +23,8 @@ export interface DynamicTableRef {
 }
 
 export const DynamicTable = forwardRef<DynamicTableRef, DynamicTableProps>(({
-    tabla,
-    id_primario,
+    table,
+    primaryId,
     onRowClick,
     onDoubleClick,
     styleConfig = {
@@ -39,8 +39,8 @@ export const DynamicTable = forwardRef<DynamicTableRef, DynamicTableProps>(({
     const agGridTableRef = useRef<AgGridTableRef>(null);
 
     const tableParamsValue = {
-        primaryId: id_primario,
-        tableName: tabla
+        primaryId,
+        tableName: table
     };
 
     const stableTableParams = useDeepMemo(tableParamsValue, tableParamsValue);
@@ -56,10 +56,8 @@ export const DynamicTable = forwardRef<DynamicTableRef, DynamicTableProps>(({
         onDoubleClick?.(item);
     };
 
-    // Actualizar la tabla cuando cambia shouldRefresh
     useEffect(() => {
         if (shouldRefresh !== undefined) {
-            console.log('Actualizando tabla desde DynamicTable');
             refreshData();
         }
     }, [shouldRefresh, refreshData]);

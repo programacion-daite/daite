@@ -1,157 +1,141 @@
-import React, { useEffect, useCallback, useMemo } from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { DatePicker } from '@/components/date-picker'
-import { DynamicSelect } from '@/components/dynamic-select'
-import { InputLabel } from '@/components/ui/input-label'
-import { AsyncSearchSelect } from '@/components/async-select'
-import { FormDataType } from '@/types/form'
-import MaskedInput from '../ui/masked-input'
-import { Save, PlusCircle, X, CheckCircle } from 'lucide-react'
-import { FormFieldWrapper } from './form-field-wrapper'
-
-type ComponentValue = string | number | boolean | null | undefined;
-
-interface Campo {
-  nombre: string
-  tipo: string
-  label: string
-  requerido?: boolean
-  parametros?: Record<string, unknown>
-  placeholder?: string
-  componente?: 'InputLabel' | 'DynamicSelect' | 'DatePicker' | 'AsyncSearchSelect' | 'MaskedInput'
-  classname?: string
-}
+import { AsyncSearchSelect } from '@/components/async-select';
+import { DatePicker } from '@/components/date-picker';
+import { DynamicSelect } from '@/components/dynamic-select';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { InputLabel } from '@/components/ui/input-label';
+import MaskedInput from '@/components/ui/masked-input';
+import { useDynamicFormStore } from '@/store/useDynamicFormStore';
+import { DatabaseField, FormDataType } from '@/types/form';
+import { useForm } from '@inertiajs/react';
+import { CheckCircle, PlusCircle, Save, X } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { FormField } from './form-field';
 
 interface ModalFormProps {
-  abierto: boolean
-  onClose: () => void
-  modo: 'crear' | 'editar'
-  campos: Campo[]
-  datosIniciales?: Record<string, unknown>
-  onSubmit: (data: Record<string, unknown>) => void
-  title?: string
+    isOpen: boolean;
+    onClose: () => void;
+    mode: 'create' | 'edit';
+    title: string;
+    initialData: FormDataType;
+    onSubmit: (data: FormDataType) => Promise<void>;
+    fields: DatabaseField[];
+    disableClose?: boolean;
 }
 
-// Memoizar el mapeo de componentes para evitar recreación
 const componentMap = {
-  DynamicSelect,
-  DatePicker,
-  AsyncSearchSelect,
-  MaskedInput,
-  InputLabel
-} as const;
+    InputLabel,
+    DynamicSelect,
+    DatePicker,
+    AsyncSearchSelect,
+    MaskedInput,
+};
 
-export const ModalForm: React.FC<ModalFormProps> = React.memo(({
-  abierto,
-  onClose,
-  modo,
-  campos,
-  datosIniciales = {},
-  onSubmit,
-  title = ''
-}) => {
-  const [formData, setFormData] = React.useState<FormDataType>({})
-  const [errors] = React.useState<Record<string, string | undefined>>({})
+export function ModalForm({ isOpen, onClose, mode, title, initialData, onSubmit, fields, disableClose = false }: ModalFormProps) {
+    const { data, setData, processing, errors, reset } = useForm<FormDataType>(initialData);
+    const { setErrors, showError } = useDynamicFormStore();
 
-  // Inicializar formData
-  useEffect(() => {
-    if (modo === 'editar' && datosIniciales && Object.keys(datosIniciales).length > 0) {
-      setFormData(datosIniciales)
-    } else if (modo === 'crear') {
-      const initialData = campos.reduce<FormDataType>((acc, c) => {
-        // Asegurarnos de que los campos iniciales tengan un valor válido
-        acc[c.nombre] = datosIniciales[c.nombre] || '';
-        return acc;
-      }, {});
-      setFormData(initialData)
-    }
-  }, [datosIniciales, modo, abierto, campos])
+    useEffect(() => {
+        if (isOpen) {
+            reset();
+            setData(initialData);
+        }
+    }, [isOpen, initialData]);
 
-  // Memoizar los handlers
-  const handleInputChange = useCallback((
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
-  }, [])
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setErrors({});
 
-  const handleComponentChange = useCallback((name: string) => (value: ComponentValue) => {
-    setFormData(prev => ({ ...prev, [name]: value }))
-  }, [])
+        try {
+            await onSubmit(data);
+        } catch (error) {
+            showError(error instanceof Error ? error.message : 'An error occurred');
+        }
+    };
 
-  const handleSubmit = useCallback(() => {
-    if (Object.keys(errors).length === 0) {
-      onSubmit(formData)
-    }
-  }, [onSubmit, formData, errors])
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+        setData(e.target.name, e.target.value);
+    };
 
-  const handleClose = useCallback(() => {
-    onClose()
-  }, [onClose])
+    const handleInput = (e: React.FormEvent<HTMLInputElement>) => {
+        setData(e.currentTarget.name, e.currentTarget.value);
+    };
 
-  // Memoizar la creación de campos
-  const fields = useMemo(() => campos.map(campo => {
-    const Component = campo.componente ? componentMap[campo.componente] : InputLabel;
+    const handleComponentChange = (name: string) => (value: string) => {
+        setData(name, value);
+    };
+
+    if (!isOpen) return null;
 
     return (
-      <FormFieldWrapper
-        key={campo.nombre}
-        component={Component}
-        id={campo.nombre}
-        label={campo.label}
-        name={campo.nombre}
-        parametros={campo.parametros}
-        data={formData}
-        errors={errors}
-        handleInputChange={handleInputChange}
-        handleComponentChange={handleComponentChange}
-        className={campo.classname}
-      />
-    )
-  }), [campos, formData, errors, handleInputChange, handleComponentChange])
+        <Dialog open={isOpen} onOpenChange={onClose}>
+            <DialogContent className="max-w-md md:max-w-lg rounded-lg overflow-hidden p-0 gap-0 [&>button:last-child]:hidden">
+                <DialogHeader className="bg-gradient-to-r from-emerald-500 to-green-600 p-6 text-white">
+                    <DialogTitle className="text-xl font-medium flex items-center gap-2 capitalize">
+                        {mode === 'create' ? (
+                            <>
+                                <PlusCircle className="h-5 w-5" /> Creación de {title}
+                            </>
+                        ) : (
+                            <>
+                                <Save className="h-5 w-5" /> Modificación de {title}
+                            </>
+                        )}
+                    </DialogTitle>
+                    <DialogClose asChild>
+                        <button className="absolute top-4 right-4 p-1 rounded-full hover:bg-gray-100 cursor-pointer hover:text-black">
+                            <X className="h-5 w-5" />
+                        </button>
+                    </DialogClose>
+                </DialogHeader>
 
-  return (
-    <Dialog open={abierto} onOpenChange={handleClose}>
-      <DialogContent className="max-w-md md:max-w-lg rounded-lg overflow-hidden p-0 gap-0 [&>button:last-child]:hidden">
-        <DialogHeader className="bg-gradient-to-r from-emerald-500 to-green-600 p-6 text-white">
-          <DialogTitle className="text-xl font-medium flex items-center gap-2 capitalize">
-            {modo === 'crear'
-              ? <><PlusCircle className="h-5 w-5"/> Creación de {title}</>
-              : <><Save className="h-5 w-5"/> Modificación de {title}</>
-            }
-          </DialogTitle>
-          <DialogClose asChild>
-            <button className="absolute top-4 right-4 p-1 rounded-full hover:bg-gray-100 cursor-pointer hover:text-black">
-              <X className="h-5 w-5" />
-            </button>
-          </DialogClose>
-        </DialogHeader>
+                <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4 px-3 pb-2">
+                    {fields.map((field) => {
+                        const Component = componentMap[field.componente || 'InputLabel'];
+                        const isMaskedInput = field.componente === 'MaskedInput';
 
-        <div className="grid grid-cols-1 gap-4 px-3 pb-2">
-          {fields}
-        </div>
+                        return (
+                            <FormField
+                                key={field.nombre}
+                                component={Component}
+                                id={field.nombre}
+                                label={field.label}
+                                name={field.nombre}
+                                parametros={field.parametros}
+                                data={data}
+                                errors={errors}
+                                onChange={!isMaskedInput ? handleInputChange : undefined}
+                                onInput={isMaskedInput ? handleInput : undefined}
+                                onValueChange={handleComponentChange(field.nombre)}
+                                className={field.classname}
+                            />
+                        );
+                    })}
 
-        <div className="flex justify-between items-center gap-3 p-3 border-t border-gray-100 bg-gray-50">
-          <Button
-            onClick={handleSubmit}
-            className="bg-gradient-to-r cursor-pointer from-emerald-500 to-green-600 text-white hover:from-emerald-600 hover:to-green-700 transition-colors flex items-center gap-2"
-          >
-            {modo === 'crear'
-              ? <><PlusCircle className="h-4 w-4"/> Crear</>
-              : <><CheckCircle className="h-4 w-4"/> Guardar</>
-            }
-          </Button>
+                </form>
 
-          <Button
-            variant="outline"
-            onClick={handleClose}
-            className="flex items-center gap-2 hover:bg-gray-100 transition-colors cursor-pointer"
-          >
-            <X className="h-4 w-4" /> Cancelar
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
-  )
-})
+                <div className="flex items-center justify-between gap-3 border-t border-gray-100 bg-gray-50 p-3">
+                    <Button
+                        onClick={handleSubmit}
+                        className="flex cursor-pointer items-center gap-2 bg-gradient-to-r from-emerald-500 to-green-600 text-white transition-colors hover:from-emerald-600 hover:to-green-700"
+                    >
+                        {mode === 'create' ? (
+                            <>
+                                <PlusCircle className="h-4 w-4" /> Crear
+                            </>
+                        ) : (
+                            <>
+                                <CheckCircle className="h-4 w-4" /> Guardar
+                            </>
+                        )}
+                    </Button>
+
+                    <Button type="button" variant="destructive" onClick={onClose} disabled={processing} className="cursor-pointer">
+                        Cancelar
+                    </Button>
+                </div>
+
+            </DialogContent>
+        </Dialog>
+    );
+}

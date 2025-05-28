@@ -4,8 +4,8 @@ import RegistroDinamico from "@/components/form/dynamic-form"
 export default function Actividades() {
     return (
         <RegistroDinamico
-            tabla="actividades"
-            id_primario="id_actividad"
+            table="actividades"
+            primaryId="id_actividad"
         />
     )
 }

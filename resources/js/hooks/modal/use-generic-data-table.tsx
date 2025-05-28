@@ -1,15 +1,14 @@
 import { RenderEditButton } from '@/components/table/utils/shared-table-utils';
 import { getValueFormatterByType } from '@/lib/utils';
-import { ColumnConfig, TableItem, TipoDato } from '@/types/table';
+import { TableItem, TipoDato } from '@/types/table';
 import { TABLE_LANGUAGE_ES } from '@/utils/table-language';
 import { ColDef, GridOptions, SortDirection, ValueFormatterFunc } from 'ag-grid-community';
-import axios from 'axios';
-import { useCallback, useMemo, useState, useEffect, useRef } from 'react';
+import { useCallback, useMemo } from 'react';
+import { useTableColumns, useTableData } from '../table/use-table-queries';
 
 interface UseGenericTableProps {
     tableName: string | undefined;
     primaryId: string | undefined;
-    loadImmediately?: boolean;
 }
 
 interface UseAgGridDataReturn {
@@ -26,142 +25,48 @@ interface UseAgGridDataReturn {
 
 export function useGenericTable({
     tableName,
-    primaryId,
-    loadImmediately = true
+    primaryId
 }: UseGenericTableProps): UseAgGridDataReturn {
-    const [columns, setColumns] = useState<ColumnConfig[]>([]);
-    const [rowData, setRowData] = useState<TableItem[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [hasMultipleIds, setHasMultipleIds] = useState(false);
-    const columnsRoute = 'esquema';
-    const [initialized, setInitialized] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const {
+        data: columnsData,
+        isLoading: isLoadingColumns,
+        error: columnsError,
+        refetch: refetchColumns
+    } = useTableColumns(tableName, primaryId);
 
-    const loggedOnce = useRef(false);
+    const {
+        data: rowData = [],
+        isLoading: isLoadingData,
+        error: dataError,
+        refetch: refetchData
+    } = useTableData(tableName, primaryId, columnsData?.hasForeignIDs ?? false);
 
-    const stableTableName = useMemo(() => tableName, [tableName]);
-    const stablePrimaryId = useMemo(() => primaryId, [primaryId]);
+    const loading = isLoadingColumns || isLoadingData;
+    const error = columnsError?.message || dataError?.message || null;
 
-    const fetchColumns = useCallback(async () => {
-        try {
-            const columnsParameters = {
-                tabla: stableTableName,
-            };
-
-            const response = await axios.post(
-                route(columnsRoute), columnsParameters,
-                {
-                    headers: { 'Content-Type': 'application/json' },
-                    withCredentials: true,
-                },
-            );
-
-            const resultado = response.data[0].original ?? response.data[0];
-            const hasForeignIDs = resultado.filter((col: ColumnConfig) => col.nombre && stablePrimaryId && col.nombre?.startsWith('id_')).length > 1;
-
-            setHasMultipleIds(hasForeignIDs);
-            setColumns(resultado);
-
-            if (!loggedOnce.current) {
-                console.log("Columnas cargadas:", resultado);
-                loggedOnce.current = true;
-            }
-
-            return hasForeignIDs;
-        } catch (error) {
-            console.error('Error fetching generic columns:', error);
-            throw error;
-        }
-    }, [stableTableName, stablePrimaryId, columnsRoute]);
-
-    // Fetch data para genéricas
-    const fetchTableData = useCallback(async (useHasMultipleIds?: boolean) => {
-        setLoading(true);
-        setError(null);
-        try {
-            const shouldUseMultipleIds = useHasMultipleIds !== undefined ? useHasMultipleIds : hasMultipleIds;
-
-            const routeToUse = shouldUseMultipleIds ? 'traerRegistrosCombinados' : 'registrosConsultaPrincipal';
-            const params = shouldUseMultipleIds
-                ? { renglon: stableTableName }
-                : { origen_registros: stableTableName, campo_ordenar: stablePrimaryId };
-
-            const response = await axios.post(route(routeToUse), params, {
-                headers: { 'Content-Type': 'application/json' },
-                withCredentials: true,
-            });
-
-            const resultado = response.data[0].original;
-            setRowData(Array.isArray(resultado) ? resultado : []);
-        } catch (error) {
-            console.error('Error fetching generic data:', error);
-            setError("Error al cargar los datos");
-        } finally {
-            setLoading(false);
-        }
-    }, [stableTableName, stablePrimaryId, hasMultipleIds]);
-
-    const loadFullData = useCallback(async () => {
-        if (!stableTableName) return;
-
-        try {
-            setLoading(true);
-            setError(null);
-            const multipleIds = await fetchColumns();
-            await fetchTableData(multipleIds);
-            setInitialized(true);
-        } catch (error) {
-            console.error("Error loading data:", error);
-            setError("Error al cargar datos");
-        } finally {
-            setLoading(false);
-        }
-    }, [fetchColumns, fetchTableData, stableTableName]);
-
-    useEffect(() => {
-        if (loadImmediately && stableTableName && !initialized) {
-            loadFullData();
-        }
-    }, [loadImmediately, stableTableName, initialized, loadFullData]);
-
-    // Public refresh methods
     const refreshData = useCallback(async () => {
-        await fetchTableData();
-    }, [fetchTableData]);
+        await refetchData();
+    }, [refetchData]);
 
     const refreshColumns = useCallback(async () => {
-        await fetchColumns();
-    }, [fetchColumns]);
+        await refetchColumns();
+    }, [refetchColumns]);
 
-    const loadData = useCallback(async (filters?: Record<string, string>) => {
-        console.log('Cargando datos con filtros:', filters);
-        await loadFullData();
-    }, [loadFullData]);
+    const loadData = useCallback(async () => {
+        await refetchData();
+    }, [refetchData]);
 
-    // Column definitions específicas para genéricas
     const columnDefs = useMemo<ColDef<TableItem>[]>(() => {
-        if (columns.length === 0) return [];
+        if (!columnsData?.columns.length) return [];
 
-        if (!loggedOnce.current) {
-            console.log("Columnas a procesar:", columns.map(c => ({
-                nombre: c.nombre,
-                tipo: c.tipo,
-                sumar: c.sumar
-            })));
-        }
-
-        // 1. Crear las columnas base
         const colDefs: ColDef<TableItem>[] = [];
 
-        // 2. Procesar y añadir todas las columnas
-        columns.forEach((col) => {
-            const esCampoId = col.nombre?.startsWith('id_') && col.nombre !== stablePrimaryId;
-            const esIdPrimario = col.nombre === stablePrimaryId;
+        columnsData.columns.forEach((col) => {
+            const esCampoId = col.nombre?.startsWith('id_') && col.nombre !== primaryId;
+            const esIdPrimario = col.nombre === primaryId;
 
-            // Determinar nombre del campo a mostrar (sin id_ para foráneas)
             const displayField = esCampoId ? col.nombre?.replace('id_', '') : col.nombre;
 
-            // Configurar el modo de suma
             let sumarModo = '0';
             if (esIdPrimario) {
                 sumarModo = 'filas';
@@ -187,7 +92,7 @@ export function useGenericTable({
                 flex: 1,
             };
 
-            if (esIdPrimario && hasMultipleIds) {
+            if (esIdPrimario && columnsData.hasForeignIDs) {
                 colDef.sort = 'desc' as SortDirection;
                 colDef.sortIndex = 0;
             }
@@ -199,7 +104,6 @@ export function useGenericTable({
             colDefs.push(colDef);
         });
 
-        // 3. Añadir columna de acciones
         colDefs.push({
             field: 'acciones',
             headerName: '',
@@ -210,9 +114,8 @@ export function useGenericTable({
         });
 
         return colDefs;
-    }, [columns, stablePrimaryId]);
+    }, [columnsData, primaryId]);
 
-    // Default column definitions
     const defaultColDef = useMemo<Partial<ColDef<TableItem>>>(
         () => ({
             resizable: true,
@@ -223,7 +126,6 @@ export function useGenericTable({
         [],
     );
 
-    // Grid options
     const gridOptions = useMemo<GridOptions<TableItem>>(
         () => ({
             localeText: TABLE_LANGUAGE_ES,

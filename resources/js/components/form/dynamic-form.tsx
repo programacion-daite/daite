@@ -3,13 +3,14 @@ import { useSchemaQuery } from '@/hooks/form/use-schema-query';
 import AppLayout from '@/layouts/app-layout';
 import type { DynamicRecordProps, FormDataType } from '@/types/form';
 import { TableItem } from '@/types/table';
-import { Head, usePage } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import { useCallback } from 'react';
 import { ModalForm } from './modal-form';
 import { TableProvider } from '@/contexts/tableContext';
 import { DynamicTableSection } from './dynamic-table-section';
 import { useDynamicFormStore } from '@/store/useDynamicFormStore';
 import { useRegisterRecordsMutation } from '@/lib/mutations';
+import { useTable } from '@/contexts/tableContext';
 
 export default function DynamicRecord({ table, primaryId }: DynamicRecordProps) {
     return (
@@ -20,9 +21,9 @@ export default function DynamicRecord({ table, primaryId }: DynamicRecordProps) 
 }
 
 function DynamicRecordContent({ table, primaryId }: DynamicRecordProps) {
-    const { programa } = usePage().props;
-    const { data: fields, isLoading, error } = useSchemaQuery(table, primaryId, programa as string);
+    const { data: fields, isLoading, error } = useSchemaQuery(table, primaryId);
     const registerRecordsMutation = useRegisterRecordsMutation();
+    const { refreshTable } = useTable();
 
     const {
         formData,
@@ -41,7 +42,6 @@ function DynamicRecordContent({ table, primaryId }: DynamicRecordProps) {
 
     const handleSubmit = useCallback(async (data: FormDataType) => {
         try {
-            console.log('Starting submit...');
             if (modalMode === 'edit' && (!selectedItem || !selectedItem[primaryId])) {
                 throw new Error('Invalid edit operation');
             }
@@ -52,17 +52,15 @@ function DynamicRecordContent({ table, primaryId }: DynamicRecordProps) {
                 formData: data
             }) as { message?: string };
 
-            console.log(response);
-
             showSuccess(response.message || `Registro ${modalMode === 'create' ? 'Creado' : 'Actualizado'} correctamente`);
+            refreshTable();
 
         } catch (error: unknown) {
             console.log('Error occurred:', error);
             showError('Error al procesar la solicitud, intenta de nuevo');
-            console.error(error);
         }
 
-    }, [modalMode, selectedItem, primaryId, showSuccess, showError, registerRecordsMutation, table]);
+    }, [modalMode, selectedItem, primaryId, showSuccess, showError, registerRecordsMutation, table, refreshTable]);
 
     const handleOpenNewForm = useCallback(() => {
         resetForm();
@@ -75,9 +73,7 @@ function DynamicRecordContent({ table, primaryId }: DynamicRecordProps) {
     }, [openEditModal, resetForm]);
 
     const handleCloseModal = useCallback(() => {
-        console.log('handleCloseModal called, result.isOpen:', result.isOpen);
         if (!result.isOpen) {
-            console.log('Closing modal...');
             resetForm();
             closeModal();
         } else {
@@ -105,6 +101,7 @@ function DynamicRecordContent({ table, primaryId }: DynamicRecordProps) {
     return (
         <AppLayout>
             <Head title={`Registro de ${table.replace(/_/g, ' ')}`} />
+
             <div className="flex h-full w-full flex-1 flex-col gap-4 rounded-xl p-4">
                 <DynamicTableSection
                     table={table}

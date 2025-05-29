@@ -92,10 +92,13 @@ export function useGenericTable({
                 flex: 1,
             };
 
-            if (esIdPrimario && columnsData.hasForeignIDs) {
-                colDef.sort = 'desc' as SortDirection;
-                colDef.sortIndex = 0;
-            }
+            colDef.sort = 'desc' as SortDirection;
+            colDef.sortIndex = 0;
+            colDef.comparator = (valueA, valueB) => {
+                const numA = Number(valueA);
+                const numB = Number(valueB);
+                return numA - numB;
+            };
 
             if (esCampoId) {
                 colDef.headerName = (displayField ?? '').replace(/_/g, ' ');

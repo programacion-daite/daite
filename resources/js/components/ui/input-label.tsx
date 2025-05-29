@@ -22,7 +22,7 @@ export const InputLabel = memo(({
   required = false,
   autoFocus = false,
   tabIndex = 1,
-  autoComplete = 'nono',
+  autoComplete = 'off',
   disabled = false,
   readOnly = false,
   ref,

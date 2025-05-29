@@ -2,7 +2,7 @@ import { AsyncSearchSelect } from '@/components/async-select';
 import { DatePicker } from '@/components/date-picker';
 import { DynamicSelect } from '@/components/dynamic-select';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { InputLabel } from '@/components/ui/input-label';
 import MaskedInput from '@/components/ui/masked-input';
 import { useDynamicFormStore } from '@/store/useDynamicFormStore';
@@ -68,8 +68,12 @@ export function ModalForm({ isOpen, onClose, mode, title, initialData, onSubmit,
     if (!isOpen) return null;
 
     return (
-        <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-md md:max-w-lg rounded-lg overflow-hidden p-0 gap-0 [&>button:last-child]:hidden">
+        <Dialog open={isOpen} onOpenChange={() => {}}>
+            <DialogContent
+                className="max-w-md md:max-w-lg rounded-lg overflow-hidden p-0 gap-0 [&>button:last-child]:hidden"
+                onEscapeKeyDown={(e) => e.preventDefault()}
+                onPointerDownOutside={(e) => e.preventDefault()}
+            >
                 <DialogHeader className="bg-gradient-to-r from-emerald-500 to-green-600 p-6 text-white">
                     <DialogTitle className="text-xl font-medium flex items-center gap-2 capitalize">
                         {mode === 'create' ? (
@@ -82,11 +86,14 @@ export function ModalForm({ isOpen, onClose, mode, title, initialData, onSubmit,
                             </>
                         )}
                     </DialogTitle>
-                    <DialogClose asChild>
-                        <button className="absolute top-4 right-4 p-1 rounded-full hover:bg-gray-100 cursor-pointer hover:text-black">
+                    {!disableClose && (
+                        <button
+                            onClick={onClose}
+                            className="absolute top-4 right-4 p-1 rounded-full hover:bg-gray-100 cursor-pointer hover:text-black"
+                        >
                             <X className="h-5 w-5" />
                         </button>
-                    </DialogClose>
+                    )}
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4 px-3 pb-2">

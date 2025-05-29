@@ -37,6 +37,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('areas', fn() => Inertia::render('registros/areas'))
         ->name('registros.areas');
 
+        Route::get('argumentos', fn() => Inertia::render('registros/argumentos'))
+        ->name('registros.argumentos');
+
 
     });
 

@@ -21,7 +21,7 @@ export default function DynamicRecord({ table, primaryId }: DynamicRecordProps) 
 }
 
 function DynamicRecordContent({ table, primaryId }: DynamicRecordProps) {
-    const { data: fields, isLoading, error } = useSchemaQuery(table, primaryId);
+    const { data: fields, isLoading } = useSchemaQuery(table, primaryId);
     const registerRecordsMutation = useRegisterRecordsMutation();
     const { refreshTable } = useTable();
 
@@ -90,14 +90,6 @@ function DynamicRecordContent({ table, primaryId }: DynamicRecordProps) {
         }
     }, [closeResult, closeModal, resetForm, result.isSuccess]);
 
-    if (isLoading) return (
-        <div className="flex h-screen w-full items-center justify-center">
-            <div className="h-16 w-16 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-        </div>
-    );
-    if (error) return <div>Error: {error.message}</div>;
-    if (!fields) return <div>No fields found</div>;
-
     return (
         <AppLayout>
             <Head title={`Registro de ${table.replace(/_/g, ' ')}`} />
@@ -111,16 +103,19 @@ function DynamicRecordContent({ table, primaryId }: DynamicRecordProps) {
                 />
             </div>
 
-            <ModalForm
-                isOpen={isModalOpen}
-                onClose={handleCloseModal}
-                mode={modalMode || 'create'}
-                title={table}
-                initialData={formData as FormDataType}
-                onSubmit={handleSubmit}
-                fields={fields}
-                disableClose={result.isOpen}
-            />
+            {isModalOpen && (
+                <ModalForm
+                    isOpen={isModalOpen}
+                    onClose={handleCloseModal}
+                    mode={modalMode || 'create'}
+                    title={table}
+                    initialData={formData as FormDataType}
+                    onSubmit={handleSubmit}
+                    fields={fields || []}
+                    disableClose={result.isOpen}
+                    isLoading={isLoading}
+                />
+            )}
 
             <ResultModal
                 open={result.isOpen}

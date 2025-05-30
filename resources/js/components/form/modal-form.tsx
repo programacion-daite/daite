@@ -8,7 +8,7 @@ import MaskedInput from '@/components/ui/masked-input';
 import { useDynamicFormStore } from '@/store/useDynamicFormStore';
 import { DatabaseField, FormDataType } from '@/types/form';
 import { useForm } from '@inertiajs/react';
-import { CheckCircle, PlusCircle, Save, X } from 'lucide-react';
+import { CheckCircle, Loader2, PlusCircle, Save, X } from 'lucide-react';
 import React, { useEffect } from 'react';
 import { FormField } from './form-field';
 
@@ -21,6 +21,7 @@ interface ModalFormProps {
     onSubmit: (data: FormDataType) => Promise<void>;
     fields: DatabaseField[];
     disableClose?: boolean;
+    isLoading?: boolean;
 }
 
 const componentMap = {
@@ -31,7 +32,7 @@ const componentMap = {
     MaskedInput,
 };
 
-export function ModalForm({ isOpen, onClose, mode, title, initialData, onSubmit, fields, disableClose = false }: ModalFormProps) {
+export function ModalForm({ isOpen, onClose, mode, title, initialData, onSubmit, fields, disableClose = false, isLoading = false }: ModalFormProps) {
     const { data, setData, processing, errors, reset } = useForm<FormDataType>(initialData);
     const { setErrors, showError } = useDynamicFormStore();
 
@@ -97,36 +98,44 @@ export function ModalForm({ isOpen, onClose, mode, title, initialData, onSubmit,
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4 px-3 pb-2">
-                    {fields.map((field) => {
-                        const Component = componentMap[field.componente || 'InputLabel'];
-                        const isMaskedInput = field.componente === 'MaskedInput';
+                    {isLoading ? (
+                        <div className="flex items-center justify-center py-8">
+                            <Loader2 className="h-8 w-8 animate-spin text-emerald-500" />
+                        </div>
+                    ) : (
+                        fields.map((field) => {
+                            const Component = componentMap[field.componente || 'InputLabel'];
+                            const isMaskedInput = field.componente === 'MaskedInput';
 
-                        return (
-                            <FormField
-                                key={field.nombre}
-                                component={Component}
-                                id={field.nombre}
-                                label={field.label}
-                                name={field.nombre}
-                                parametros={field.parametros}
-                                data={data}
-                                errors={errors}
-                                onChange={!isMaskedInput ? handleInputChange : undefined}
-                                onInput={isMaskedInput ? handleInput : undefined}
-                                onValueChange={handleComponentChange(field.nombre)}
-                                className={field.classname}
-                            />
-                        );
-                    })}
-
+                            return (
+                                <FormField
+                                    key={field.nombre}
+                                    component={Component}
+                                    id={field.nombre}
+                                    label={field.label}
+                                    name={field.nombre}
+                                    parametros={field.parametros}
+                                    data={data}
+                                    errors={errors}
+                                    onChange={!isMaskedInput ? handleInputChange : undefined}
+                                    onInput={isMaskedInput ? handleInput : undefined}
+                                    onValueChange={handleComponentChange(field.nombre)}
+                                    className={field.classname}
+                                />
+                            );
+                        })
+                    )}
                 </form>
 
                 <div className="flex items-center justify-between gap-3 border-t border-gray-100 bg-gray-50 p-3">
                     <Button
                         onClick={handleSubmit}
+                        disabled={isLoading || processing}
                         className="flex cursor-pointer items-center gap-2 bg-gradient-to-r from-emerald-500 to-green-600 text-white transition-colors hover:from-emerald-600 hover:to-green-700"
                     >
-                        {mode === 'create' ? (
+                        {processing ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : mode === 'create' ? (
                             <>
                                 <PlusCircle className="h-4 w-4" /> Crear
                             </>
@@ -137,7 +146,7 @@ export function ModalForm({ isOpen, onClose, mode, title, initialData, onSubmit,
                         )}
                     </Button>
 
-                    <Button type="button" variant="destructive" onClick={onClose} disabled={processing} className="cursor-pointer">
+                    <Button type="button" variant="destructive" onClick={onClose} disabled={processing || isLoading} className="cursor-pointer">
                         Cancelar
                     </Button>
                 </div>

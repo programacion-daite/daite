@@ -12,16 +12,21 @@ import { useDynamicFormStore } from '@/store/useDynamicFormStore';
 import { useRegisterRecordsMutation } from '@/lib/mutations';
 import { useTable } from '@/contexts/tableContext';
 
-export default function DynamicRecord({ table, primaryId }: DynamicRecordProps) {
+interface RegistroDinamicoProps {
+    tabla: string;
+    id_primario: string;
+}
+
+export default function RegistroDinamico({ tabla, id_primario }: RegistroDinamicoProps) {
     return (
         <TableProvider>
-            <DynamicRecordContent table={table} primaryId={primaryId} />
+            <RegistroDinamicoContent tabla={tabla} id_primario={id_primario} />
         </TableProvider>
     );
 }
 
-function DynamicRecordContent({ table, primaryId }: DynamicRecordProps) {
-    const { data: fields, isLoading } = useSchemaQuery(table, primaryId);
+function RegistroDinamicoContent({ tabla, id_primario }: RegistroDinamicoProps) {
+    const { data: fields, isLoading, error } = useSchemaQuery(tabla, id_primario);
     const registerRecordsMutation = useRegisterRecordsMutation();
     const { refreshTable } = useTable();
 
@@ -42,25 +47,25 @@ function DynamicRecordContent({ table, primaryId }: DynamicRecordProps) {
 
     const handleSubmit = useCallback(async (data: FormDataType) => {
         try {
-            if (modalMode === 'edit' && (!selectedItem || !selectedItem[primaryId])) {
+            if (modalMode === 'edit' && (!selectedItem || !selectedItem[id_primario])) {
                 throw new Error('Invalid edit operation');
             }
 
             const response = await registerRecordsMutation.mutateAsync({
-                table: table,
-                primaryId: primaryId,
+                table: tabla,
+                primaryId: id_primario,
                 formData: data
             }) as { message?: string };
 
-            showSuccess(response.message || `Registro ${modalMode === 'create' ? 'Creado' : 'Actualizado'} correctamente`);
+            showSuccess(response.message || `Record ${modalMode === 'create' ? 'Created' : 'Updated'} successfully`);
             refreshTable();
 
         } catch (error: unknown) {
             console.log('Error occurred:', error);
-            showError('Error al procesar la solicitud, intenta de nuevo');
+            showError('Error processing request, please try again');
         }
 
-    }, [modalMode, selectedItem, primaryId, showSuccess, showError, registerRecordsMutation, table, refreshTable]);
+    }, [modalMode, selectedItem, id_primario, showSuccess, showError, registerRecordsMutation, tabla, refreshTable]);
 
     const handleOpenNewForm = useCallback(() => {
         resetForm();
@@ -92,12 +97,12 @@ function DynamicRecordContent({ table, primaryId }: DynamicRecordProps) {
 
     return (
         <AppLayout>
-            <Head title={`Registro de ${table.replace(/_/g, ' ')}`} />
+            <Head title={`Registro de ${tabla.replace(/_/g, ' ')}`} />
 
             <div className="flex h-full w-full flex-1 flex-col gap-4 rounded-xl p-4">
                 <DynamicTableSection
-                    table={table}
-                    primaryId={primaryId}
+                    table={tabla}
+                    primaryId={id_primario}
                     onNewClick={handleOpenNewForm}
                     onEditClick={handleOpenEditForm}
                 />
@@ -120,7 +125,7 @@ function DynamicRecordContent({ table, primaryId }: DynamicRecordProps) {
             <ResultModal
                 open={result.isOpen}
                 onClose={handleCloseResult}
-                title={result.isSuccess ? 'Exito' : 'Intenta de nuevo'}
+                title={result.isSuccess ? 'Success' : 'Try again'}
                 message={result.message}
                 status={result.isSuccess ? 'success' : 'error'}
             />

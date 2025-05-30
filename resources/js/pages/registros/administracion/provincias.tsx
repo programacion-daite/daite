@@ -4,8 +4,8 @@ import RegistroDinamico from "@/components/form/dynamic-form"
 export default function Provincias() {
     return (
         <RegistroDinamico
-            table="provincias"
-            primaryId="id_provincia"
+            tabla="provincias"
+            id_primario="id_provincia"
         />
     )
 }

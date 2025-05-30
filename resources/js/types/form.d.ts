@@ -22,7 +22,8 @@ export interface InertiaFormProps<TForm extends FormDataType> {
 
 // Props for dynamic record components
 export type DynamicRecordProps = {
-    table: string;
+    tabla?: string | undefined;
+    table?: string | undefined;
     primaryId: string;
 }
 

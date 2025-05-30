@@ -1,7 +1,7 @@
 import { ResultModal } from '@/components/modal/result-modal';
 import { useSchemaQuery } from '@/hooks/form/use-schema-query';
 import AppLayout from '@/layouts/app-layout';
-import type { DynamicRecordProps, FormDataType } from '@/types/form';
+import type { FormDataType } from '@/types/form';
 import { TableItem } from '@/types/table';
 import { Head } from '@inertiajs/react';
 import { useCallback } from 'react';
@@ -26,7 +26,7 @@ export default function RegistroDinamico({ tabla, id_primario }: RegistroDinamic
 }
 
 function RegistroDinamicoContent({ tabla, id_primario }: RegistroDinamicoProps) {
-    const { data: fields, isLoading, error } = useSchemaQuery(tabla, id_primario);
+    const { data: fields, isLoading } = useSchemaQuery(tabla, id_primario);
     const registerRecordsMutation = useRegisterRecordsMutation();
     const { refreshTable } = useTable();
 
@@ -113,7 +113,7 @@ function RegistroDinamicoContent({ tabla, id_primario }: RegistroDinamicoProps) 
                     isOpen={isModalOpen}
                     onClose={handleCloseModal}
                     mode={modalMode || 'create'}
-                    title={table}
+                    title={tabla}
                     initialData={formData as FormDataType}
                     onSubmit={handleSubmit}
                     fields={fields || []}

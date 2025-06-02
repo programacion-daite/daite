@@ -7,7 +7,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Home, FileText, BarChart, ChevronDown, CreditCard } from "lucide-react";
+import { Home, FileText, BarChart, ChevronDown, CreditCard, Icon, ChartBar } from "lucide-react";
 import { SessionData, Modulo, Programa } from '@/types';
 
 type MenuConfig = {
@@ -45,7 +45,7 @@ export function NavMain() {
             {MENU_CONFIG.map(({ title, icon: Icon, key }) => (
                 <DropdownMenu key={key}>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="text-white gap-1 font-bold hover:bg-blue-600">
+                        <Button variant="ghost" className="text-white gap-1 font-bold hover:bg-blue-900 hover:text-white">
                             <Icon className="h-4 w-4" />
                             <span>{title}</span>
                             <ChevronDown className="h-4 w-4 transition-transform duration-200" />
@@ -87,6 +87,12 @@ export function NavMain() {
                     </DropdownMenuContent>
                 </DropdownMenu>
             ))}
+
+            <Button variant="ghost" className="text-white gap-1 font-bold hover:bg-blue-900 hover:text-white">
+                <ChartBar className="h-4 w-4" />
+                <Link href="/estadisticas">Estadisticas</Link>
+            </Button>
+
         </div>
     );
 }

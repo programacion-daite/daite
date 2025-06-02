@@ -28,7 +28,8 @@ class GeneralController extends Controller
         'p_registrar_registros',
         'p_traer_registros_combinados',
         'p_traer_campos_registros',
-        'p_traer_registros'
+        'p_traer_registros',
+        'p_traer_informes'
     ];
 
     /**
@@ -127,6 +128,14 @@ class GeneralController extends Controller
     public function getSingleEntity(Request $request)
     {
         return $this->executeProcedure($request, 'p_traer_unico_registro');
+    }
+
+    /**
+     * Obtiene los datos de un informe
+     */
+    public function getInform(Request $request)
+    {
+        return $this->executeProcedure($request, 'p_traer_informes');
     }
 
     /**

@@ -1,7 +1,7 @@
 import { ResultModal } from '@/components/modal/result-modal';
 import { useSchemaQuery } from '@/hooks/form/use-schema-query';
 import AppLayout from '@/layouts/app-layout';
-import type { DynamicRecordProps, FormDataType } from '@/types/form';
+import type { FormDataType } from '@/types/form';
 import { TableItem } from '@/types/table';
 import { Head } from '@inertiajs/react';
 import { useCallback } from 'react';
@@ -26,7 +26,7 @@ export default function RegistroDinamico({ tabla, id_primario }: RegistroDinamic
 }
 
 function RegistroDinamicoContent({ tabla, id_primario }: RegistroDinamicoProps) {
-    const { data: fields, isLoading, error } = useSchemaQuery(tabla, id_primario);
+    const { data: fields, isLoading } = useSchemaQuery(tabla, id_primario);
     const registerRecordsMutation = useRegisterRecordsMutation();
     const { refreshTable } = useTable();
 
@@ -95,14 +95,6 @@ function RegistroDinamicoContent({ tabla, id_primario }: RegistroDinamicoProps) 
         }
     }, [closeResult, closeModal, resetForm, result.isSuccess]);
 
-    if (isLoading) return (
-        <div className="flex h-screen w-full items-center justify-center">
-            <div className="h-16 w-16 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-        </div>
-    );
-    if (error) return <div>Error: {error.message}</div>;
-    if (!fields) return <div>No fields found</div>;
-
     return (
         <AppLayout>
             <Head title={`Registro de ${tabla.replace(/_/g, ' ')}`} />
@@ -116,16 +108,19 @@ function RegistroDinamicoContent({ tabla, id_primario }: RegistroDinamicoProps) 
                 />
             </div>
 
-            <ModalForm
-                isOpen={isModalOpen}
-                onClose={handleCloseModal}
-                mode={modalMode || 'create'}
-                title={tabla}
-                initialData={formData as FormDataType}
-                onSubmit={handleSubmit}
-                fields={fields}
-                disableClose={result.isOpen}
-            />
+            {isModalOpen && (
+                <ModalForm
+                    isOpen={isModalOpen}
+                    onClose={handleCloseModal}
+                    mode={modalMode || 'create'}
+                    title={tabla}
+                    initialData={formData as FormDataType}
+                    onSubmit={handleSubmit}
+                    fields={fields || []}
+                    disableClose={result.isOpen}
+                    isLoading={isLoading}
+                />
+            )}
 
             <ResultModal
                 open={result.isOpen}

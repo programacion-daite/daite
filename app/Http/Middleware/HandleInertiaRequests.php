@@ -63,9 +63,7 @@ class HandleInertiaRequests extends Middleware
 
         if ($request->session()->has('conexion') && $request->user()) {
             $cacheKey = "sesion_data_{$request->user()->id_usuario}";
-            $sesionData = Cache::remember($cacheKey, 3600, function () use ($request) {
-                return $this->sessionService->getSessionData($request);
-            });
+            $sesionData = $this->sessionService->getSessionData($request);
 
         }
 

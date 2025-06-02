@@ -33,6 +33,9 @@ Route::middleware(['auth', HandleDinamicConnections::class])->group(function () 
     Route::post('single-entity', [GeneralController::class, 'getSingleEntity'])
         ->name('single.entity');
 
+    Route::post('get-inform', [GeneralController::class, 'getInform'])
+        ->name('get.inform');
+
     // Rutas de esquema y consultas
     Route::match(['get', 'post'], 'schema', [GeneralController::class, 'getSchema'])
         ->name('schema');

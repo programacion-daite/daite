@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\GeneralController;
+use Illuminate\Support\Facades\DB;
+use App\Helpers\DynamicConnection;
 
 Route::get('/', fn() => redirect()->route('inicio'));
 
@@ -10,6 +12,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('inicio', fn() => Inertia::render('dashboard'))
         ->name('inicio');
+
+    Route::get('estadisticas', function () {
+        $modules = DB::connection('tenant')->select("EXEC dbo.p_traer_registros_consulta_principal @origen_registros='modulos', @campos='id_modulo as valor, modulo as descripcion', @programa='' ");
+
+        return Inertia::render('estadisticas', [
+            'modules' => $modules
+        ]);
+    })->name('estadisticas');
 
 });
 

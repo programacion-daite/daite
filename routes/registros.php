@@ -43,6 +43,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('garantias', fn() => Inertia::render('registros/garantias'))
         ->name('registros.garantias');
 
+        Route::get('tiposNotas', fn() => Inertia::render('registros/tiposNotas'))
+        ->name('registros.tiposNotas');
+
     });
 
 });

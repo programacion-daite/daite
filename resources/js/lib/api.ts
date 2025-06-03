@@ -8,7 +8,6 @@ export async function fetchSingleEntity(informId: string) {
     id_renglon: informId,
   });
   if (!res.success) throw new Error(res.error || 'Error al obtener detalles');
-  // Si la respuesta es un array, retorna el array, si es objeto, retorna el objeto
   return res.data;
 }
 

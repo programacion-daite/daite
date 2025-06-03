@@ -3,12 +3,13 @@ import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import { DynamicSelect } from '@/components/dynamic-select';
 import { useState } from 'react';
 import BarChartGraphic from '@/components/barchartgraphic';
 import { useQuery } from '@tanstack/react-query';
 import { fetchSingleEntity, fetchDatos } from '@/lib/api';
+import PieChartGraphic from '@/components/piechartgraphic';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -22,7 +23,6 @@ export default function Estadisticas() {
     const [selectedModule, setSelectedModule] = useState<string>('');
     const [selectedInforme, setSelectedInforme] = useState<string>('');
 
-    // Query para detalles del informe
     const { data: detalles, isLoading: loadingDetalles } = useQuery({
       queryKey: ['detalles', selectedInforme],
       queryFn: () => fetchSingleEntity(selectedInforme),
@@ -30,14 +30,12 @@ export default function Estadisticas() {
       select: (data) => data[0],
     });
 
-    // Query para datos del informe
     const { data: datos, isLoading: loadingDatos } = useQuery({
       queryKey: ['datos', selectedInforme],
       queryFn: () => fetchDatos(selectedInforme),
       enabled: !!selectedInforme && !!detalles,
     });
 
-    // Prepara los datos para el gráfico
     const chartData = (datos || []).map((item: { x: string; y: string | number }) => ({
       x: item.x?.trim() ?? '',
       y: Number(item.y),
@@ -57,9 +55,9 @@ export default function Estadisticas() {
             <div className="p-4">
                 <div className="grid grid-cols-2 gap-4">
                     <DynamicSelect
+                        label="Módulo"
                         id="id_modulo"
                         name="module"
-                        label="Módulo"
                         parametros={{
                             options: modules.map(module => ({
                                 value: module.valor,
@@ -68,14 +66,16 @@ export default function Estadisticas() {
                         }}
                         onValueChange={(value) => setSelectedModule(value)}
                         value={selectedModule}
+                        withRefresh={false}
                         placeholder="Selecciona una opción"
                     />
 
                     <DynamicSelect
+                        label="Estadistica"
                         id="id_tipo_informe"
                         name="type"
-                        label="Tipo de informe"
                         isDependent={true}
+                        withRefresh={false}
                         dependentOn={{
                             selectId: "id_modulo",
                             valueKey: "value"
@@ -102,11 +102,15 @@ export default function Estadisticas() {
 
             <div className="p-4">
                 {loadingDetalles || loadingDatos ? (
-                <div>Cargando gráfico...</div>
+                <div className="flex justify-center items-center h-full">
+                    <Loader2 className="animate-spin" />
+                </div>
                 ) : detalles && detalles.tipo === 'BARRA' && chartData.length > 0 ? (
                 <BarChartGraphic data={chartData} title={detalles.informe} />
+                ) : detalles && detalles.tipo === 'CIRCULAR' && chartData.length > 0 ? (
+                <PieChartGraphic data={chartData} title={detalles.informe} />
                 ) : (
-                <div style={{ textAlign: 'center', color: '#aaa' }}>Selecciona un informe para ver el gráfico</div>
+                <div style={{ textAlign: 'center', color: '#aaa' }}></div>
                 )}
             </div>
 

@@ -9,10 +9,18 @@ export default function BarChartGraphic({ data, title }: { data: { x: string; y:
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="x" />
           <YAxis />
-          <Tooltip />
+          <Tooltip
+            formatter={(value: number) => [`${value}`, 'Total']}
+            // labelFormatter={(label) => `Categoría: ${label}`}
+          />
           <Legend />
-          <Bar dataKey="y" fill="#22aaff">
-            <LabelList dataKey="y" position="top" />
+          <Bar dataKey="y" fill="#22aaff" name="Total">
+                        <LabelList
+              dataKey="y"
+              position="top"
+              style={{ fill: '#666', fontSize: 12, fontWeight: 'bold' }}
+              formatter={(value: number) => `${value}`}
+            />
           </Bar>
         </BarChart>
       </ResponsiveContainer>

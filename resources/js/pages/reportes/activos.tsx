@@ -115,6 +115,7 @@ export default function Activos() {
                             }}
                             onValueChange={(value) => setData('sucursal', value)}
                             value={data.sucursal}
+                            withRefresh={false}
                             placeholder="Selecciona una opción"
                             error={errors.sucursal}
                         />
@@ -138,6 +139,7 @@ export default function Activos() {
                             }}
                             onValueChange={(value) => setData('grupo', value)}
                             value={data.grupo}
+                            withRefresh={false}
                             placeholder="Selecciona una opción"
                             error={errors.grupo}
                         />
@@ -157,6 +159,7 @@ export default function Activos() {
                             }}
                             onValueChange={(value) => setData('ubicacion', value)}
                             value={data.ubicacion}
+                            withRefresh={false}
                             placeholder="Selecciona una opción"
                             error={errors.ubicacion}
                         />
@@ -176,6 +179,7 @@ export default function Activos() {
                             }}
                             onValueChange={(value) => setData('categoria', value)}
                             value={data.categoria}
+                            withRefresh={false}
                             placeholder="Selecciona una opción"
                             error={errors.categoria}
                         />
@@ -195,6 +199,7 @@ export default function Activos() {
                             }}
                             onValueChange={(value) => setData('estado', value)}
                             value={data.estado}
+                            withRefresh={false}
                             placeholder="Selecciona una opción"
                             error={errors.estado}
                         />
@@ -214,6 +219,7 @@ export default function Activos() {
                             }}
                             onValueChange={(value) => setData('tipo', value)}
                             value={data.tipo}
+                            withRefresh={false}
                             placeholder="Selecciona una opción"
                             error={errors.tipo}
                         />
@@ -232,6 +238,7 @@ export default function Activos() {
                             }}
                             onValueChange={(value) => setData('id_usuario_registro', value)}
                             value={data.id_usuario_registro}
+                            withRefresh={false}
                             placeholder="Selecciona una opción"
                             error={errors.id_usuario_registro}
                         />

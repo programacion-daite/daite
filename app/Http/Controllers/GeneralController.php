@@ -29,7 +29,9 @@ class GeneralController extends Controller
         'p_traer_registros_combinados',
         'p_traer_campos_registros',
         'p_traer_registros',
-        'p_traer_informes'
+        'p_traer_informes',
+        'p_traer_filtros_json',
+        'p_traer_activos'
     ];
 
     /**
@@ -206,6 +208,22 @@ class GeneralController extends Controller
     public function getRegisterRecords(Request $request)
     {
         return $this->executeProcedure($request, 'p_traer_registros');
+    }
+
+    /**
+     * Obtiene los filtros en formato JSON
+     */
+    public function getFiltersJson(Request $request)
+    {
+        return $this->executeProcedure($request, 'p_traer_filtros_json');
+    }
+
+    /**
+     * Obtiene los datos de los activos
+     */
+    public function getActiveData(Request $request)
+    {
+        return $this->executeProcedure($request, 'p_traer_activos');
     }
 }
 

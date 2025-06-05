@@ -1,5 +1,5 @@
 import type { DatabaseField } from '@/types/form';
-import { TipoDato } from '@/types/table';
+import { TipoDato } from '@/resources/js/types/table';
 import { ValueFormatterParams } from 'ag-grid-community';
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';

@@ -11,6 +11,9 @@ Route::middleware(['auth', HandleDinamicConnections::class])->group(function () 
     Route::post('filters', [GeneralController::class, 'getFilters'])
         ->name('filters');
 
+    Route::post('filtersJson', [GeneralController::class, 'getFiltersJson'])
+        ->name('filters.json');
+
     Route::post('query-header', [GeneralController::class, 'getQueryHeader'])
         ->name('query.header');
 
@@ -22,6 +25,9 @@ Route::middleware(['auth', HandleDinamicConnections::class])->group(function () 
 
     Route::post('reports-header', [GeneralController::class, 'getReportsHeader'])
         ->name('reports.header');
+
+    Route::post('get-active-data', [GeneralController::class, 'getActiveData'])
+        ->name('get.active.data');
 
     // Rutas de entidades y registros
     Route::post('entities', [GeneralController::class, 'getEntities'])
@@ -58,4 +64,5 @@ Route::middleware(['auth', HandleDinamicConnections::class])->group(function () 
     // Ruta de registro
     Route::post('register-records', [GeneralController::class, 'registerRecords'])
         ->name('register.records');
+
 });

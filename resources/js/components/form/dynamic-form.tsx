@@ -57,12 +57,12 @@ function RegistroDinamicoContent({ tabla, id_primario }: RegistroDinamicoProps) 
                 formData: data
             }) as { message?: string };
 
-            showSuccess(response.message || `Record ${modalMode === 'create' ? 'Created' : 'Updated'} successfully`);
+            showSuccess(response.message || `Registro ${modalMode === 'create' ? 'Creado' : 'Actualizado'} Correctamente!`);
             refreshTable();
 
         } catch (error: unknown) {
             console.log('Error occurred:', error);
-            showError('Error processing request, please try again');
+            showError('Ha pasando un inconveniente, por favor intente nuevamente');
         }
 
     }, [modalMode, selectedItem, id_primario, showSuccess, showError, registerRecordsMutation, tabla, refreshTable]);
@@ -125,7 +125,7 @@ function RegistroDinamicoContent({ tabla, id_primario }: RegistroDinamicoProps) 
             <ResultModal
                 open={result.isOpen}
                 onClose={handleCloseResult}
-                title={result.isSuccess ? 'Success' : 'Try again'}
+                title={result.isSuccess ? 'Exito' : 'Inconveniente'}
                 message={result.message}
                 status={result.isSuccess ? 'success' : 'error'}
             />

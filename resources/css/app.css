@@ -191,4 +191,17 @@
         font-size: var(--text-header);
     }
 
+    .input-label input,
+.input-label select,
+.input-label textarea,
+.input-label button,
+.input-label label {
+    font-size: 11px !important;
+    height: 28px !important;
+    padding-top: 2px !important;
+    padding-bottom: 2px !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+}
+
 }

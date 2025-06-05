@@ -54,7 +54,7 @@ export function useAgGridData({
                 withCredentials: true,
             });
 
-            const resultado = response.data[0].original ?? response.data[0];
+            const resultado = response.data;
             if (!Array.isArray(resultado)) throw new Error('Invalid columns response');
 
             setColumns(resultado.filter((col) => col.visible === '1'));
@@ -75,7 +75,7 @@ export function useAgGridData({
                 withCredentials: true,
             });
 
-            const resultado = response.data[0].original;
+            const resultado = response.data;
             if (!Array.isArray(resultado)) throw new Error('Invalid data response');
             setRowData(resultado);
         } catch (error) {

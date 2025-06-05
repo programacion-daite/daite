@@ -54,6 +54,7 @@ export const DynamicSelect = memo(function DynamicSelect({
     dependentOn,
     procedure,
 }: DynamicSelectProps) {
+
     const [options, setOptions] = useState<{ value: string; label: string }[]>(() => {
         const optionsParam = parametros.options;
         if (Array.isArray(optionsParam)) {
@@ -71,6 +72,7 @@ export const DynamicSelect = memo(function DynamicSelect({
         }
         return [];
     });
+
     const [errorMsg, setErrorMsg] = useState('');
     const api = ApiClient.getInstance();
 
@@ -103,24 +105,23 @@ export const DynamicSelect = memo(function DynamicSelect({
                 }
             }
 
-            const response = await api.post(route('filters'), {
+            const response = await api.post(route('filters.json'), {
                 ...procedureParams
             });
 
             if (!response.success) {
                 throw new Error(response.error || 'Error al cargar los datos');
             }
-
-            const data = response.data as any[];
+            const data = JSON.parse(response.data[0].json as string);
+            
             if (!Array.isArray(data)) {
                 throw new Error('La respuesta no es válida');
             }
 
-            // Si no hay datos, retornamos un array con una opción vacía
             if (data.length === 0) {
                 return [{
                     value: '',
-                    label: placeholder
+                    label: placeholder || 'No hay opciones'
                 }];
             }
 
@@ -132,7 +133,6 @@ export const DynamicSelect = memo(function DynamicSelect({
         enabled: !isDependent || !!selectValues.get(dependentOn?.selectId || ''),
     });
 
-    // Actualizar opciones cuando cambia queryData
     useEffect(() => {
         if (queryData) {
             setOptions(queryData);
@@ -172,6 +172,7 @@ export const DynamicSelect = memo(function DynamicSelect({
                         type="button"
                         variant="outline"
                         size="icon"
+                        className="cursor-pointer hover:text-white"
                         onClick={() => refetch()}
                         disabled={disabled || isLoading}
                     >

@@ -22,8 +22,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('estadisticas');
 
 });
-
 require __DIR__.'/settings.php';
+require __DIR__.'/reportes.php';
 require __DIR__.'/registros.php';
 require __DIR__.'/procesos.php';
 require __DIR__.'/general.php';

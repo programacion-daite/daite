@@ -191,7 +191,7 @@
         font-size: var(--text-header);
     }
 
-    .input-label input,
+/* .input-label input,
 .input-label select,
 .input-label textarea,
 .input-label button,
@@ -202,6 +202,6 @@
     padding-bottom: 2px !important;
     padding-left: 8px !important;
     padding-right: 8px !important;
-}
+} */
 
 }

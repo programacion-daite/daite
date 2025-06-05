@@ -117,13 +117,13 @@ export default function LotesPagos() {
 
                     <FormBody onSubmit={handleSubmit}>
                         <div className="space-x-3 ">
-                            <LotesPagosForm
+                            {/* <LotesPagosForm
                                 data={data}
                                 errors={errors}
                                 handleInputChange={handleInputChange}
                                 handleComponentChange={handleComponentChange}
                                 className="grid grid-cols-1 gap-4 md:grid-cols-5"
-                            />
+                            /> */}
 
                             <div className="col-span-4 h-2 rounded-md bg-orange-500 mt-2"></div>
 

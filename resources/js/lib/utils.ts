@@ -96,10 +96,23 @@ export function capitalize(texto: string, delimitador: string = ' '): string {
  */
 export const construirJSONGenerico = (datos: Record<string, any>, tabla: string) => {
     const campos = Object.keys(datos);
-
     const camposExcluidos = ['json', '_token'];
+    console.log('ajsdlka');
+    // Identificar campos foráneos y sus IDs correspondientes
+    const camposForaneos = campos.filter(campo => !campo.startsWith('id_') && datos[`id_${campo}`]);
+    const idsForaneos = camposForaneos.map(campo => `id_${campo}`);
 
-    const camposFiltrados = campos.filter((campo) => !camposExcluidos.includes(campo));
+    // Filtrar campos excluyendo los descriptivos de foráneos
+    const camposFiltrados = campos
+        .filter(campo => !camposExcluidos.includes(campo))
+        .filter(campo => {
+            // Si es un campo foráneo descriptivo, lo excluimos
+            if (camposForaneos.includes(campo)) {
+                return false;
+            }
+            // Si es un ID de foráneo o cualquier otro campo, lo incluimos
+            return true;
+        });
 
     // Obtener los valores correspondientes a los campos filtrados
     const valores = camposFiltrados

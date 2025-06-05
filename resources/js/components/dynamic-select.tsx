@@ -113,7 +113,7 @@ export const DynamicSelect = memo(function DynamicSelect({
                 throw new Error(response.error || 'Error al cargar los datos');
             }
             const data = JSON.parse(response.data[0].json as string);
-            
+
             if (!Array.isArray(data)) {
                 throw new Error('La respuesta no es válida');
             }
@@ -159,7 +159,7 @@ export const DynamicSelect = memo(function DynamicSelect({
                                 <SelectItem
                                     key={option.value}
                                     value={option.value}
-                                    className="hover:text-white focus:text-white"
+                                    className="hover:bg-blue-800 hover:text-white focus:bg-blue-500 focus:text-black"
                                 >
                                     {option.label}
                                 </SelectItem>

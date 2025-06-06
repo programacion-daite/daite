@@ -91,6 +91,10 @@ export function ModalForm({ isOpen, onClose, mode, title, initialData, onSubmit,
                 className="max-w-md md:max-w-lg rounded-lg overflow-hidden p-0 gap-0 [&>button:last-child]:hidden"
                 onEscapeKeyDown={(e) => e.preventDefault()}
                 onPointerDownOutside={(e) => e.preventDefault()}
+                onInteractOutside={(e) => e.preventDefault()}
+                onOpenAutoFocus={(e) => {
+                    e.preventDefault(); // Prevenir el autofoco por defecto
+                }}
             >
                 <DialogHeader className="bg-gradient-to-r from-emerald-500 to-green-600 p-6 text-white">
                     <DialogTitle className="text-xl font-medium flex items-center gap-2 capitalize">
@@ -114,13 +118,16 @@ export function ModalForm({ isOpen, onClose, mode, title, initialData, onSubmit,
                     )}
                 </DialogHeader>
 
-                <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4 px-3 pb-2">
+                <form
+                    onSubmit={handleSubmit}
+                    className="grid grid-cols-1 gap-4 px-3 pb-2"
+                >
                     {isLoading ? (
                         <div className="flex items-center justify-center py-8">
                             <Loader2 className="h-8 w-8 animate-spin text-emerald-500" />
                         </div>
                     ) : (
-                        fields.map((field) => {
+                        fields.map((field, index) => {
                             const Component = componentMap[field.componente || 'InputLabel'];
                             const isMaskedInput = field.componente === 'MaskedInput';
 
@@ -138,6 +145,7 @@ export function ModalForm({ isOpen, onClose, mode, title, initialData, onSubmit,
                                     onInput={isMaskedInput ? handleInput : undefined}
                                     onValueChange={handleComponentChange(field.nombre)}
                                     className={field.classname}
+                                    tabIndex={index + 1}
                                 />
                             );
                         })

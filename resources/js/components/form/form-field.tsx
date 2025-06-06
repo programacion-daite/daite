@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import { FormDataType } from '@/types/form';
 import { FormDataConvertible } from '@inertiajs/core';
 
@@ -12,6 +12,8 @@ type FormComponentProps = {
   onInput?: (e: React.FormEvent<HTMLInputElement>) => void;
   onValueChange?: (value: string) => void;
   className?: string;
+  autoFocus?: boolean;
+  ref?: React.Ref<HTMLInputElement>;
   [key: string]: unknown;
 };
 
@@ -27,24 +29,30 @@ interface FormFieldProps {
   onInput?: (e: React.FormEvent<HTMLInputElement>) => void;
   onValueChange?: (value: string) => void;
   className?: string;
-
+  autoFocus?: boolean;
+  ref?: React.Ref<HTMLInputElement>;
 }
 
-export function FormField({
+export const FormField = forwardRef<HTMLInputElement, FormFieldProps>(({
   component: Component,
   onChange,
   onInput,
   onValueChange,
+  autoFocus,
   ...props
-}: FormFieldProps) {
+}, ref) => {
   const componentProps = {
     ...props,
     onChange,
     onInput,
     onValueChange,
     value: props.data[props.name] || '',
+    autoFocus,
+    ref,
     ...props.parametros
   };
 
   return <Component {...componentProps} />;
-}
+});
+
+FormField.displayName = 'FormField';

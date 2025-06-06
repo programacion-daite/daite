@@ -40,6 +40,20 @@ export function ModalForm({ isOpen, onClose, mode, title, initialData, onSubmit,
         if (isOpen) {
             reset();
             setData(initialData);
+            const timer = setTimeout(() => {
+                const modalContent = document.querySelector('[role="dialog"]');
+                const firstInput = modalContent?.querySelector('input:not([type="hidden"]):not(.hidden), select:not(.hidden), textarea:not(.hidden)');
+                console.log('Modal content:', modalContent);
+                console.log('First input found:', firstInput);
+                if (firstInput instanceof HTMLElement) {
+                    firstInput.focus();
+                    if (firstInput instanceof HTMLInputElement) {
+                        firstInput.select();
+                    }
+                }
+            }, 100);
+
+            return () => clearTimeout(timer);
         }
     }, [isOpen, initialData]);
 
@@ -55,15 +69,18 @@ export function ModalForm({ isOpen, onClose, mode, title, initialData, onSubmit,
     };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-        setData(e.target.name, e.target.value);
+        const value = typeof e.target.value === 'string' ? e.target.value.toUpperCase() : e.target.value;
+        setData(e.target.name, value);
     };
 
     const handleInput = (e: React.FormEvent<HTMLInputElement>) => {
-        setData(e.currentTarget.name, e.currentTarget.value);
+        const value = e.currentTarget.value.toUpperCase();
+        setData(e.currentTarget.name, value);
     };
 
     const handleComponentChange = (name: string) => (value: string) => {
-        setData(name, value);
+        const upperValue = typeof value === 'string' ? value.toUpperCase() : value;
+        setData(name, upperValue);
     };
 
     if (!isOpen) return null;
@@ -128,6 +145,7 @@ export function ModalForm({ isOpen, onClose, mode, title, initialData, onSubmit,
                 </form>
 
                 <div className="flex items-center justify-between gap-3 border-t border-gray-100 bg-gray-50 p-3">
+
                     <Button
                         onClick={handleSubmit}
                         disabled={isLoading || processing}
@@ -137,7 +155,7 @@ export function ModalForm({ isOpen, onClose, mode, title, initialData, onSubmit,
                             <Loader2 className="h-4 w-4 animate-spin" />
                         ) : mode === 'create' ? (
                             <>
-                                <PlusCircle className="h-4 w-4" /> Crear
+                                <PlusCircle className="h-4 w-4" /> Guardar
                             </>
                         ) : (
                             <>

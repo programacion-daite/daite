@@ -97,8 +97,7 @@ export function capitalize(texto: string, delimitador: string = ' '): string {
 export const construirJSONGenerico = (datos: Record<string, any>, tabla: string) => {
     const campos = Object.keys(datos);
     const camposExcluidos = ['json', '_token'];
-    console.log('ajsdlka');
-    // Identificar campos foráneos y sus IDs correspondientes
+
     const camposForaneos = campos.filter(campo => !campo.startsWith('id_') && datos[`id_${campo}`]);
     const idsForaneos = camposForaneos.map(campo => `id_${campo}`);
 

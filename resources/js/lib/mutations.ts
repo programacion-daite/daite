@@ -64,45 +64,37 @@ export const useRegisterRecordsMutation = () => {
       primaryId: string;
       formData: FormDataType;
     }) => {
-      // Preparar los datos del formulario incluyendo el ID primario
       const formDataWithId = {
-        [primaryId]: formData[primaryId] ?? 0, // Usar el ID existente o 0 si no existe
+        [primaryId]: formData[primaryId] ?? 0,
         ...formData
       };
 
-      // Obtener el nombre descriptivo de la tabla principal (sin el prefijo id_)
-      const nombreDescriptivo = primaryId.replace('id_', '');
+      const descriptiveName = primaryId.replace('id_', '');
 
-      // Identificar campos foráneos (excluyendo la tabla principal)
-      const camposForaneos = Object.keys(formDataWithId).filter(
-        campo => !campo.startsWith('id_') &&
-                formDataWithId[`id_${campo}`] &&
-                campo !== nombreDescriptivo
+      const foreignFields = Object.keys(formDataWithId).filter(
+        field => !field.startsWith('id_') &&
+                formDataWithId[`id_${field}`] &&
+                field !== descriptiveName
       );
 
-      // Filtrar los campos
-      const campos = Object.keys(formDataWithId)
+      const fields = Object.keys(formDataWithId)
         .filter(key => {
-          // Excluir campos undefined o null
           if (formDataWithId[key] === undefined || formDataWithId[key] === null) {
             return false;
           }
-          // Excluir campos descriptivos de foráneos (excepto el de la tabla principal)
-          if (camposForaneos.includes(key)) {
+          if (foreignFields.includes(key)) {
             return false;
           }
           return true;
         })
         .join(',');
 
-      const valores = Object.keys(formDataWithId)
+      const values = Object.keys(formDataWithId)
         .filter(key => {
-          // Excluir campos undefined o null
           if (formDataWithId[key] === undefined || formDataWithId[key] === null) {
             return false;
           }
-          // Excluir campos descriptivos de foráneos (excepto el de la tabla principal)
-          if (camposForaneos.includes(key)) {
+          if (foreignFields.includes(key)) {
             return false;
           }
           return true;
@@ -110,23 +102,21 @@ export const useRegisterRecordsMutation = () => {
         .map(key => formDataWithId[key]?.toString().toUpperCase())
         .join(',');
 
-      // Preparar el payload para la API
       const payload = {
         json: JSON.stringify({
           tabla: table,
-          campos: campos,
-          valores: valores
+          campos: fields,
+          valores: values
         })
       };
 
-      // Realizar la petición
       const response = await api.post('register-records', payload);
 
       if (!response.success) {
-        throw new Error(response.error || 'Error registering records');
+        return response;
       }
 
-      return response.data;
+      return response;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['register-records'] });

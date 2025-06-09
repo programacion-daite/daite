@@ -5,13 +5,34 @@ export interface ApiResponse<T> {
   success: boolean;
   message?: string;
   error?: string;
+  errorData?: ApiErrorData[];
 }
 
-export type ApiError = {
+export interface ApiErrorData {
+  campo: string;
+  campo_enfocar: string;
+  codigo_estado: string;
+  id_registro: string;
+  mensaje: string;
+}
+
+export interface ApiResponseError {
+  data: ApiErrorData[];
+  status: number;
+  statusText: string;
+}
+
+export interface ApiError extends Error {
   message: string;
   status?: number;
-  data?: unknown;
-};
+  response?: {
+    data: ApiErrorData[];
+    status: number;
+    statusText: string;
+    headers: Record<string, string>;
+    config: AxiosRequestConfig;
+  };
+}
 
 export class ApiClient {
   private static instance: ApiClient;
@@ -28,7 +49,6 @@ export class ApiClient {
       withCredentials: true,
     });
 
-    // Interceptor para agregar programa a todos los requests
     this.axiosInstance.interceptors.request.use(
       (config) => {
         if (config.params) {
@@ -70,12 +90,13 @@ export class ApiClient {
       const response: AxiosResponse = await this.axiosInstance.request(config);
 
       if (response.data.length > 0 && response.data[0].codigo_estado === '400') {
-        const error = response.data[0];
+        const errorData = response.data as ApiErrorData[];
         return {
-          data: response.data as T,
+          data: {} as T,
           success: false,
-          error: error.mensaje,
-          message: error.mensaje
+          error: errorData[0].mensaje,
+          message: errorData[0].mensaje,
+          errorData: errorData
         };
       }
 
@@ -85,10 +106,12 @@ export class ApiClient {
       };
     } catch (error) {
       const apiError = error as ApiError;
+      const errorData = apiError.response?.data as ApiErrorData[];
       return {
-        data: null as T,
+        data: {} as T,
         success: false,
-        error: apiError.message,
+        error: errorData?.[0]?.mensaje || apiError.message,
+        errorData: errorData
       };
     }
   }

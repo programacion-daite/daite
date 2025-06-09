@@ -11,6 +11,7 @@ type FormComponentProps = {
   onChange?: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
   onInput?: (e: React.FormEvent<HTMLInputElement>) => void;
   onValueChange?: (value: string) => void;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   className?: string;
   autoFocus?: boolean;
   ref?: React.Ref<HTMLInputElement>;
@@ -28,9 +29,11 @@ interface FormFieldProps {
   onChange?: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
   onInput?: (e: React.FormEvent<HTMLInputElement>) => void;
   onValueChange?: (value: string) => void;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   className?: string;
   autoFocus?: boolean;
   ref?: React.Ref<HTMLInputElement>;
+  tabIndex?: number;
 }
 
 export const FormField = forwardRef<HTMLInputElement, FormFieldProps>(({
@@ -38,7 +41,9 @@ export const FormField = forwardRef<HTMLInputElement, FormFieldProps>(({
   onChange,
   onInput,
   onValueChange,
+  onKeyDown,
   autoFocus,
+  tabIndex,
   ...props
 }, ref) => {
   const componentProps = {
@@ -46,10 +51,12 @@ export const FormField = forwardRef<HTMLInputElement, FormFieldProps>(({
     onChange,
     onInput,
     onValueChange,
+    onKeyDown,
     value: props.data[props.name] || '',
     autoFocus,
     ref,
-    ...props.parametros
+    ...props.parametros,
+    tabIndex
   };
 
   return <Component {...componentProps} />;

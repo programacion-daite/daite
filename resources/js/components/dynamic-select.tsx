@@ -195,7 +195,7 @@ export const DynamicSelect = memo(function DynamicSelect({
                                 <SelectItem
                                     key={option.value}
                                     value={option.value}
-                                    className="hover:bg-blue-800 hover:text-white focus:bg-blue-500 focus:text-black cursor-pointer"
+                                    className="hover:bg-[#025DAD] hover:text-white focus:[#025DAD] focus:text-black cursor-pointer"
                                 >
                                     {option.label}
                                 </SelectItem>
@@ -220,8 +220,8 @@ export const DynamicSelect = memo(function DynamicSelect({
                     </Button>
                 )}
             </div>
-            {error && <p className="text-sm text-red-500">{error}</p>}
-            {errorMsg && <p className="text-sm text-red-500">{errorMsg}</p>}
+            { error && <p className="text-sm text-red-500">{error}</p> }
+            { errorMsg && <p className="text-sm text-red-500">{errorMsg}</p> }
         </div>
     );
 });

@@ -11,11 +11,36 @@ import { DynamicTableSection } from './dynamic-table-section';
 import { useDynamicFormStore } from '@/store/useDynamicFormStore';
 import { useRegisterRecordsMutation } from '@/lib/mutations';
 import { useTable } from '@/contexts/tableContext';
+import { ApiResponse } from '@/lib/api-client';
 
 interface RegistroDinamicoProps {
     tabla: string;
     id_primario: string;
 }
+
+const getSuccessMessage = (mode: 'create' | 'edit' | null) => {
+    if (!mode) return 'Registro Guardado Correctamente!';
+    return `Registro ${mode === 'create' ? 'Creado' : 'Actualizado'} Correctamente!`;
+};
+
+const getErrorMessage = (error: unknown): string => {
+    if (error instanceof Error) {
+        return error.message;
+    }
+    if (typeof error === 'string') {
+        return error;
+    }
+    if (error && typeof error === 'object' && 'message' in error) {
+        return (error as { message: string }).message;
+    }
+    return 'Ha ocurrido un inconveniente, por favor intente nuevamente';
+};
+
+const validateEditOperation = (selectedItem: TableItem | null, primaryId: string) => {
+    if (!selectedItem?.[primaryId]) {
+        throw new Error('Invalid edit operation');
+    }
+};
 
 export default function RegistroDinamico({ tabla, id_primario }: RegistroDinamicoProps) {
     return (
@@ -42,30 +67,42 @@ function RegistroDinamicoContent({ tabla, id_primario }: RegistroDinamicoProps) 
         showSuccess,
         showError,
         closeResult,
-        resetForm
+        resetForm,
+        setErrors
     } = useDynamicFormStore();
 
     const handleSubmit = useCallback(async (data: FormDataType) => {
         try {
-            if (modalMode === 'edit' && (!selectedItem || !selectedItem[id_primario])) {
-                throw new Error('Invalid edit operation');
+            if (modalMode === 'edit') {
+                validateEditOperation(selectedItem, id_primario);
             }
 
             const response = await registerRecordsMutation.mutateAsync({
                 table: tabla,
                 primaryId: id_primario,
                 formData: data
-            }) as { message?: string };
+            }) as ApiResponse<unknown>;
 
-            showSuccess(response.message || `Registro ${modalMode === 'create' ? 'Creado' : 'Actualizado'} Correctamente!`);
+            if (!response.success) {
+                const inputsWithErrors = response.errorData?.map(error => error.campo_enfocar) || [];
+                const formErrors = inputsWithErrors.reduce((acc, field) => ({
+                    ...acc,
+                    [field]: 'Este campo es requerido'
+                }), {});
+                console.log('formErrors', formErrors);
+                setErrors(formErrors);
+                showError(response.error || 'Ha ocurrido un error');
+                return;
+            }
+
+            showSuccess(getSuccessMessage(modalMode));
             refreshTable();
 
         } catch (error: unknown) {
-            console.log('Error occurred:', error);
-            showError('Ha pasando un inconveniente, por favor intente nuevamente');
+            console.error('Error occurred:', error);
+            showError(getErrorMessage(error));
         }
-
-    }, [modalMode, selectedItem, id_primario, showSuccess, showError, registerRecordsMutation, tabla, refreshTable]);
+    }, [modalMode, selectedItem, id_primario, showSuccess, showError, registerRecordsMutation, tabla, refreshTable, setErrors]);
 
     const handleOpenNewForm = useCallback(() => {
         resetForm();

@@ -4,33 +4,35 @@ import laravel from 'laravel-vite-plugin';
 import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
 
-export default defineConfig({
-    plugins: [
-        laravel({
-            input: ['resources/css/app.css', 'resources/js/app.tsx'],
-            ssr: 'resources/js/ssr.tsx',
-            refresh: true,
-        }),
-        react(),
-        tailwindcss(),
-    ],
-    esbuild: {
-        jsx: 'automatic',
-    },
-    resolve: {
-        alias: {
-            'ziggy-js': resolve(__dirname, 'vendor/tightenco/ziggy'),
+export default defineConfig((configEnv) => {
+    const isSsrBuild = configEnv.isSsrBuild;
+    return {
+        plugins: [
+            laravel({
+                input: ['resources/css/app.css', 'resources/js/app.tsx'],
+                ssr: 'resources/js/ssr.tsx',
+                refresh: true,
+            }),
+            react(),
+            tailwindcss(),
+        ],
+        esbuild: {
+            jsx: 'automatic',
         },
-    },
-    build: {
-        rollupOptions: {
-          output: {
-            manualChunks: {
-              agGrid: ['ag-grid-community'],
-              lucide: ['lucide-react'],
-              reactVendor: ['react', 'react-dom'],
+        resolve: {
+            alias: {
+                'ziggy-js': resolve(__dirname, 'vendor/tightenco/ziggy'),
             },
-          },
         },
-      },
+        build: {
+            rollupOptions: {
+                output: !isSsrBuild ? {
+                    manualChunks: {
+                        lucide: ['lucide-react'],
+                        reactVendor: ['react', 'react-dom'],
+                    },
+                } : undefined,
+            },
+        },
+    };
 });

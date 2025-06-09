@@ -12,6 +12,14 @@ import { CheckCircle, Loader2, PlusCircle, Save, X } from 'lucide-react';
 import React, { useEffect } from 'react';
 import { FormField } from './form-field';
 
+const componentMap = {
+    InputLabel,
+    DynamicSelect,
+    DatePicker,
+    AsyncSearchSelect,
+    MaskedInput,
+};
+
 interface ModalFormProps {
     isOpen: boolean;
     onClose: () => void;
@@ -24,14 +32,6 @@ interface ModalFormProps {
     isLoading?: boolean;
 }
 
-const componentMap = {
-    InputLabel,
-    DynamicSelect,
-    DatePicker,
-    AsyncSearchSelect,
-    MaskedInput,
-};
-
 export function ModalForm({ isOpen, onClose, mode, title, initialData, onSubmit, fields, disableClose = false, isLoading = false }: ModalFormProps) {
     const { data, setData, processing, errors, reset } = useForm<FormDataType>(initialData);
     const { setErrors, showError } = useDynamicFormStore();
@@ -40,6 +40,18 @@ export function ModalForm({ isOpen, onClose, mode, title, initialData, onSubmit,
         if (isOpen) {
             reset();
             setData(initialData);
+            const timer = setTimeout(() => {
+                const modalContent = document.querySelector('[role="dialog"]');
+                const firstInput = modalContent?.querySelector('input:not([type="hidden"]):not(.hidden), select:not(.hidden), textarea:not(.hidden)');
+                if (firstInput instanceof HTMLElement) {
+                    firstInput.focus();
+                    if (firstInput instanceof HTMLInputElement) {
+                        firstInput.select();
+                    }
+                }
+            }, 100);
+
+            return () => clearTimeout(timer);
         }
     }, [isOpen, initialData]);
 
@@ -54,16 +66,13 @@ export function ModalForm({ isOpen, onClose, mode, title, initialData, onSubmit,
         }
     };
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-        setData(e.target.name, e.target.value);
-    };
-
-    const handleInput = (e: React.FormEvent<HTMLInputElement>) => {
-        setData(e.currentTarget.name, e.currentTarget.value);
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+        const value = e.target.value.replace(/,/g, '').toUpperCase();
+        setData(e.target.name, value);
     };
 
     const handleComponentChange = (name: string) => (value: string) => {
-        setData(name, value);
+        setData(name, value.toUpperCase());
     };
 
     if (!isOpen) return null;
@@ -74,6 +83,10 @@ export function ModalForm({ isOpen, onClose, mode, title, initialData, onSubmit,
                 className="max-w-md md:max-w-lg rounded-lg overflow-hidden p-0 gap-0 [&>button:last-child]:hidden"
                 onEscapeKeyDown={(e) => e.preventDefault()}
                 onPointerDownOutside={(e) => e.preventDefault()}
+                onInteractOutside={(e) => e.preventDefault()}
+                onOpenAutoFocus={(e) => {
+                    e.preventDefault();
+                }}
             >
                 <DialogHeader className="bg-gradient-to-r from-emerald-500 to-green-600 p-6 text-white">
                     <DialogTitle className="text-xl font-medium flex items-center gap-2 capitalize">
@@ -97,15 +110,17 @@ export function ModalForm({ isOpen, onClose, mode, title, initialData, onSubmit,
                     )}
                 </DialogHeader>
 
-                <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4 px-3 pb-2">
+                <form
+                    onSubmit={handleSubmit}
+                    className="grid grid-cols-1 gap-4 px-3 pb-2"
+                >
                     {isLoading ? (
                         <div className="flex items-center justify-center py-8">
                             <Loader2 className="h-8 w-8 animate-spin text-emerald-500" />
                         </div>
                     ) : (
-                        fields.map((field) => {
+                        fields.map((field, index) => {
                             const Component = componentMap[field.componente || 'InputLabel'];
-                            const isMaskedInput = field.componente === 'MaskedInput';
 
                             return (
                                 <FormField
@@ -117,10 +132,10 @@ export function ModalForm({ isOpen, onClose, mode, title, initialData, onSubmit,
                                     parametros={field.parametros}
                                     data={data}
                                     errors={errors}
-                                    onChange={!isMaskedInput ? handleInputChange : undefined}
-                                    onInput={isMaskedInput ? handleInput : undefined}
+                                    onChange={handleChange}
                                     onValueChange={handleComponentChange(field.nombre)}
                                     className={field.classname}
+                                    tabIndex={index + 1}
                                 />
                             );
                         })
@@ -129,15 +144,17 @@ export function ModalForm({ isOpen, onClose, mode, title, initialData, onSubmit,
 
                 <div className="flex items-center justify-between gap-3 border-t border-gray-100 bg-gray-50 p-3">
                     <Button
+                        type="submit"
                         onClick={handleSubmit}
                         disabled={isLoading || processing}
                         className="flex cursor-pointer items-center gap-2 bg-gradient-to-r from-emerald-500 to-green-600 text-white transition-colors hover:from-emerald-600 hover:to-green-700"
+                        tabIndex={fields.length + 1}
                     >
                         {processing ? (
                             <Loader2 className="h-4 w-4 animate-spin" />
                         ) : mode === 'create' ? (
                             <>
-                                <PlusCircle className="h-4 w-4" /> Crear
+                                <PlusCircle className="h-4 w-4" /> Guardar
                             </>
                         ) : (
                             <>
@@ -146,11 +163,17 @@ export function ModalForm({ isOpen, onClose, mode, title, initialData, onSubmit,
                         )}
                     </Button>
 
-                    <Button type="button" variant="destructive" onClick={onClose} disabled={processing || isLoading} className="cursor-pointer">
+                    <Button
+                        type="button"
+                        variant="destructive"
+                        onClick={onClose}
+                        disabled={processing || isLoading}
+                        className="cursor-pointer"
+                        tabIndex={fields.length + 2}
+                    >
                         Cancelar
                     </Button>
                 </div>
-
             </DialogContent>
         </Dialog>
     );

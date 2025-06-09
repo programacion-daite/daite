@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import { FormDataType } from '@/types/form';
 import { FormDataConvertible } from '@inertiajs/core';
 
@@ -11,7 +11,10 @@ type FormComponentProps = {
   onChange?: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
   onInput?: (e: React.FormEvent<HTMLInputElement>) => void;
   onValueChange?: (value: string) => void;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   className?: string;
+  autoFocus?: boolean;
+  ref?: React.Ref<HTMLInputElement>;
   [key: string]: unknown;
 };
 
@@ -26,25 +29,37 @@ interface FormFieldProps {
   onChange?: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
   onInput?: (e: React.FormEvent<HTMLInputElement>) => void;
   onValueChange?: (value: string) => void;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   className?: string;
-
+  autoFocus?: boolean;
+  ref?: React.Ref<HTMLInputElement>;
+  tabIndex?: number;
 }
 
-export function FormField({
+export const FormField = forwardRef<HTMLInputElement, FormFieldProps>(({
   component: Component,
   onChange,
   onInput,
   onValueChange,
+  onKeyDown,
+  autoFocus,
+  tabIndex,
   ...props
-}: FormFieldProps) {
+}, ref) => {
   const componentProps = {
     ...props,
     onChange,
     onInput,
     onValueChange,
+    onKeyDown,
     value: props.data[props.name] || '',
-    ...props.parametros
+    autoFocus,
+    ref,
+    ...props.parametros,
+    tabIndex
   };
 
   return <Component {...componentProps} />;
-}
+});
+
+FormField.displayName = 'FormField';

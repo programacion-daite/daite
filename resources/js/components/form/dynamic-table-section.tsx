@@ -40,7 +40,6 @@ export function DynamicTableSection({
                         <DynamicTable
                             table={table}
                             primaryId={primaryId}
-                            onRowClick={onEditClick}
                             onDoubleClick={onEditClick}
                         />
                     </div>

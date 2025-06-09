@@ -35,6 +35,8 @@ interface DynamicSelectProps {
             [key: string]: string | ((value: string) => string);
         };
     };
+    tabIndex?: number;
+    className?: string;
 }
 
 export const DynamicSelect = memo(function DynamicSelect({
@@ -53,7 +55,10 @@ export const DynamicSelect = memo(function DynamicSelect({
     isDependent = false,
     dependentOn,
     procedure,
+    tabIndex,
+    className,
 }: DynamicSelectProps) {
+    const [isOpen, setIsOpen] = useState(false);
 
     const [options, setOptions] = useState<{ value: string; label: string }[]>(() => {
         const optionsParam = parametros.options;
@@ -139,6 +144,16 @@ export const DynamicSelect = memo(function DynamicSelect({
         }
     }, [queryData]);
 
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setIsOpen(true);
+        }
+        if (isOpen && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+            e.preventDefault(); // Prevenir el scroll de la página
+        }
+    };
+
     return (
         <div className="flex flex-col gap-2">
             <Label htmlFor={id} className={cn("text-sm font-medium", required && "after:content-['*'] after:ml-0.5 after:text-red-500")}>
@@ -149,17 +164,38 @@ export const DynamicSelect = memo(function DynamicSelect({
                     value={value || defaultValue}
                     onValueChange={handleValueChange}
                     disabled={disabled || isLoading}
+                    open={isOpen}
+                    onOpenChange={setIsOpen}
                 >
-                    <SelectTrigger id={id} name={name} className="flex-1">
-                        <SelectValue placeholder={placeholder} className="" />
+                    <SelectTrigger
+                        id={id}
+                        name={name}
+                        className="flex-1"
+                        aria-label={label}
+                        aria-required={required}
+                        aria-invalid={!!error}
+                        tabIndex={tabIndex}
+                        onKeyDown={handleKeyDown}
+                    >
+                        <SelectValue placeholder={placeholder} />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent
+                        position="popper"
+                        onCloseAutoFocus={(e) => {
+                            e.preventDefault();
+                            document.getElementById(id)?.focus();
+                        }}
+                        onEscapeKeyDown={() => {
+                            setIsOpen(false);
+                            document.getElementById(id)?.focus();
+                        }}
+                    >
                         <SelectGroup>
                             {options.map((option) => (
                                 <SelectItem
                                     key={option.value}
                                     value={option.value}
-                                    className="hover:bg-blue-800 hover:text-white focus:bg-blue-500 focus:text-black"
+                                    className="hover:bg-[#025DAD] hover:text-white focus:[#025DAD] focus:text-black cursor-pointer"
                                 >
                                     {option.label}
                                 </SelectItem>
@@ -184,8 +220,8 @@ export const DynamicSelect = memo(function DynamicSelect({
                     </Button>
                 )}
             </div>
-            {error && <p className="text-sm text-red-500">{error}</p>}
-            {errorMsg && <p className="text-sm text-red-500">{errorMsg}</p>}
+            { error && <p className="text-sm text-red-500">{error}</p> }
+            { errorMsg && <p className="text-sm text-red-500">{errorMsg}</p> }
         </div>
     );
 });

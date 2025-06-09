@@ -1,18 +1,19 @@
+import { forwardRef } from 'react';
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { memo } from "react";
 
-export interface InputLabelProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'value'> {
+export interface InputLabelProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string;
   value: string;
   error?: string | boolean;
-  ref?: React.RefCallback<HTMLInputElement>;
+  required?: boolean;
 }
 
 const inputClassNames = "h-8 px-2 py-1";
+const errorInputClassNames = "border-red-500 focus:ring-red-500 focus:border-red-500";
 
-export const InputLabel = memo(({
+export const InputLabel = forwardRef<HTMLInputElement, InputLabelProps>(({
   id,
   type = "text",
   label,
@@ -25,13 +26,20 @@ export const InputLabel = memo(({
   autoComplete = 'off',
   disabled = false,
   readOnly = false,
-  ref,
   className,
   ...props
-}: InputLabelProps) => {
+}, ref) => {
   return (
     <div className="space-y-2 input-label">
-      <Label htmlFor={id} className={className}>{label} {required && <span className="text-red-500">*</span>}</Label>
+      <Label
+        htmlFor={id}
+        className={cn(
+          className,
+          error && "text-red-500 font-medium"
+        )}
+      >
+        {label} {(required || error) && <span className="text-red-500">*</span>}
+      </Label>
       <Input
         id={id}
         type={type}
@@ -45,10 +53,25 @@ export const InputLabel = memo(({
         ref={ref}
         readOnly={readOnly}
         aria-invalid={error ? "true" : "false"}
-        className={cn(className, error && "border-red-500", inputClassNames)}
+        aria-errormessage={error ? `${id}-error` : undefined}
+        className={cn(
+          inputClassNames,
+          error && errorInputClassNames,
+          className
+        )}
         {...props}
       />
-      {error && <p className="text-sm text-red-500">{error}</p>}
+      {error && (
+        <p
+          id={`${id}-error`}
+          className="text-sm text-red-500 font-medium mt-1"
+          role="alert"
+        >
+          {typeof error === 'string' ? error : 'Este campo es requerido'}
+        </p>
+      )}
     </div>
   );
 });
+
+InputLabel.displayName = 'InputLabel';

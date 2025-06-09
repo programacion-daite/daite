@@ -70,13 +70,43 @@ export const useRegisterRecordsMutation = () => {
         ...formData
       };
 
-      // Obtener los campos y valores como strings separados por comas
+      // Obtener el nombre descriptivo de la tabla principal (sin el prefijo id_)
+      const nombreDescriptivo = primaryId.replace('id_', '');
+
+      // Identificar campos foráneos (excluyendo la tabla principal)
+      const camposForaneos = Object.keys(formDataWithId).filter(
+        campo => !campo.startsWith('id_') &&
+                formDataWithId[`id_${campo}`] &&
+                campo !== nombreDescriptivo
+      );
+
+      // Filtrar los campos
       const campos = Object.keys(formDataWithId)
-        .filter(key => formDataWithId[key] !== undefined && formDataWithId[key] !== null)
+        .filter(key => {
+          // Excluir campos undefined o null
+          if (formDataWithId[key] === undefined || formDataWithId[key] === null) {
+            return false;
+          }
+          // Excluir campos descriptivos de foráneos (excepto el de la tabla principal)
+          if (camposForaneos.includes(key)) {
+            return false;
+          }
+          return true;
+        })
         .join(',');
 
       const valores = Object.keys(formDataWithId)
-        .filter(key => formDataWithId[key] !== undefined && formDataWithId[key] !== null)
+        .filter(key => {
+          // Excluir campos undefined o null
+          if (formDataWithId[key] === undefined || formDataWithId[key] === null) {
+            return false;
+          }
+          // Excluir campos descriptivos de foráneos (excepto el de la tabla principal)
+          if (camposForaneos.includes(key)) {
+            return false;
+          }
+          return true;
+        })
         .map(key => formDataWithId[key]?.toString().toUpperCase())
         .join(',');
 

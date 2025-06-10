@@ -10,7 +10,7 @@ export interface InputLabelProps extends React.InputHTMLAttributes<HTMLInputElem
   required?: boolean;
 }
 
-const inputClassNames = "h-8 px-2 py-1";
+const inputClassNames = "h-8 px-2 py-1 uppercase";
 const errorInputClassNames = "border-red-500 focus:ring-red-500 focus:border-red-500";
 
 export const InputLabel = forwardRef<HTMLInputElement, InputLabelProps>(({

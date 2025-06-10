@@ -23,6 +23,28 @@ interface UseAgGridDataReturn {
     loadData: (filters?: Record<string, string>) => Promise<void>;
 }
 
+// Tipos para la configuración de columnas
+interface ColumnConfig {
+    nombre?: string;
+    tipo: string;
+    sumar?: string;
+}
+
+// Constantes para modos de suma
+const SUMA_MODO = {
+    NO_SUMAR: '0',
+    SUMAR: '1',
+    CONTAR_FILAS: 'filas'
+} as const;
+
+type SumaModoType = typeof SUMA_MODO[keyof typeof SUMA_MODO];
+
+/**
+ * Hook para crear una tabla genérica utilizando AG-Grid
+ * @param tableName - Nombre de la tabla a mostrar
+ * @param primaryId - Campo que actúa como identificador primario
+ * @returns Configuración y datos necesarios para AG-Grid
+ */
 export function useGenericTable({
     tableName,
     primaryId
@@ -56,58 +78,57 @@ export function useGenericTable({
         await refetchData();
     }, [refetchData]);
 
+    const createColumnDefinition = (col: ColumnConfig): ColDef<TableItem> => {
+        const esCampoId = col.nombre?.startsWith('id_') && col.nombre !== primaryId;
+        const esIdPrimario = col.nombre === primaryId;
+        const displayField = esCampoId ? col.nombre?.replace('id_', '') : col.nombre;
+
+        let sumarModo: SumaModoType = SUMA_MODO.NO_SUMAR;
+        if (esIdPrimario) {
+            sumarModo = SUMA_MODO.CONTAR_FILAS;
+        } else if (col.tipo === 'numeric' && col.sumar === '1') {
+            sumarModo = SUMA_MODO.SUMAR;
+        }
+
+        const colDef: ColDef<TableItem> = {
+            field: displayField ?? '',
+            headerName: (displayField ?? '').replace(/_/g, ' '),
+            headerClass: 'capitalize',
+            cellStyle: {
+                textAlign: col.tipo === 'numeric' ? 'right' : 'left',
+                fontWeight: 'bold',
+            },
+            context: {
+                sumar: sumarModo,
+                isPrimary: esIdPrimario,
+                esForaneo: esCampoId
+            },
+            valueFormatter: getValueFormatterByType(col.tipo as TipoDato) as ValueFormatterFunc<TableItem>,
+            wrapText: true,
+            flex: 1,
+        };
+
+        if (esIdPrimario) {
+            colDef.sort = 'desc' as SortDirection;
+            colDef.sortIndex = 0;
+            colDef.comparator = (valueA, valueB) => {
+                const numA = Number(valueA);
+                const numB = Number(valueB);
+                return numA - numB;
+            };
+        }
+
+        if (esCampoId) {
+            colDef.headerName = (displayField ?? '').replace(/_/g, ' ');
+        }
+
+        return colDef;
+    };
+
     const columnDefs = useMemo<ColDef<TableItem>[]>(() => {
         if (!columnsData?.columns.length) return [];
 
-        const colDefs: ColDef<TableItem>[] = [];
-
-        columnsData.columns.forEach((col) => {
-            const esCampoId = col.nombre?.startsWith('id_') && col.nombre !== primaryId;
-            const esIdPrimario = col.nombre === primaryId;
-
-            const displayField = esCampoId ? col.nombre?.replace('id_', '') : col.nombre;
-
-            let sumarModo = '0';
-            if (esIdPrimario) {
-                sumarModo = 'filas';
-            } else if (col.tipo === 'numeric' && col.sumar === '1') {
-                sumarModo = '1';
-            }
-
-            const colDef: ColDef<TableItem> = {
-                field: displayField ?? '',
-                headerName: (displayField ?? '').replace(/_/g, ' '),
-                headerClass: 'capitalize',
-                cellStyle: {
-                    textAlign: 'left',
-                    fontWeight: 'bold',
-                },
-                context: {
-                    sumar: sumarModo,
-                    isPrimary: esIdPrimario,
-                    esForaneo: esCampoId
-                },
-                valueFormatter: getValueFormatterByType(col.tipo as TipoDato) as ValueFormatterFunc<TableItem>,
-                wrapText: true,
-                flex: 1,
-            };
-
-            if (esIdPrimario) {
-                colDef.sort = 'desc' as SortDirection;
-                colDef.sortIndex = 0;
-                colDef.comparator = (valueA, valueB) => {
-                    const numA = Number(valueA);
-                    const numB = Number(valueB);
-                    return numA - numB;
-                };
-            }
-
-            if (esCampoId) {
-                colDef.headerName = (displayField ?? '').replace(/_/g, ' ');
-            }
-
-            colDefs.push(colDef);
-        });
+        const colDefs: ColDef<TableItem>[] = columnsData.columns.map(createColumnDefinition);
 
         colDefs.push({
             field: 'acciones',

@@ -89,7 +89,6 @@ function RegistroDinamicoContent({ tabla, id_primario }: RegistroDinamicoProps) 
                     ...acc,
                     [field]: 'Este campo es requerido'
                 }), {});
-                console.log('formErrors', formErrors);
                 setErrors(formErrors);
                 showError(response.error || 'Ha ocurrido un error');
                 return;
@@ -99,7 +98,6 @@ function RegistroDinamicoContent({ tabla, id_primario }: RegistroDinamicoProps) 
             refreshTable();
 
         } catch (error: unknown) {
-            console.error('Error occurred:', error);
             showError(getErrorMessage(error));
         }
     }, [modalMode, selectedItem, id_primario, showSuccess, showError, registerRecordsMutation, tabla, refreshTable, setErrors]);
@@ -124,7 +122,6 @@ function RegistroDinamicoContent({ tabla, id_primario }: RegistroDinamicoProps) 
     }, [closeModal, resetForm, result.isOpen]);
 
     const handleCloseResult = useCallback(() => {
-        console.log('handleCloseResult called');
         closeResult();
         if (result.isSuccess) {
             resetForm();

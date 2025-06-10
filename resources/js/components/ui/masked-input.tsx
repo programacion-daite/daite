@@ -1,6 +1,7 @@
 import { useMaskito } from "@maskito/react";
 import { MaskitoOptions } from "@maskito/core";
 import { InputLabel, InputLabelProps } from "@/components/ui/input-label";
+import {maskitoNumberOptionsGenerator} from '@maskito/kit';
 
 // Definimos las máscaras
 const masks: Record<string, MaskitoOptions> = {
@@ -16,9 +17,12 @@ const masks: Record<string, MaskitoOptions> = {
   numeros: {
     mask: [/\d/, /\d/, /\d/, /\d/, /\d/, /\d/, /\d/, /\d/],
   },
-  dinero: {
-    mask: ["$", /\d/, /\d/, /\d/, ".", /\d/, /\d/],
-  },
+  dinero: maskitoNumberOptionsGenerator({
+    prefix: '',
+    thousandSeparator: ',',
+    decimalSeparator: '.',
+    precision: 2,
+  }),
 };
 
 interface MaskedInputProps extends Omit<InputLabelProps, "ref"> {
@@ -27,7 +31,6 @@ interface MaskedInputProps extends Omit<InputLabelProps, "ref"> {
 
 const MaskedInput = ({ maskType, ...props }: MaskedInputProps) => {
   const inputRef = useMaskito({ options: masks[maskType] });
-
   return (
     <InputLabel
       {...props}

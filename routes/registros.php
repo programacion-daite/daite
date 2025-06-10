@@ -27,24 +27,27 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('distritos', fn() => Inertia::render('registros/administracion/distritos'))
         ->name('registros.distritos');
-        
+
         Route::get('afps', fn() => Inertia::render('registros/afps'))
         ->name('registros.afps');
-        
+
         Route::get('bancos', fn() => Inertia::render('registros/bancos'))
         ->name('registros.bancos');
-        
+
         Route::get('areas', fn() => Inertia::render('registros/areas'))
         ->name('registros.areas');
 
         Route::get('argumentos', fn() => Inertia::render('registros/argumentos'))
         ->name('registros.argumentos');
-        
+
         Route::get('garantias', fn() => Inertia::render('registros/garantias'))
         ->name('registros.garantias');
 
         Route::get('tiposNotas', fn() => Inertia::render('registros/tiposNotas'))
         ->name('registros.tiposNotas');
+
+        Route::get('tiposCargos', fn() => Inertia::render('registros/tiposCargos'))
+        ->name('registros.tiposCargos');
 
     });
 

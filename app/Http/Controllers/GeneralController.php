@@ -43,14 +43,10 @@ class GeneralController extends Controller
      */
     private function executeProcedure(Request $request, string $procedure): Response|ResponseFactory
     {
-        Log::info("Ejecutando procedimiento: {$procedure}", $request->all());
-
         $request->merge(['procedimiento' => $procedure]);
         $this->validateProcedure($procedure);
 
         $data = json_encode($request->all());
-
-        info($data);
 
         return Helpers::executeProcedure($data);
     }

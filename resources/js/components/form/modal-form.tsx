@@ -75,6 +75,8 @@ export function ModalForm({ isOpen, onClose, mode, title, initialData, onSubmit,
         setData(name, value.toUpperCase());
     };
 
+    title = title.replace('_', ' ');
+
     if (!isOpen) return null;
 
     return (

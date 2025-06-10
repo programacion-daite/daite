@@ -63,11 +63,9 @@ export const AgGridTable = forwardRef<AgGridTableRef, AgGridTableProps>(
         const [filterText, setFilterText] = useState('');
         const footerLoggedRef = useRef(false);
 
-        // Estabilizar rowData y columnDefs para reducir re-renderizados
         const stableRowData = useMemo(() => rowData, [JSON.stringify(rowData)]);
         const stableColumnDefs = useMemo(() => columnDefs, [JSON.stringify(columnDefs)]);
 
-        // Calcular el footer una vez y memorizarlo
         const footerData = useMemo(() => {
             if (!stableRowData.length || !stableColumnDefs.length) return {};
 
@@ -80,7 +78,6 @@ export const AgGridTable = forwardRef<AgGridTableRef, AgGridTableProps>(
 
                 if (!field || !sumar || sumar === '0' || sumar === 0) return;
 
-                // Solo loguear la primera vez en esta sesión
                 if (!footerLoggedRef.current && !loggedMessage) {
 
                     loggedMessage = true;
@@ -104,7 +101,6 @@ export const AgGridTable = forwardRef<AgGridTableRef, AgGridTableProps>(
             });
 
             if (!footerLoggedRef.current && Object.keys(footer).length > 0) {
-
                 footerLoggedRef.current = true;
             }
 
@@ -146,13 +142,10 @@ export const AgGridTable = forwardRef<AgGridTableRef, AgGridTableProps>(
 
                 if (!field || !sumar || sumar === '0' || sumar === 0) return;
 
-
-
                 if (sumar === 'filas') {
                     footer[field] = rowData.length;
                 } else if (sumar === 1 || sumar === '1') {
                     const sum = rowData.reduce((acc, data) => {
-                        // Añadimos un log para ver qué valores estamos sumando
                         const rawValue = (data as any)[field];
                         const val = Number(rawValue);
 

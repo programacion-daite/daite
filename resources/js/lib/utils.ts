@@ -140,10 +140,11 @@ export const construirJSONGenerico = (datos: Record<string, any>, tabla: string)
 
 // Process field from database to generate appropriate structure
 export const processField = (field: DatabaseField, primaryId: string): DatabaseField => {
-    // If the field already has all properties, return it
+
     if (field.nombre && field.label && field.tipo) {
         return field;
     }
+
     // Normalize field name
     const nombre = field.nombre || field.id || field.campo;
     const esForanea = field.selector === 'SI';
@@ -166,11 +167,12 @@ export const processField = (field: DatabaseField, primaryId: string): DatabaseF
         componente = 'DynamicSelect';
     } else if (tipo === 'datetime') {
         componente = 'DatePicker';
+    } else if (tipo === 'numeric') {
+        componente = 'MaskedInput';
     } else if (/telefono|celular|whatsapp|cedula|rnc|identificacion/i.test(nombre || '')) {
         componente = 'MaskedInput';
     }
 
-    // Configure parameters for specific components
     let parametros: Record<string, any> = {};
 
     if (componente === 'DynamicSelect') {
@@ -192,11 +194,13 @@ export const processField = (field: DatabaseField, primaryId: string): DatabaseF
         }
     } else if (componente === 'MaskedInput') {
         if (/telefono|celular|whatsapp/.test(nombre || '')) {
-            parametros = { mask: 'telefono' };
+            parametros = { maskType: 'telefono' };
         } else if (/cedula|rnc|identificacion/.test(nombre || '')) {
-            parametros = { mask: 'cedula' };
+            parametros = { maskType: 'cedula' };
+        } else if (tipo === 'numeric') {
+            parametros = { maskType: 'dinero' };
         } else {
-            parametros = { mask: 'entero' };
+            parametros = { maskType: 'entero' };
         }
     } else if (componente === 'InputLabel') {
         parametros = { maxLength: maxLength };

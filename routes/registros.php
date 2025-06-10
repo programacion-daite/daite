@@ -27,19 +27,19 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('distritos', fn() => Inertia::render('registros/administracion/distritos'))
         ->name('registros.distritos');
-        
+
         Route::get('afps', fn() => Inertia::render('registros/afps'))
         ->name('registros.afps');
-        
+
         Route::get('bancos', fn() => Inertia::render('registros/bancos'))
         ->name('registros.bancos');
-        
+
         Route::get('areas', fn() => Inertia::render('registros/areas'))
         ->name('registros.areas');
 
         Route::get('argumentos', fn() => Inertia::render('registros/argumentos'))
         ->name('registros.argumentos');
-        
+
         Route::get('garantias', fn() => Inertia::render('registros/garantias'))
         ->name('registros.garantias');
 
@@ -48,13 +48,13 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('empresas', fn() => Inertia::render('registros/empresas'))
         ->name('registros.empresas');
-        
+
         Route::get('billetes', fn() => Inertia::render('registros/billetes'))
         ->name('registros.billetes');
 
         Route::get('barrios', fn() => Inertia::render('registros/barrios'))
         ->name('registros.barrios');
-        
+
         Route::get('estadosCiviles', fn() => Inertia::render('registros/estadosCiviles'))
         ->name('registros.estadosCiviles');
 
@@ -69,7 +69,7 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('cobradores', fn() => Inertia::render('registros/cobradores'))
         ->name('registros.cobradores');
-       
+
         Route::get('gestores', fn() => Inertia::render('registros/gestores'))
         ->name('registros.gestores');
 
@@ -90,13 +90,13 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('tiposTasas', fn() => Inertia::render('registros/tiposTasas'))
         ->name('registros.tiposTasas');
-        
+
         Route::get('conceptos', fn() => Inertia::render('registros/conceptos'))
         ->name('registros.conceptos');
 
         Route::get('departamentos', fn() => Inertia::render('registros/departamentos'))
         ->name('registros.departamentos');
- 
+
         Route::get('paises', fn() => Inertia::render('registros/paises'))
         ->name('registros.paises');
 
@@ -117,7 +117,7 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('supervisores', fn() => Inertia::render('registros/supervisores'))
         ->name('registros.supervisores');
-    
+
         Route::get('tiposConstribuyentes', fn() => Inertia::render('registros/tiposConstribuyentes'))
         ->name('registros.tiposConstribuyentes');
 
@@ -125,19 +125,19 @@ Route::middleware(['auth'])->group(function () {
         ->name('registros.tiposDocumentos');
 
         Route::get('tiposRelaciones', fn() => Inertia::render('registros/tiposRelaciones'))
-        ->name('registros.tiposRelaciones');        
+        ->name('registros.tiposRelaciones');
 
         Route::get('clasificacionesContables', fn() => Inertia::render('registros/clasificacionesContables'))
-        ->name('registros.clasificacionesContables');         
+        ->name('registros.clasificacionesContables');
 
         Route::get('tiposCalculos', fn() => Inertia::render('registros/tiposCalculos'))
         ->name('registros.tiposCalculos');
 
         Route::get('formasPagos', fn() => Inertia::render('registros/formasPagos'))
-        ->name('registros.formasPagos'); 
+        ->name('registros.formasPagos');
 
         Route::get('oficiales', fn() => Inertia::render('registros/oficiales'))
-        ->name('registros.oficiales');   
+        ->name('registros.oficiales');
 
         Route::get('marcas', fn() => Inertia::render('registros/marcas'))
         ->name('registros.marcas');   

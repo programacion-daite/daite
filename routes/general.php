@@ -7,6 +7,7 @@ use App\Http\Middleware\HandleDinamicConnections;
 
 // Rutas generales para todas las pantallas
 Route::middleware(['auth', HandleDinamicConnections::class])->group(function () {
+
     // Rutas de filtros y encabezados
     Route::post('filters', [GeneralController::class, 'getFilters'])
         ->name('filters');

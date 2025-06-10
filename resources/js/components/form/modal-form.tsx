@@ -71,6 +71,11 @@ export function ModalForm({ isOpen, onClose, mode, title, initialData, onSubmit,
         setData(e.target.name, value);
     };
 
+    const handleInput = (e: React.FormEvent<HTMLInputElement>) => {
+        const target = e.target as HTMLInputElement;
+        setData(target.name, target.value);
+    };
+
     const handleComponentChange = (name: string) => (value: string) => {
         setData(name, value.toUpperCase());
     };
@@ -134,7 +139,8 @@ export function ModalForm({ isOpen, onClose, mode, title, initialData, onSubmit,
                                     parametros={field.parametros}
                                     data={data}
                                     errors={errors}
-                                    onChange={handleChange}
+                                    onChange={field.componente === 'MaskedInput' ? undefined : handleChange}
+                                    onInput={field.componente === 'MaskedInput' ? handleInput : undefined}
                                     onValueChange={handleComponentChange(field.nombre)}
                                     className={field.classname}
                                     tabIndex={index + 1}

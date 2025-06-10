@@ -1,11 +1,11 @@
 // import RegistroDinamico from "./layout"
 import RegistroDinamico from "@/components/form/dynamic-form"
 
-export default function TiposCargos() {
+export default function Especialidades() {
     return (
         <RegistroDinamico
-            tabla="tipos_cargos"
-            id_primario="id_tipo_cargo"
+            tabla="especialidades"
+            id_primario="id_especialidad"
         />
     )
 }

@@ -1,11 +1,11 @@
 // import RegistroDinamico from "./layout"
 import RegistroDinamico from "@/components/form/dynamic-form"
 
-export default function TiposCargos() {
+export default function Monedas() {
     return (
         <RegistroDinamico
-            tabla="tipos_cargos"
-            id_primario="id_tipo_cargo"
+            tabla="monedas"
+            id_primario="id_moneda"
         />
     )
 }

@@ -12,4 +12,9 @@ Route::middleware(['auth', HandleDinamicConnections::class])->group(function () 
             ->name('reportes.activos');
     });
 
+    Route::prefix('reportes')->group(function () {
+        Route::get('clientes', fn() => Inertia::render('reportes/clientes'))
+            ->name('reportes.clientes');
+    });
+
 });

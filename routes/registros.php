@@ -139,6 +139,22 @@ Route::middleware(['auth'])->group(function () {
         Route::get('oficiales', fn() => Inertia::render('registros/oficiales'))
         ->name('registros.oficiales');
 
+        Route::get('marcas', fn() => Inertia::render('registros/marcas'))
+        ->name('registros.marcas');   
+                
+        Route::get('sectores', fn() => Inertia::render('registros/sectores'))
+        ->name('registros.sectores'); 
+
+        Route::get('sucursales', fn() => Inertia::render('registros/sucursales'))
+        ->name('registros.sucursales');  
+
+        Route::get('tiposContactos', fn() => Inertia::render('registros/tiposContactos'))
+        ->name('registros.tiposContactos');  
+
+        Route::get('tiposVehiculos', fn() => Inertia::render('registros/tiposVehiculos'))
+        ->name('registros.tiposVehiculos');  
+
+
     });
 
 });

@@ -99,7 +99,7 @@ export const useRegisterRecordsMutation = () => {
           }
           return true;
         })
-        .map(key => formDataWithId[key]?.toString().toUpperCase())
+        .map(key => formDataWithId[key]?.toString().replaceAll(',','').toUpperCase())
         .join(',');
 
       const payload = {

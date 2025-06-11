@@ -1,42 +1,25 @@
 import { useDeepMemo } from '@/hooks/general/use-deepmemo';
-import { TableItem } from '@/types/table';
-import { forwardRef, useImperativeHandle, useRef, useState, useEffect } from 'react';
-import { AgGridTable, AgGridTableRef } from './data-table';
+import { DynamicTableProps, TableItem } from '@/types/table';
+import { FC, useState, useEffect } from 'react';
+import { DataTable } from './data-table';
 import { useGenericTable } from '@/hooks/modal/use-generic-data-table';
 import { useTable } from '@/contexts/tableContext';
 
-type DynamicTableProps = {
-    table: string;
-    primaryId: string;
-    onRowClick?: (item: TableItem) => void;
-    onDoubleClick?: (item: TableItem) => void;
-    styleConfig?: {
-        theme?: string;
-        headerColor?: string;
-        rowColor?: string;
-        oddRowColor?: string;
-    };
-} & React.RefAttributes<DynamicTableRef>;
-
-export interface DynamicTableRef {
-    executeGridAction: (action: 'refreshCells' | 'applyFilter' | 'refreshData', params?: unknown) => void;
-}
-
-export const DynamicTable = forwardRef<DynamicTableRef, DynamicTableProps>(({
+export const DynamicTable: FC<DynamicTableProps> = ({
     table,
     primaryId,
     onRowClick,
     onDoubleClick,
+    onAction,
     styleConfig = {
         theme: 'ag-theme-quartz',
         headerColor: '#005CAC',
         rowColor: '#FFFFFF',
         oddRowColor: '#BFD6EA'
     }
-}, ref) => {
+}) => {
     const { shouldRefresh } = useTable();
     const [selectedItem, setSelectedItem] = useState<TableItem | null>(null);
-    const agGridTableRef = useRef<AgGridTableRef>(null);
 
     const tableParamsValue = {
         primaryId,
@@ -44,7 +27,6 @@ export const DynamicTable = forwardRef<DynamicTableRef, DynamicTableProps>(({
     };
 
     const stableTableParams = useDeepMemo(tableParamsValue, tableParamsValue);
-
     const { rowData, columnDefs, defaultColDef, loading, refreshData } = useGenericTable(stableTableParams);
 
     const handleRowClick = (item: TableItem) => {
@@ -56,29 +38,22 @@ export const DynamicTable = forwardRef<DynamicTableRef, DynamicTableProps>(({
         onDoubleClick?.(item);
     };
 
+    const handleAction = (action: string) => {
+        if (action === 'refreshData') {
+            refreshData();
+        }
+        onAction?.(action);
+    };
+
     useEffect(() => {
         if (shouldRefresh !== undefined) {
             refreshData();
         }
     }, [shouldRefresh, refreshData]);
 
-    useImperativeHandle(
-        ref,
-        () => ({
-            executeGridAction: (action, params) => {
-                if (action === 'refreshData') {
-                    refreshData();
-                } else if (agGridTableRef.current) {
-                    agGridTableRef.current.executeGridAction(action, params);
-                }
-            }
-        }),
-        [refreshData],
-    );
-
     return (
         <div className={`${styleConfig.theme} h-full w-full`}>
-            <AgGridTable
+            <DataTable
                 rowData={rowData}
                 columnDefs={columnDefs}
                 defaultColDef={defaultColDef}
@@ -86,10 +61,8 @@ export const DynamicTable = forwardRef<DynamicTableRef, DynamicTableProps>(({
                 selectedItem={selectedItem}
                 onRowClick={handleRowClick}
                 onDoubleClick={handleRowDoubleClick}
-                ref={agGridTableRef}
+                onAction={handleAction}
             />
         </div>
     );
-});
-
-DynamicTable.displayName = 'DynamicTable';
+};

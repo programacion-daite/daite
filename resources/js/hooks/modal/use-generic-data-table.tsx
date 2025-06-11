@@ -6,49 +6,63 @@ import { ColDef, GridOptions, SortDirection, ValueFormatterFunc } from 'ag-grid-
 import { useCallback, useMemo } from 'react';
 import { useTableColumns, useTableData } from '../table/use-table-queries';
 
+/**
+ * Propiedades necesarias para inicializar la tabla genérica
+ */
 interface UseGenericTableProps {
-    tableName: string | undefined;
-    primaryId: string | undefined;
+    tableName: string | undefined;  // Nombre de la tabla a mostrar
+    primaryId: string | undefined;  // Identificador único de la tabla
 }
 
+/**
+ * Interfaz que define la estructura de retorno del hook
+ * Contiene toda la configuración necesaria para AG-Grid
+ */
 interface UseAgGridDataReturn {
-    columnDefs: ColDef[];
-    rowData: TableItem[];
-    gridOptions: GridOptions;
-    loading: boolean;
-    error: string | null;
-    defaultColDef: Partial<ColDef<TableItem>>;
-    refreshData: () => Promise<void>;
-    refreshColumns: () => Promise<void>;
-    loadData: (filters?: Record<string, string>) => Promise<void>;
+    columnDefs: ColDef[];           // Definiciones de columnas
+    rowData: TableItem[];           // Datos de las filas
+    gridOptions: GridOptions;       // Opciones de configuración de AG-Grid
+    loading: boolean;               // Estado de carga
+    error: string | null;           // Mensaje de error si existe
+    defaultColDef: Partial<ColDef<TableItem>>;  // Configuración por defecto de columnas
+    refreshData: () => Promise<void>;           // Función para recargar datos
+    refreshColumns: () => Promise<void>;        // Función para recargar columnas
+    loadData: (filters?: Record<string, string>) => Promise<void>;  // Función para cargar datos con filtros
 }
 
-// Tipos para la configuración de columnas
+/**
+ * Configuración de una columna individual
+ */
 interface ColumnConfig {
-    nombre?: string;
-    tipo: string;
-    sumar?: string;
+    nombre?: string;    // Nombre de la columna
+    tipo: string;       // Tipo de dato de la columna
+    sumar?: string;     // Indica si la columna debe sumarse ('1') o no ('0')
 }
 
-// Constantes para modos de suma
+/**
+ * Constantes que definen los modos de suma disponibles
+ */
 const SUMA_MODO = {
-    NO_SUMAR: '0',
-    SUMAR: '1',
-    CONTAR_FILAS: 'filas'
+    NO_SUMAR: '0',          // No realizar suma
+    SUMAR: '1',             // Sumar valores numéricos
+    CONTAR_FILAS: 'filas'   // Contar número de filas
 } as const;
 
 type SumaModoType = typeof SUMA_MODO[keyof typeof SUMA_MODO];
 
 /**
- * Hook para crear una tabla genérica utilizando AG-Grid
- * @param tableName - Nombre de la tabla a mostrar
- * @param primaryId - Campo que actúa como identificador primario
- * @returns Configuración y datos necesarios para AG-Grid
+ * Custom hook for creating a generic table using AG-Grid
+ * Provides functionality for:
+ * - Dynamic data loading and display
+ * - Handling columns with different data types
+ * - Sum and count operations
+ * - Loading and error state management
  */
 export function useGenericTable({
     tableName,
     primaryId
 }: UseGenericTableProps): UseAgGridDataReturn {
+    // Obtiene la configuración de columnas de la tabla
     const {
         data: columnsData,
         isLoading: isLoadingColumns,
@@ -56,6 +70,7 @@ export function useGenericTable({
         refetch: refetchColumns
     } = useTableColumns(tableName, primaryId);
 
+    // Obtiene los datos de las filas de la tabla
     const {
         data: rowData = [],
         isLoading: isLoadingData,
@@ -63,33 +78,60 @@ export function useGenericTable({
         refetch: refetchData
     } = useTableData(tableName, primaryId, columnsData?.hasForeignIDs ?? false);
 
+    // Estados globales de la tabla
     const loading = isLoadingColumns || isLoadingData;
     const error = columnsError?.message || dataError?.message || null;
 
+    /**
+     * Refreshes the table data
+     * Triggers a new data fetch from the server
+     */
     const refreshData = useCallback(async () => {
         await refetchData();
     }, [refetchData]);
 
+    /**
+     * Refreshes the table columns configuration
+     * Useful when table structure changes
+     */
     const refreshColumns = useCallback(async () => {
         await refetchColumns();
     }, [refetchColumns]);
 
-    const loadData = useCallback(async () => {
+    /**
+     * Loads data with optional filtering
+     * @param filters - Key-value pairs for filtering the data
+     */
+    const loadData = useCallback(async (filters?: Record<string, string>) => {
+        console.log('Filters to be implemented:', filters);
         await refetchData();
     }, [refetchData]);
 
-    const createColumnDefinition = (col: ColumnConfig): ColDef<TableItem> => {
-        const esCampoId = col.nombre?.startsWith('id_') && col.nombre !== primaryId;
-        const esIdPrimario = col.nombre === primaryId;
-        const displayField = esCampoId ? col.nombre?.replace('id_', '') : col.nombre;
+    /**
+     * Creates an AG-Grid column definition from a column configuration
+     * Handles special cases for:
+     * - Primary key columns
+     * - Foreign key columns
+     * - Numeric columns with summation
+     *
+     * @param col - Column configuration object
+     * @returns AG-Grid column definition
+     */
+    const createColumnDefinition = useCallback((col: ColumnConfig): ColDef<TableItem> => {
+        // Determine if it's an ID field or primary key
+        const isIdField = col.nombre?.startsWith('id_') && col.nombre !== primaryId;
+        const isPrimaryId = col.nombre === primaryId;
+        const displayField = isIdField ? col.nombre?.replace('id_', '') : col.nombre;
 
+        // Configure summation mode based on column type
         let sumarModo: SumaModoType = SUMA_MODO.NO_SUMAR;
-        if (esIdPrimario) {
+        if (isPrimaryId) {
             sumarModo = SUMA_MODO.CONTAR_FILAS;
         } else if (col.tipo === 'numeric' && col.sumar === '1') {
             sumarModo = SUMA_MODO.SUMAR;
         }
 
+        // Base column configuration
         const colDef: ColDef<TableItem> = {
             field: displayField ?? '',
             headerName: (displayField ?? '').replace(/_/g, ' '),
@@ -100,15 +142,16 @@ export function useGenericTable({
             },
             context: {
                 sumar: sumarModo,
-                isPrimary: esIdPrimario,
-                esForaneo: esCampoId
+                isPrimary: isPrimaryId,
+                esForaneo: isIdField
             },
             valueFormatter: getValueFormatterByType(col.tipo as TipoDato) as ValueFormatterFunc<TableItem>,
             wrapText: true,
             flex: 1,
         };
 
-        if (esIdPrimario) {
+        // Special configuration for primary key
+        if (isPrimaryId) {
             colDef.sort = 'desc' as SortDirection;
             colDef.sortIndex = 0;
             colDef.comparator = (valueA, valueB) => {
@@ -118,18 +161,26 @@ export function useGenericTable({
             };
         }
 
-        if (esCampoId) {
+        // Name adjustment for ID fields
+        if (isIdField) {
             colDef.headerName = (displayField ?? '').replace(/_/g, ' ');
         }
 
         return colDef;
-    };
+    }, [primaryId]);
 
+    /**
+     * Generates column definitions for the table
+     * Includes:
+     * - Data columns based on configuration
+     * - Action column for row operations
+     */
     const columnDefs = useMemo<ColDef<TableItem>[]>(() => {
         if (!columnsData?.columns.length) return [];
 
         const colDefs: ColDef<TableItem>[] = columnsData.columns.map(createColumnDefinition);
 
+        // Add actions column
         colDefs.push({
             field: 'acciones',
             headerName: '',
@@ -140,31 +191,56 @@ export function useGenericTable({
         });
 
         return colDefs;
-    }, [columnsData, primaryId]);
+    }, [columnsData, createColumnDefinition]);
 
+    /**
+     * Default configuration applied to all columns
+     * Sets up basic interactivity and display options
+     */
     const defaultColDef = useMemo<Partial<ColDef<TableItem>>>(
         () => ({
             resizable: true,
             sortable: true,
             filter: true,
             wrapHeaderText: true,
+            // Performance optimizations for columns
+            suppressSizeToFit: true,      // Prevent auto-sizing calculations
+            suppressAutoSize: true,       // Prevent auto-sizing calculations
+            filterParams: {
+                suppressAndOrCondition: true, // Simpler filter UI
+            },
         }),
         [],
     );
 
+    /**
+     * AG-Grid global configuration options
+     * Sets up the core functionality and behavior of the grid
+     */
     const gridOptions = useMemo<GridOptions<TableItem>>(
         () => ({
             localeText: TABLE_LANGUAGE_ES,
             columnDefs,
             rowData,
             defaultColDef,
-            animateRows: true,
+            // Performance optimizations
+            rowBuffer: 10,                    // Number of rows rendered outside viewport
+            animateRows: false,               // Disable row animations for better performance
             suppressCellFocus: true,
             rowSelection: 'single',
             columnSize: 'autoSize',
             columnSizeOptions: { skipHeader: true },
+            // Enable row model for better performance with large datasets
+            rowModelType: 'clientSide',
+            enableCellTextSelection: false,   // Disable text selection for better performance
+            suppressMovableColumns: true,     // Disable column moving for better performance
+            suppressColumnVirtualisation: false, // Enable column virtualization
+            // Cache block size for better scrolling
+            cacheBlockSize: 100,
+            // Prevent unnecessary re-renders
+            getRowId: (params) => params.data[primaryId as keyof TableItem]?.toString() ?? '',
         }),
-        [columnDefs, rowData, defaultColDef],
+        [columnDefs, rowData, defaultColDef, primaryId],
     );
 
     return {

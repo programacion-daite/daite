@@ -1,9 +1,8 @@
 import { numericFormat } from '@/lib/utils';
-import { TableItem } from '@/types/table';
+import { DataTableProps, DataTableRef, TableItem } from '@/types/table';
 import { TABLE_LANGUAGE_ES } from '@/utils/table-language';
 import {
     AllCommunityModule,
-    ColDef,
     GridApi,
     GridReadyEvent,
     ModuleRegistry,
@@ -12,13 +11,13 @@ import {
     themeQuartz,
 } from 'ag-grid-community';
 import { AgGridReact } from 'ag-grid-react';
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState, useMemo } from 'react';
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { InputLabel } from '../ui/input-label';
 
 // Registrar módulos de AG Grid solo una vez
 ModuleRegistry.registerModules([AllCommunityModule]);
 
-// Tema personalizado para la cuadrícula
+// Tema personalizado de la tabla
 const myTheme = themeQuartz.withParams({
     accentColor: '#005CAC',
     backgroundColor: '#FFFFFF',
@@ -40,171 +39,92 @@ const myTheme = themeQuartz.withParams({
     spacing: 5,
 });
 
-interface AgGridTableProps {
-    rowData: TableItem[];
-    columnDefs: ColDef<TableItem>[];
-    defaultColDef?: Partial<ColDef<TableItem>>;
-    loading: boolean;
-    selectedItem: TableItem | null;
-    onRowClick: (item: TableItem) => void;
-    onDoubleClick: (item: TableItem) => void;
-}
-
-export interface AgGridTableRef {
-    executeGridAction: (action: 'refreshCells' | 'applyFilter', params?: unknown) => void;
-    setRowData?: (data: TableItem[]) => void;
-}
-
-export const AgGridTable = forwardRef<AgGridTableRef, AgGridTableProps>(
-    ({ rowData, columnDefs, defaultColDef, selectedItem, onRowClick, onDoubleClick }, ref) => {
-
+export const DataTable = forwardRef<DataTableRef, DataTableProps>(
+    ({ rowData, columnDefs, defaultColDef, selectedItem, onRowClick, onDoubleClick, onAction }, ref) => {
         const gridRef = useRef<AgGridReact>(null);
         const [gridApi, setGridApi] = useState<GridApi | null>(null);
         const [filterText, setFilterText] = useState('');
-        const footerLoggedRef = useRef(false);
 
-        const stableRowData = useMemo(() => rowData, [JSON.stringify(rowData)]);
-        const stableColumnDefs = useMemo(() => columnDefs, [JSON.stringify(columnDefs)]);
-
-        const footerData = useMemo(() => {
-            if (!stableRowData.length || !stableColumnDefs.length) return {};
-
-            const footer: Record<string, any> = {};
-            let loggedMessage = false;
-
-            stableColumnDefs.forEach((col) => {
-                const field = col.field;
-                const sumar = col.context?.sumar;
-
-                if (!field || !sumar || sumar === '0' || sumar === 0) return;
-
-                if (!footerLoggedRef.current && !loggedMessage) {
-
-                    loggedMessage = true;
-                }
-
-                if (sumar === 'filas') {
-                    footer[field] = stableRowData.length;
-                } else if (sumar === 1 || sumar === '1') {
-                    const sum = stableRowData.reduce((acc, data) => {
-                        const rawValue = data[field as keyof TableItem];
-                        const val = Number(rawValue);
-
-                        if (isNaN(val) && !footerLoggedRef.current) {
-                            console.warn(`Valor NaN detectado en campo ${field}:`, rawValue);
-                        }
-
-                        return acc + (isNaN(val) ? 0 : val);
-                    }, 0);
-                    footer[field] = numericFormat(sum, 2);
-                }
-            });
-
-            if (!footerLoggedRef.current && Object.keys(footer).length > 0) {
-                footerLoggedRef.current = true;
-            }
-
-            return footer;
-        }, [stableRowData, stableColumnDefs]);
-
-        // Actualizar el footer solo cuando el API de la grilla esté lista
-        // o cuando los datos del footer cambien
-        useEffect(() => {
-            if (!gridApi) return;
-
-            // Solo actualizar si hay datos en el footer
-            if (Object.keys(footerData).length > 0) {
-                gridApi.setGridOption('pinnedBottomRowData', [footerData]);
-            }
-        }, [gridApi, footerData]);
-
-        const onGridReady = useCallback((params: GridReadyEvent) => {
-            setGridApi(params.api);
-            // const allColIds = params.columnApi.getAllColumns()?.map((col) => col.getColId()) || [];
-            // params.columnApi.autoSizeColumns(allColIds, false);
-        }, []);
-
-        useEffect(() => {
-            if (gridApi) {
-                gridApi?.setGridOption('quickFilterText', filterText);
-            }
-        }, [filterText, gridApi]);
-
-        useEffect(() => {
-            if (!gridApi) return;
-
-            const footer: Record<string, any> = {};
+        // Calcular el footer una vez cuando los datos cambian
+        const footer = useCallback(() => {
+            const result: Record<string, string | number> = {};
 
             columnDefs.forEach((col) => {
                 const field = col.field;
-                // Accedemos a sumar desde el context
                 const sumar = col.context?.sumar;
 
-                if (!field || !sumar || sumar === '0' || sumar === 0) return;
+                if (!field || !sumar || sumar === '0') return;
 
                 if (sumar === 'filas') {
-                    footer[field] = rowData.length;
-                } else if (sumar === 1 || sumar === '1') {
+                    result[field] = rowData.length;
+                } else if (sumar === '1') {
                     const sum = rowData.reduce((acc, data) => {
-                        const rawValue = (data as any)[field];
-                        const val = Number(rawValue);
-
-                        if (isNaN(val)) {
-                            console.warn(`Valor NaN detectado en campo ${field}:`, rawValue);
-                        }
-
+                        const val = Number(data[field as keyof TableItem]);
                         return acc + (isNaN(val) ? 0 : val);
                     }, 0);
-                    footer[field] = numericFormat(sum, 2);
+                    result[field] = numericFormat(sum, 2);
                 }
             });
 
-            gridApi.setGridOption('pinnedBottomRowData', [footer]);
-        }, [gridApi, rowData, columnDefs]);
+            return result;
+        }, [columnDefs, rowData]);
 
+        // Actualizar el footer cuando cambian los datos
+        useEffect(() => {
+            if (!gridApi) return;
+            const footerData = footer();
+            if (Object.keys(footerData).length > 0) {
+                gridApi.setGridOption('pinnedBottomRowData', [footerData]);
+            }
+        }, [gridApi, footer]);
+
+        // Manejar el filtro rápido
+        useEffect(() => {
+            gridApi?.setGridOption('quickFilterText', filterText);
+        }, [filterText, gridApi]);
+
+        // Mantener la selección sincronizada
         useEffect(() => {
             if (!gridApi || !selectedItem) return;
             gridApi.forEachNode((node) => node.setSelected(node.data === selectedItem));
         }, [gridApi, selectedItem]);
 
-        const handleRowClicked = useCallback((e: RowClickedEvent) => onRowClick(e.data), [onRowClick]);
-
-        const handleRowDoubleClicked = useCallback((e: RowDoubleClickedEvent) => onDoubleClick(e.data), [onDoubleClick]);
+        const onGridReady = useCallback((params: GridReadyEvent) => {
+            setGridApi(params.api);
+        }, []);
 
         useImperativeHandle(
             ref,
             () => ({
-                executeGridAction: (action: 'refreshCells' | 'applyFilter', params?: unknown) => {
+                executeGridAction: (action: 'refreshCells' | 'applyFilter') => {
                     if (!gridApi) return;
-
-                    switch (action) {
-                        case 'refreshCells':
-
-                            gridApi.refreshCells({ force: true });
-                            break;
-                        // case 'applyFilter':
-                        //  // Implementa lógica para aplicar filtros si es necesario
-                        //  break;
-                        default:
-                            console.warn(`Acción no soportada: ${action}`);
+                    if (action === 'refreshCells') {
+                        gridApi.refreshCells({ force: true });
                     }
                 },
                 setRowData: (data: TableItem[]) => {
-                    if (!gridApi) return;
-                    gridApi.setGridOption('rowData', data);
+                    gridApi?.setGridOption('rowData', data);
+                },
+                onAction: (action: string) => {
+                    onAction?.(action);
                 },
             }),
-            [gridApi],
+            [gridApi, onAction],
         );
 
         return (
             <>
                 <div className="flex items-center space-x-2 p-2">
-                    <InputLabel label="Buscar" id="buscar" name="buscar" value={filterText} onChange={(e) => setFilterText(e.target.value)} />
+                    <InputLabel
+                        label="Buscar"
+                        id="buscar"
+                        name="buscar"
+                        value={filterText}
+                        onChange={(e) => setFilterText(e.target.value)}
+                    />
                 </div>
 
                 <div className="flex h-[450px] w-full flex-col rounded-md border border-gray-200 shadow-sm">
-                    {/* Input de búsqueda */}
                     <div className="relative flex-1">
                         <AgGridReact
                             ref={gridRef}
@@ -213,21 +133,21 @@ export const AgGridTable = forwardRef<AgGridTableRef, AgGridTableProps>(
                             columnDefs={columnDefs}
                             defaultColDef={defaultColDef}
                             onGridReady={onGridReady}
-                            onRowClicked={handleRowClicked}
-                            onRowDoubleClicked={handleRowDoubleClicked}
+                            onRowClicked={(e: RowClickedEvent) => onRowClick(e.data)}
+                            onRowDoubleClicked={(e: RowDoubleClickedEvent) => onDoubleClick(e.data)}
                             rowSelection="single"
                             animateRows={false}
                             theme={myTheme}
                             domLayout="normal"
                             pagination
-                            paginationPageSize={50} // Paginación con 50 filas
-                            rowBuffer={10} // Virtualización de filas
+                            paginationPageSize={50}
+                            rowBuffer={10}
                             getRowStyle={({ node }) =>
-                                node.rowPinned === 'bottom'
+                                node?.rowPinned === 'bottom'
                                     ? {
-                                          backgroundColor: '#005CAC', // mismo headerBackgroundColor
-                                          color: '#FFFFFF', // mismo headerTextColor
-                                          fontWeight: 600, // mismo headerFontWeight
+                                          backgroundColor: '#005CAC',
+                                          color: '#FFFFFF',
+                                          fontWeight: 600,
                                       }
                                     : undefined
                             }
@@ -239,4 +159,4 @@ export const AgGridTable = forwardRef<AgGridTableRef, AgGridTableProps>(
     },
 );
 
-AgGridTable.displayName = 'AgGridTable';
+DataTable.displayName = 'DataTable';

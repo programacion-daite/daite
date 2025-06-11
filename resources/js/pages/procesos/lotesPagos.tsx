@@ -1,7 +1,7 @@
 import FormBody from '@/components/form/form-body';
 import {FormHeader} from '@/components/form/form-header';
-import { LotesPagosForm } from '@/components/lotesPagos/lotesPagosForm';
-import { AgGridTable } from '@/components/table/data-table';
+// import { LotesPagosForm } from '@/components/lotesPagos/lotesPagosForm';
+import { DataTable } from '@/components/table/data-table';
 import { Button } from '@/components/ui/button';
 import { useInertiaFormWrapper } from '@/hooks/form/use-form';
 import { useDeepMemo } from '@/hooks/general/use-deepmemo';
@@ -42,7 +42,7 @@ const initialData: LotesPagosData = {
 
 export default function LotesPagos() {
     const inertiaForm = useForm(initialData);
-    const { data, errors, handleInputChange, handleComponentChange, resetForm } = useInertiaFormWrapper(inertiaForm);
+    const { resetForm } = useInertiaFormWrapper(inertiaForm);
 
     const [selectedItem, setSelectedItem] = useState<TableItem | null>(null);
     const [cargarDatosInicio, setCargarDatosInicio] = useState(false);
@@ -81,6 +81,10 @@ export default function LotesPagos() {
 
     const handleClear = () => {
         resetForm(initialData);
+    };
+
+    const handleAction = (action: string) => {
+        console.log('Action:', action);
     };
 
     return (
@@ -130,7 +134,7 @@ export default function LotesPagos() {
                             {/* Formulario de Lotes de Pagos */}
 
                             <div className="w-full">
-                                <AgGridTable
+                                <DataTable
                                     rowData={rowData}
                                     columnDefs={columnDefs}
                                     defaultColDef={defaultColDef}
@@ -138,6 +142,7 @@ export default function LotesPagos() {
                                     selectedItem={selectedItem}
                                     onRowClick={handleRowClick}
                                     onDoubleClick={handleDoubleClick}
+                                    onAction={handleAction}
                                 />
                             </div>
                         </div>

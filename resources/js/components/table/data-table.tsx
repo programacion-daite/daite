@@ -38,7 +38,7 @@ const myTheme = themeQuartz.withParams({
 });
 
 export const DataTable = forwardRef<DataTableRef, DataTableProps>(
-    ({ rowData, columnDefs, defaultColDef, selectedItem, onRowClick, onDoubleClick, onAction }, ref) => {
+    ({ rowData, columnDefs, defaultColDef, selectedItem, onRowClick, onDoubleClick, onAction = () => {} }, ref) => {
         const gridRef = useRef<AgGridReact>(null);
         const [gridApi, setGridApi] = useState<GridApi | null>(null);
         const [filterText, setFilterText] = useState('');

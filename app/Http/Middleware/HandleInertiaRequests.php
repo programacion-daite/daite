@@ -66,7 +66,6 @@ class HandleInertiaRequests extends Middleware
             $sesionData = Cache::remember($cacheKey, now()->addMinutes(5), function() use ($request) {
                 return $this->sessionService->getSessionData($request);
             });
-
         }
 
         return [

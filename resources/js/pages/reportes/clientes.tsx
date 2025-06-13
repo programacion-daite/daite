@@ -1,6 +1,4 @@
 import { Button } from '@/components/ui/button';
-import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
 import { DynamicSelect } from '@/components/dynamic-select';
@@ -10,13 +8,6 @@ import { DataTable } from '@/components/table/data-table';
 import { useAgGridData } from '@/hooks/modal/use-data-table';
 import { useState } from 'react';
 import { TableItem } from '@/types/table';
-
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Reportes',
-        href: '/reportes',
-    },
-];
 
 interface FormData {
     id_sucursal: string;
@@ -86,15 +77,15 @@ export default function Clientes() {
     };
 
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <>
             <Head title="Reportes de Clientes" />
 
-            <div className="bg-[#e6f0f9] p-4 rounded-t-md flex items-center w-full">
-                <Button variant="ghost" size="icon" className="bg-blue-600 text-white h-8 w-8">
-                    <ArrowLeft className="h-4 w-4" />
-                </Button>
-                <h2 className="text-xl font-semibold text-[#0066b3] flex-grow text-center">Reportes de Activos</h2>
-            </div>
+                <div className="bg-[#e6f0f9] p-4 rounded-t-md flex items-center w-full">
+                    <Button variant="ghost" size="icon" className="bg-blue-600 text-white h-8 w-8">
+                        <ArrowLeft className="h-4 w-4" />
+                    </Button>
+                    <h2 className="text-xl font-semibold text-[#0066b3] flex-grow text-center">Reportes de Activos</h2>
+                </div>
 
             <div className="border-t-4 border-blue-800 w-full mt-1"></div>
 
@@ -301,6 +292,6 @@ export default function Clientes() {
 
             </div>
 
-        </AppLayout>
+        </>
     );
 }

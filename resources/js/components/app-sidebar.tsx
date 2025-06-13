@@ -17,12 +17,6 @@ export function AppSidebar() {
             )}
         >
             <div className="flex flex-1 items-center gap-8">
-                {/* <SidebarHeader className="lg:flex-row lg:items-center">
-                    <Link href="/dashboard" prefetch className="lg:flex lg:items-center">
-                        <AppLogo className="text-white" />
-                    </Link>
-                </SidebarHeader> */}
-
                 {!isMobile && <NavMain />}
 
                 <div className="ml-auto">
@@ -36,7 +30,6 @@ export function AppSidebar() {
                     <NavMain />
                 </SidebarContent>
             )}
-
 
             {/* <SidebarFooter className="lg:flex-row lg:items-center">
 

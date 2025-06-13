@@ -1,6 +1,4 @@
 import { Button } from '@/components/ui/button';
-import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
 import { DynamicSelect } from '@/components/dynamic-select';
@@ -10,13 +8,6 @@ import { DataTable } from '@/components/table/data-table';
 import { useAgGridData } from '@/hooks/modal/use-data-table';
 import { useState } from 'react';
 import { TableItem } from '@/types/table';
-
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Reportes',
-        href: '/reportes',
-    },
-];
 
 interface FormData {
     id_sucursal: string;
@@ -86,7 +77,7 @@ export default function Activos() {
     };
 
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <>
             <Head title="Reportes de Activos" />
 
             <div className="bg-[#e6f0f9] p-4 rounded-t-md flex items-center w-full">
@@ -301,6 +292,6 @@ export default function Activos() {
 
             </div>
 
-        </AppLayout>
+        </>
     );
 }

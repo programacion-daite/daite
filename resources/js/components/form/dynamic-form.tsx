@@ -1,6 +1,5 @@
 import { useCallback, Suspense, lazy } from 'react';
 import { useSchemaQuery } from '@/hooks/form/use-schema-query';
-import AppLayout from '@/layouts/app-layout';
 import type { FormDataType } from '@/types/form';
 import { TableItem } from '@/types/table';
 import { Head } from '@inertiajs/react';
@@ -108,7 +107,7 @@ function RegistroDinamicoContent({ tabla, id_primario }: RegistroDinamicoProps) 
     }, [closeResult, closeModal, resetForm, result.isSuccess]);
 
     return (
-        <AppLayout>
+        <>
             <Head title={`Registro de ${tabla.replace(/_/g, ' ')}`} />
 
             <div className="flex h-full w-full flex-1 flex-col gap-4 rounded-xl p-4">
@@ -147,7 +146,7 @@ function RegistroDinamicoContent({ tabla, id_primario }: RegistroDinamicoProps) 
                     status={result.isSuccess ? 'success' : 'error'}
                 />
             </Suspense>
-        </AppLayout>
+        </>
     );
 }
 

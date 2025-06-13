@@ -24,7 +24,7 @@ export interface DataTableProps {
     selectedItem: TableItem | null;
     onRowClick: (item: TableItem) => void;
     onDoubleClick: (item: TableItem) => void;
-    onAction: (action: string) => void;
+    onAction?: (action: string) => void;
 }
 
 export interface DataTableRef {

@@ -20,30 +20,6 @@ const DynamicTableSection = lazy(() => import('@/components/form/dynamic-table-s
 const ModalForm = lazy(() => import('@/components/form/modal-form'));
 const ResultModal = lazy(() => import('@/components/modal/result-modal'));
 
-const getSuccessMessage = (mode: 'create' | 'edit' | null) => {
-    if (!mode) return 'Registro Guardado Correctamente!';
-    return `Registro ${mode === 'create' ? 'Creado' : 'Actualizado'} Correctamente!`;
-};
-
-const getErrorMessage = (error: unknown): string => {
-    if (error instanceof Error) {
-        return error.message;
-    }
-    if (typeof error === 'string') {
-        return error;
-    }
-    if (error && typeof error === 'object' && 'message' in error) {
-        return (error as { message: string }).message;
-    }
-    return 'Ha ocurrido un inconveniente, por favor intente nuevamente';
-};
-
-const validateEditOperation = (selectedItem: TableItem | null, primaryId: string) => {
-    if (!selectedItem?.[primaryId]) {
-        throw new Error('Invalid edit operation');
-    }
-};
-
 export default function RegistroDinamico({ tabla, id_primario }: RegistroDinamicoProps) {
     return (
         <TableProvider>
@@ -174,3 +150,27 @@ function RegistroDinamicoContent({ tabla, id_primario }: RegistroDinamicoProps) 
         </AppLayout>
     );
 }
+
+const getSuccessMessage = (mode: 'create' | 'edit' | null) => {
+    if (!mode) return 'Registro Guardado Correctamente!';
+    return `Registro ${mode === 'create' ? 'Creado' : 'Actualizado'} Correctamente!`;
+};
+
+const getErrorMessage = (error: unknown): string => {
+    if (error instanceof Error) {
+        return error.message;
+    }
+    if (typeof error === 'string') {
+        return error;
+    }
+    if (error && typeof error === 'object' && 'message' in error) {
+        return (error as { message: string }).message;
+    }
+    return 'Ha ocurrido un inconveniente, por favor intente nuevamente';
+};
+
+const validateEditOperation = (selectedItem: TableItem | null, primaryId: string) => {
+    if (!selectedItem?.[primaryId]) {
+        throw new Error('Invalid edit operation');
+    }
+};

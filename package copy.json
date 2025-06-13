@@ -52,7 +52,6 @@
         "@types/react-dom": "^19.0.2",
         "@vitejs/plugin-react": "^4.3.4",
         "add": "^2.0.6",
-        "ag-grid-community": "^33.3.2",
         "ag-grid-react": "^33.2.4",
         "axios": "^1.8.4",
         "checkbox": "^0.0.1",

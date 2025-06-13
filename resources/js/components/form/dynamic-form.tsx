@@ -1,22 +1,24 @@
-import { ResultModal } from '@/components/modal/result-modal';
+import { useCallback, Suspense, lazy } from 'react';
 import { useSchemaQuery } from '@/hooks/form/use-schema-query';
 import AppLayout from '@/layouts/app-layout';
 import type { FormDataType } from '@/types/form';
 import { TableItem } from '@/types/table';
 import { Head } from '@inertiajs/react';
-import { useCallback } from 'react';
-import { ModalForm } from './modal-form';
 import { TableProvider } from '@/contexts/tableContext';
-import { DynamicTableSection } from './dynamic-table-section';
 import { useDynamicFormStore } from '@/store/useDynamicFormStore';
 import { useRegisterRecordsMutation } from '@/lib/mutations';
 import { useTable } from '@/contexts/tableContext';
 import { ApiResponse } from '@/lib/api-client';
+import { Loader2 } from 'lucide-react';
 
 interface RegistroDinamicoProps {
     tabla: string;
     id_primario: string;
 }
+
+const DynamicTableSection = lazy(() => import('@/components/form/dynamic-table-section'));
+const ModalForm = lazy(() => import('@/components/form/modal-form'));
+const ResultModal = lazy(() => import('@/components/modal/result-modal'));
 
 const getSuccessMessage = (mode: 'create' | 'edit' | null) => {
     if (!mode) return 'Registro Guardado Correctamente!';
@@ -134,35 +136,41 @@ function RegistroDinamicoContent({ tabla, id_primario }: RegistroDinamicoProps) 
             <Head title={`Registro de ${tabla.replace(/_/g, ' ')}`} />
 
             <div className="flex h-full w-full flex-1 flex-col gap-4 rounded-xl p-4">
-                <DynamicTableSection
-                    table={tabla}
-                    primaryId={id_primario}
-                    onNewClick={handleOpenNewForm}
-                    onEditClick={handleOpenEditForm}
-                />
+                <Suspense fallback={<Loader2 className="animate-spin" />}>
+                    <DynamicTableSection
+                        table={tabla}
+                        primaryId={id_primario}
+                        onNewClick={handleOpenNewForm}
+                        onEditClick={handleOpenEditForm}
+                    />
+                </Suspense>
             </div>
 
-            {isModalOpen && (
-                <ModalForm
-                    isOpen={isModalOpen}
-                    onClose={handleCloseModal}
-                    mode={modalMode || 'create'}
-                    title={tabla}
-                    initialData={formData as FormDataType}
-                    onSubmit={handleSubmit}
-                    fields={fields || []}
-                    disableClose={result.isOpen}
-                    isLoading={isLoading}
-                />
-            )}
+                <Suspense fallback={<div>Loading...</div>}>
+                    {isModalOpen && (
+                        <ModalForm
+                            isOpen={isModalOpen}
+                            onClose={handleCloseModal}
+                            mode={modalMode || 'create'}
+                            title={tabla}
+                            initialData={formData as FormDataType}
+                            onSubmit={handleSubmit}
+                            fields={fields || []}
+                            disableClose={result.isOpen}
+                            isLoading={isLoading}
+                        />
+                    )}
+                </Suspense>
 
-            <ResultModal
-                open={result.isOpen}
-                onClose={handleCloseResult}
-                title={result.isSuccess ? 'Exito' : 'Inconveniente'}
-                message={result.message}
-                status={result.isSuccess ? 'success' : 'error'}
-            />
+            <Suspense fallback={<div>Loading...</div>}>
+                <ResultModal
+                    open={result.isOpen}
+                    onClose={handleCloseResult}
+                    title={result.isSuccess ? 'Exito' : 'Inconveniente'}
+                    message={result.message}
+                    status={result.isSuccess ? 'success' : 'error'}
+                />
+            </Suspense>
         </AppLayout>
     );
 }

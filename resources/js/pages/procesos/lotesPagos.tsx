@@ -19,7 +19,6 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-// Define el tipo de datos inicial
 interface LotesPagosData {
     id_cuenta_banco: string;
     id_sucursal: string;
@@ -47,10 +46,8 @@ export default function LotesPagos() {
     const [selectedItem, setSelectedItem] = useState<TableItem | null>(null);
     const [cargarDatosInicio, setCargarDatosInicio] = useState(false);
 
-    // Los parametros de las columnas
     const columnsParamValue = { programa: 'registros.seguimientos' };
 
-    // Los parametros de los datos
     const dataParamValue = { renglon: '', desde_fecha: '20240101', tipo_reporte: '00'};
 
     const tableParamsValue = {

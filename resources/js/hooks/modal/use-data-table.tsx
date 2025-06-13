@@ -40,7 +40,6 @@ export function useAgGridData({
     const [rowData, setRowData] = useState<TableItem[]>([]);
     const [loading, setLoading] = useState(false);
 
-    // Memoized parameters
     const memoizedColumnsParams = useMemo(() => parametrosColumna, [JSON.stringify(parametrosColumna)]);
     const memoizedDataParams = useMemo(() => parametrosDatos, [JSON.stringify(parametrosDatos)]);
 

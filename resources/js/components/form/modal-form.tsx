@@ -32,7 +32,7 @@ interface ModalFormProps {
     isLoading?: boolean;
 }
 
-export function ModalForm({ isOpen, onClose, mode, title, initialData, onSubmit, fields, disableClose = false, isLoading = false }: ModalFormProps) {
+export default function ModalForm({ isOpen, onClose, mode, title, initialData, onSubmit, fields, disableClose = false, isLoading = false }: ModalFormProps) {
     const { data, setData, processing, errors, reset } = useForm<FormDataType>(initialData);
     const { setErrors, showError } = useDynamicFormStore();
 

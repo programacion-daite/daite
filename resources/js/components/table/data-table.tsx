@@ -14,10 +14,8 @@ import { AgGridReact } from 'ag-grid-react';
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { InputLabel } from '../ui/input-label';
 
-// Registrar módulos de AG Grid solo una vez
 ModuleRegistry.registerModules([AllCommunityModule]);
 
-// Tema personalizado de la tabla
 const myTheme = themeQuartz.withParams({
     accentColor: '#005CAC',
     backgroundColor: '#FFFFFF',
@@ -45,7 +43,6 @@ export const DataTable = forwardRef<DataTableRef, DataTableProps>(
         const [gridApi, setGridApi] = useState<GridApi | null>(null);
         const [filterText, setFilterText] = useState('');
 
-        // Calcular el footer una vez cuando los datos cambian
         const footer = useCallback(() => {
             const result: Record<string, string | number> = {};
 
@@ -69,7 +66,6 @@ export const DataTable = forwardRef<DataTableRef, DataTableProps>(
             return result;
         }, [columnDefs, rowData]);
 
-        // Actualizar el footer cuando cambian los datos
         useEffect(() => {
             if (!gridApi) return;
             const footerData = footer();
@@ -78,12 +74,10 @@ export const DataTable = forwardRef<DataTableRef, DataTableProps>(
             }
         }, [gridApi, footer]);
 
-        // Manejar el filtro rápido
         useEffect(() => {
             gridApi?.setGridOption('quickFilterText', filterText);
         }, [filterText, gridApi]);
 
-        // Mantener la selección sincronizada
         useEffect(() => {
             if (!gridApi || !selectedItem) return;
             gridApi.forEachNode((node) => node.setSelected(node.data === selectedItem));

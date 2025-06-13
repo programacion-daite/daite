@@ -62,7 +62,6 @@ export function useGenericTable({
     tableName,
     primaryId
 }: UseGenericTableProps): UseAgGridDataReturn {
-    // Obtiene la configuración de columnas de la tabla
     const {
         data: columnsData,
         isLoading: isLoadingColumns,
@@ -70,7 +69,6 @@ export function useGenericTable({
         refetch: refetchColumns
     } = useTableColumns(tableName, primaryId);
 
-    // Obtiene los datos de las filas de la tabla
     const {
         data: rowData = [],
         isLoading: isLoadingData,
@@ -78,7 +76,6 @@ export function useGenericTable({
         refetch: refetchData
     } = useTableData(tableName, primaryId, columnsData?.hasForeignIDs ?? false);
 
-    // Estados globales de la tabla
     const loading = isLoadingColumns || isLoadingData;
     const error = columnsError?.message || dataError?.message || null;
 
@@ -118,7 +115,6 @@ export function useGenericTable({
      * @returns AG-Grid column definition
      */
     const createColumnDefinition = useCallback((col: ColumnConfig): ColDef<TableItem> => {
-        // Determine if it's an ID field or primary key
         const isIdField = col.nombre?.startsWith('id_') && col.nombre !== primaryId;
         const isPrimaryId = col.nombre === primaryId;
         const displayField = isIdField ? col.nombre?.replace('id_', '') : col.nombre;
@@ -180,7 +176,6 @@ export function useGenericTable({
 
         const colDefs: ColDef<TableItem>[] = columnsData.columns.map(createColumnDefinition);
 
-        // Add actions column
         colDefs.push({
             field: 'acciones',
             headerName: '',
@@ -223,21 +218,17 @@ export function useGenericTable({
             columnDefs,
             rowData,
             defaultColDef,
-            // Performance optimizations
             rowBuffer: 10,                    // Number of rows rendered outside viewport
             animateRows: false,               // Disable row animations for better performance
             suppressCellFocus: true,
             rowSelection: 'single',
             columnSize: 'autoSize',
             columnSizeOptions: { skipHeader: true },
-            // Enable row model for better performance with large datasets
             rowModelType: 'clientSide',
             enableCellTextSelection: false,   // Disable text selection for better performance
             suppressMovableColumns: true,     // Disable column moving for better performance
             suppressColumnVirtualisation: false, // Enable column virtualization
-            // Cache block size for better scrolling
             cacheBlockSize: 100,
-            // Prevent unnecessary re-renders
             getRowId: (params) => params.data[primaryId as keyof TableItem]?.toString() ?? '',
         }),
         [columnDefs, rowData, defaultColDef, primaryId],

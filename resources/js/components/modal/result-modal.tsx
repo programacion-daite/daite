@@ -1,5 +1,3 @@
-import type React from "react"
-
 import { CheckCircle, XCircle } from "lucide-react"
 import {
   AlertDialog,
@@ -20,7 +18,7 @@ interface ResultModalProps {
   status: "success" | "error"
 }
 
-export const ResultModal: React.FC<ResultModalProps> = ({ open, onClose, title, message, status }) => {
+export default function ResultModal({ open, onClose, title, message, status }: ResultModalProps) {
   return (
     <AlertDialog open={open}>
       <AlertDialogContent className="max-w-md border-0 shadow-lg">

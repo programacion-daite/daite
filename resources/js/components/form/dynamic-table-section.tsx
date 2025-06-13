@@ -11,7 +11,7 @@ interface DynamicTableSectionProps {
     onEditClick: (item: TableItem) => void;
 }
 
-export function DynamicTableSection({
+export default function DynamicTableSection({
     table,
     primaryId,
     onNewClick,

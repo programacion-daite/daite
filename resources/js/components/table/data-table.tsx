@@ -135,6 +135,7 @@ export const DataTable = forwardRef<DataTableRef, DataTableProps>(
                             domLayout="normal"
                             pagination
                             paginationPageSize={50}
+                            paginationPageSizeSelector={[100,200,500,1000,999999]}
                             rowBuffer={10}
                             getRowStyle={({ node }) =>
                                 node?.rowPinned === 'bottom'

@@ -25,7 +25,6 @@ const MENU_CONFIG: MenuConfig[] = [
     { title: 'Reportes', icon: BarChart, key: 'reportes' },
 ];
 
-// Memoized Menu Item Component
 const MenuItem = memo(({
     programa,
     isActive,
@@ -50,7 +49,6 @@ const MenuItem = memo(({
     </Link>
 ));
 
-// Memoized Module Section Component
 const ModuleSection = memo(({
     modulo,
     programas,

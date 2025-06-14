@@ -1,8 +1,8 @@
 import { RenderEditButton } from '@/components/table/utils/shared-table-utils';
 import { getValueFormatterByType } from '@/lib/utils';
-import { TableItem, TipoDato } from '@/types/table';
+import { TableItem } from '@/types/table';
 import { TABLE_LANGUAGE_ES } from '@/utils/table-language';
-import { ColDef, GridOptions, SortDirection, ValueFormatterFunc } from 'ag-grid-community';
+import { ColDef, GridOptions, SortDirection, ValueFormatterFunc, ValueFormatterParams } from 'ag-grid-community';
 import { useCallback, useMemo } from 'react';
 import { useTableColumns, useTableData } from '../table/use-table-queries';
 
@@ -33,10 +33,16 @@ interface UseAgGridDataReturn {
 /**
  * Configuración de una columna individual
  */
-interface ColumnConfig {
-    nombre?: string;    // Nombre de la columna
-    tipo: string;       // Tipo de dato de la columna
-    sumar?: string;     // Indica si la columna debe sumarse ('1') o no ('0')
+interface TableColumn {
+    columna: string;
+    titulo: string;
+    tipo: string;
+    alineacion: 'derecha' | 'izquierda' | 'centro';
+    sumar?: string;
+}
+
+interface TableColumnsData {
+    encabezado: TableColumn[];
 }
 
 /**
@@ -74,7 +80,12 @@ export function useGenericTable({
         isLoading: isLoadingData,
         error: dataError,
         refetch: refetchData
-    } = useTableData(tableName, primaryId, columnsData?.hasForeignIDs ?? false);
+    } = useTableData(
+        tableName,
+        primaryId,
+        false, // hasForeignIDs ya no es necesario
+        true
+    );
 
     const loading = isLoadingColumns || isLoadingData;
     const error = columnsError?.message || dataError?.message || null;
@@ -100,6 +111,7 @@ export function useGenericTable({
      * @param filters - Key-value pairs for filtering the data
      */
     const loadData = useCallback(async (filters?: Record<string, string>) => {
+        // TODO: Implementar filtros usando el ApiClient
         console.log('Filters to be implemented:', filters);
         await refetchData();
     }, [refetchData]);
@@ -114,56 +126,23 @@ export function useGenericTable({
      * @param col - Column configuration object
      * @returns AG-Grid column definition
      */
-    const createColumnDefinition = useCallback((col: ColumnConfig): ColDef<TableItem> => {
-        const isIdField = col.nombre?.startsWith('id_') && col.nombre !== primaryId;
-        const isPrimaryId = col.nombre === primaryId;
-        const displayField = isIdField ? col.nombre?.replace('id_', '') : col.nombre;
-
-        // Configure summation mode based on column type
-        let sumarModo: SumaModoType = SUMA_MODO.NO_SUMAR;
-        if (isPrimaryId) {
-            sumarModo = SUMA_MODO.CONTAR_FILAS;
-        } else if (col.tipo === 'numeric' && col.sumar === '1') {
-            sumarModo = SUMA_MODO.SUMAR;
-        }
-
-        // Base column configuration
-        const colDef: ColDef<TableItem> = {
-            field: displayField ?? '',
-            headerName: (displayField ?? '').replace(/_/g, ' '),
-            headerClass: 'capitalize',
-            cellStyle: {
-                textAlign: col.tipo === 'numeric' ? 'right' : 'left',
-                fontWeight: 'bold',
-            },
-            context: {
-                sumar: sumarModo,
-                isPrimary: isPrimaryId,
-                esForaneo: isIdField
-            },
-            valueFormatter: getValueFormatterByType(col.tipo as TipoDato) as ValueFormatterFunc<TableItem>,
-            wrapText: true,
-            flex: 1,
-        };
-
-        // Special configuration for primary key
-        if (isPrimaryId) {
-            colDef.sort = 'desc' as SortDirection;
-            colDef.sortIndex = 0;
-            colDef.comparator = (valueA, valueB) => {
-                const numA = Number(valueA);
-                const numB = Number(valueB);
-                return numA - numB;
-            };
-        }
-
-        // Name adjustment for ID fields
-        if (isIdField) {
-            colDef.headerName = (displayField ?? '').replace(/_/g, ' ');
-        }
-
-        return colDef;
-    }, [primaryId]);
+    // const createColumnDefinition = useCallback((col: ColumnConfig): ColDef<TableItem> => {
+    //     const formatter = getValueFormatterByType(col.tipo);
+    //     return {
+    //         field: col.columna || '',
+    //         headerName: col.titulo || '',
+    //         cellStyle: {
+    //             textAlign: col.alineacion === 'derecha' ? 'right' : col.alineacion === 'izquierda' ? 'left' : 'center',
+    //             fontWeight: 'bold',
+    //         },
+    //         context: {
+    //             sumar: col.sumar,
+    //         },
+    //         valueFormatter: formatter ? (params: ValueFormatterParams) => formatter(params) : undefined,
+    //         wrapText: true,
+    //         flex: 1,
+    //     };
+    // }, []);
 
     /**
      * Generates column definitions for the table
@@ -172,9 +151,25 @@ export function useGenericTable({
      * - Action column for row operations
      */
     const columnDefs = useMemo<ColDef<TableItem>[]>(() => {
-        if (!columnsData?.columns.length) return [];
+        if (!columnsData?.encabezado) return [];
 
-        const colDefs: ColDef<TableItem>[] = columnsData.columns.map(createColumnDefinition);
+        const colDefs: ColDef<TableItem>[] = columnsData.encabezado.map((col: TableColumn) => {
+            const formatter = getValueFormatterByType(col.tipo);
+            return {
+                field: col.columna || '',
+                headerName: col.titulo || '',
+                cellStyle: {
+                    textAlign: col.alineacion === 'derecha' ? 'right' : col.alineacion === 'izquierda' ? 'left' : 'center',
+                    fontWeight: 'bold',
+                },
+                context: {
+                    sumar: col.sumar,
+                },
+                valueFormatter: formatter,
+                wrapText: true,
+                flex: 1,
+            } as ColDef<TableItem>;
+        });
 
         colDefs.push({
             field: 'acciones',
@@ -182,11 +177,11 @@ export function useGenericTable({
             width: 100,
             pinned: 'right',
             cellRenderer: RenderEditButton,
-            cellStyle: { textAlign: 'center' }
-        });
+            cellStyle: { textAlign: 'center', fontWeight: 'bold' }
+        } as ColDef<TableItem>);
 
         return colDefs;
-    }, [columnsData, createColumnDefinition]);
+    }, [columnsData]);
 
     /**
      * Default configuration applied to all columns

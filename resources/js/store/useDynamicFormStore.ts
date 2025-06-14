@@ -69,13 +69,24 @@ export const useDynamicFormStore = create<DynamicFormState>((set) => ({
     formData: {},
     errors: {}
   }),
-  openEditModal: (item) => set({
-    isModalOpen: true,
-    modalMode: 'edit',
-    selectedItem: item,
-    formData: item,
-    errors: {}
-  }),
+  openEditModal: (item) => {
+    console.log('Opening edit modal with item:', item);
+    // Asegurarse de que todos los valores sean strings
+    const formattedData = Object.entries(item).reduce((acc, [key, value]) => ({
+      ...acc,
+      [key]: value !== null && value !== undefined ? String(value) : ''
+    }), {});
+
+    console.log('Formatted data:', formattedData);
+
+    set({
+      isModalOpen: true,
+      modalMode: 'edit',
+      selectedItem: item,
+      formData: formattedData,
+      errors: {}
+    });
+  },
   closeModal: () => set({
     isModalOpen: false,
     modalMode: null,

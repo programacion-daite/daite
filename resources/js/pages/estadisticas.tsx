@@ -1,7 +1,4 @@
 import { Button } from '@/components/ui/button';
-// import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
-import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { DynamicSelect } from '@/components/dynamic-select';
@@ -10,13 +7,6 @@ import BarChartGraphic from '@/components/barchartgraphic';
 import { useQuery } from '@tanstack/react-query';
 import { fetchSingleEntity, fetchDatos } from '@/lib/api';
 import PieChartGraphic from '@/components/piechartgraphic';
-
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Estadisticas',
-        href: '/estadisticas',
-    },
-];
 
 export default function Estadisticas() {
     const { modules } = usePage().props as unknown as { modules: { valor: string; descripcion: string }[] };
@@ -42,7 +32,7 @@ export default function Estadisticas() {
     }));
 
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <>
             <Head title="Estadisticas" />
 
             <div className="bg-[#e6f0f9] p-4 rounded-t-md flex items-center w-full">
@@ -114,6 +104,6 @@ export default function Estadisticas() {
                 )}
             </div>
 
-        </AppLayout>
+        </>
     );
 }

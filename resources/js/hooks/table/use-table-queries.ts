@@ -7,7 +7,21 @@ const api = ApiClient.getInstance();
 interface ApiResponse<T> {
   success: boolean;
   error?: string;
-  data: T;
+  data: T[];
+}
+
+interface RawTableResponse {
+  resultado: string;
+}
+
+interface ParsedTableResponse {
+  encabezado: ColumnConfig[];
+}
+
+interface TableResponse {
+  encabezado: ColumnConfig[];
+  datos: TableItem[];
+  hasForeignIDs: boolean;
 }
 
 export const useTableColumns = (tableName: string | undefined, primaryId: string | undefined) => {
@@ -16,25 +30,22 @@ export const useTableColumns = (tableName: string | undefined, primaryId: string
     queryFn: async () => {
       if (!tableName) throw new Error('Table name is required');
 
-      const response = await api.post<ApiResponse<ColumnConfig[]>>(
-        route('schema'),
-        { table: tableName }
+      const response = await api.post<ApiResponse<RawTableResponse>>(
+        route('get.register.records'),
+        { renglon: tableName, salida: 'JSON_CON_ENCABEZADO' }
       );
 
       if (!response.success) {
         throw new Error(response.error || 'Error loading columns');
       }
 
-      const columns = response.data.data;
-      const hasForeignIDs = columns.filter(
-        (col: ColumnConfig) => col.nombre && primaryId && col.nombre?.startsWith('id_')
-      ).length > 1;
+      const data = JSON.parse(response.data[0].resultado) as ParsedTableResponse;
 
-      return { columns, hasForeignIDs };
+      return { encabezado: data.encabezado };
     },
     enabled: !!tableName,
-    staleTime: 5 * 60 * 1000, // 5 minutos para datos de tabla
-    gcTime: 5 * 60 * 1000, // 5 minutos
+    staleTime: Infinity, // Las columnas nunca cambian
+    gcTime: 24 * 60 * 60 * 1000, // 24 horas
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     refetchOnReconnect: false
@@ -44,34 +55,40 @@ export const useTableColumns = (tableName: string | undefined, primaryId: string
 export const useTableData = (
   tableName: string | undefined,
   primaryId: string | undefined,
-  hasMultipleIds: boolean
+  hasMultipleIds: boolean,
+  skipColumns: boolean = false // Nuevo parámetro para indicar si queremos solo los datos
 ) => {
   const shouldEnable = Boolean(tableName && primaryId);
 
   const query = useQuery({
-    queryKey: ['table-data', tableName, hasMultipleIds],
+    queryKey: ['table-data', tableName, hasMultipleIds, skipColumns],
     queryFn: async () => {
       if (!tableName) throw new Error('Table name is required');
       if (!primaryId) throw new Error('Primary ID is required');
 
       const routeToUse = 'get.register.records';
-      const params = { renglon: tableName }
+      const params = {
+        renglon: tableName,
+        skipColumns,
+        salida: 'JSON_SIN_ENCABEZADO'
+      }
 
-      const response = await api.post<ApiResponse<TableItem[]>>(route(routeToUse), params);
+      const response = await api.post<ApiResponse<TableResponse>>(route(routeToUse), params);
 
       if (!response.success) {
         throw new Error(response.error || 'Error loading data');
       }
 
-      const data = response.data;
-      if (!Array.isArray(data)) {
+      const data = JSON.parse(response.data[0].resultado) as TableResponse;
+
+      if (!data.datos || !Array.isArray(data.datos)) {
         throw new Error('Invalid data response');
       }
 
-      return data as TableItem[];
+      return data.datos as TableItem[];
     },
     enabled: shouldEnable,
-    staleTime: 5 * 60 * 1000, // 5 minutos para datos de tabla
+    staleTime: 0, // Los datos siempre se consideran stale para poder actualizarlos
     gcTime: 5 * 60 * 1000, // 5 minutos
     refetchOnWindowFocus: false,
     refetchOnMount: false,

@@ -37,7 +37,7 @@ class TenantAuthService
     public function authenticateUser($username, $password, $device = null, $origin = 'WEB')
     {
         try {
-            // Primero obtenemos las credenciales usando la conexión por defecto
+            // First get credentials using default connection
             $credentials = DB::connection('sqlsrv')->select('EXEC [dbo].[p_traer_conexion_usuario_autenticar] ?, ?, ?, ?', [
                 $username,
                 $password,
@@ -48,17 +48,23 @@ class TenantAuthService
             $credentials = $credentials[0] ?? null;
 
             if (!$credentials || property_exists($credentials, 'error')) {
+                Log::error('Error getting credentials', [
+                    'credentials' => $credentials,
+                    'username' => $username
+                ]);
                 return [
                     'error' => true,
                     'data' => $credentials
                 ];
             }
 
-            // Configuramos la nueva conexión
+            // Configure new connection
             try {
                 $this->dbService->setConnection($credentials);
             } catch (\Exception $e) {
-                Log::error('Error al configurar la conexión: ' . $e->getMessage());
+                Log::error('Error configuring connection: ' . $e->getMessage(), [
+                    'credentials' => $credentials
+                ]);
                 return [
                     'error' => true,
                     'data' => [
@@ -68,7 +74,7 @@ class TenantAuthService
                 ];
             }
 
-            // Usamos la nueva conexión para buscar el usuario
+            // Use new connection to find user
             try {
                 $usuarioModel = (new User)->setConnection('tenant')
                     ->where('usuario', $username)
@@ -76,6 +82,9 @@ class TenantAuthService
                     ->first();
 
                 if (!$usuarioModel) {
+                    Log::warning('User not found', [
+                        'username' => $username
+                    ]);
                     return [
                         'error' => true,
                         'data' => [
@@ -86,17 +95,27 @@ class TenantAuthService
                     ];
                 }
 
-                Auth::login($usuarioModel);
-
+                // Save information in session before login
                 Session::put('conexion', $credentials);
                 Session::put('usuario', $usuarioModel);
+
+                // Perform login
+                Auth::login($usuarioModel);
+
+                Log::info('User authenticated successfully', [
+                    'username' => $username,
+                    'id_usuario' => $usuarioModel->id_usuario
+                ]);
 
                 return [
                     'error' => false,
                     'data' => $usuarioModel
                 ];
             } catch (\Exception $e) {
-                Log::error('Error al buscar usuario: ' . $e->getMessage());
+                Log::error('Error finding user: ' . $e->getMessage(), [
+                    'username' => $username,
+                    'trace' => $e->getTraceAsString()
+                ]);
                 return [
                     'error' => true,
                     'data' => [
@@ -107,7 +126,7 @@ class TenantAuthService
             }
 
         } catch (\Exception $e) {
-            Log::error('Error en autenticación: ' . $e->getMessage(), [
+            Log::error('Authentication error: ' . $e->getMessage(), [
                 'username' => $username,
                 'origin' => $origin,
                 'trace' => $e->getTraceAsString()

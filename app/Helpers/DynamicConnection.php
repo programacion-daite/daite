@@ -16,7 +16,6 @@ class DynamicConnection
         $userId = session('usuario')->id_usuario ?? 'default';
         $cacheKey = self::CACHE_KEY . $userId;
 
-        // Si ya existe una conexión en caché, la usamos
         if (Cache::has($cacheKey)) {
             return;
         }
@@ -45,7 +44,6 @@ class DynamicConnection
         try {
             DB::connection('tenant')->getPdo();
 
-            // Guardamos la configuración en caché
             Cache::put($cacheKey, $config, self::CACHE_TTL);
         } catch (\Exception $e) {
             throw new \Exception("Failed to establish database connection: " . $e->getMessage());

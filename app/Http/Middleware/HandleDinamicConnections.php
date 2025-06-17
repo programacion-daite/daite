@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Services\DatabaseConnectionService;
+use Illuminate\Support\Facades\DB;
 
 class HandleDinamicConnections
 {
@@ -19,10 +20,17 @@ class HandleDinamicConnections
     {
         if (Auth::check() && session()->has('conexion')) {
             try {
-                $credentials = session('conexion');
-                $this->dbService->setConnection($credentials);
+                // Check if connection is already established
+                try {
+                    DB::connection('tenant')->getPdo();
+                    return $next($request);
+                } catch (\Exception $e) {
+                    // If connection is not established, configure it
+                    $credentials = session('conexion');
+                    $this->dbService->setConnection($credentials);
+                }
             } catch (\Exception $e) {
-                // Si hay un error al configurar la conexión, limpiamos la sesión
+                // If there's an error configuring the connection, clear the session
                 Auth::logout();
                 session()->flush();
                 return redirect()->route('login')->withErrors(['mensaje' => 'Error de conexión a la base de datos']);

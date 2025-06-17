@@ -13,7 +13,14 @@ export default defineConfig((configEnv) => {
                 ssr: 'resources/js/ssr.tsx',
                 refresh: true,
             }),
-            react(),
+            react({
+                jsxRuntime: 'automatic',
+                babel: {
+                    plugins: [
+                        ['@babel/plugin-transform-react-jsx', { runtime: 'automatic' }]
+                    ]
+                }
+            }),
             tailwindcss(),
         ],
         esbuild: {
@@ -21,6 +28,7 @@ export default defineConfig((configEnv) => {
         },
         resolve: {
             alias: {
+                '@': resolve(__dirname, './resources/js'),
                 'ziggy-js': resolve(__dirname, 'vendor/tightenco/ziggy'),
             },
         },
@@ -33,6 +41,9 @@ export default defineConfig((configEnv) => {
                     },
                 } : undefined,
             },
+        },
+        optimizeDeps: {
+            include: ['react', 'react-dom'],
         },
     };
 });

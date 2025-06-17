@@ -86,7 +86,7 @@ export default function Login() {
                 </form>
 
                 <div className="mt-8 flex flex-col text-center text-sm text-gray-600 md:flex-row md:justify-between">
-                    <div>2025 © Daite</div>
+                    <div>{new Date().getFullYear()} © Daite</div>
                     <div>
                         Desarrollado por{' '}
                         <a href="#" className="text-[#0a5ca8]">

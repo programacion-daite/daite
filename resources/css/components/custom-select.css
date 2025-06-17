@@ -1,0 +1,67 @@
+/* .react-select-container .react-select__control {
+    @apply border border-input bg-background text-sm ring-offset-background;
+    @apply hover:border-primary/50;
+    @apply focus:border-primary focus:ring-1 focus:ring-primary;
+}
+
+.react-select-container .react-select__control--is-focused {
+    @apply border-primary ring-1 ring-primary;
+}
+
+.react-select-container .react-select__control--is-disabled {
+    @apply bg-muted cursor-not-allowed opacity-50;
+}
+
+.react-select-container .react-select__menu {
+    @apply bg-popover text-popover-foreground;
+    @apply border border-border rounded-md shadow-md;
+}
+
+.react-select-container .react-select__option {
+    @apply cursor-pointer px-3 py-2 text-sm;
+    @apply hover:bg-primary hover:text-primary-foreground;
+}
+
+.react-select-container .react-select__option--is-focused {
+    @apply bg-primary/10;
+}
+
+.react-select-container .react-select__option--is-selected {
+    @apply bg-primary text-primary-foreground;
+}
+
+.react-select-container .react-select__indicator-separator {
+    @apply bg-border;
+}
+
+.react-select-container .react-select__dropdown-indicator {
+    @apply text-muted-foreground hover:text-foreground;
+}
+
+.react-select-container .react-select__clear-indicator {
+    @apply text-muted-foreground hover:text-foreground;
+}
+
+.react-select-container .react-select__input-container {
+    @apply text-foreground;
+}
+
+.react-select-container .react-select__placeholder {
+    @apply text-muted-foreground;
+}
+
+.react-select-container .react-select__single-value {
+    @apply text-foreground;
+}
+
+.react-select-container .react-select__multi-value {
+    @apply bg-primary/10 text-primary rounded-md;
+}
+
+.react-select-container .react-select__multi-value__label {
+    @apply text-primary px-2 py-0.5;
+}
+
+.react-select-container .react-select__multi-value__remove {
+    @apply text-primary hover:bg-primary/20 rounded-r-md px-1;
+} */

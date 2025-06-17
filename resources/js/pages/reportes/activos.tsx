@@ -79,7 +79,6 @@ export default function Activos() {
     return (
         <>
             <Head title="Reportes de Activos" />
-
             <div className="bg-[#e6f0f9] p-4 rounded-t-md flex items-center w-full">
                 <Button variant="ghost" size="icon" className="bg-blue-600 text-white h-8 w-8">
                     <ArrowLeft className="h-4 w-4" />

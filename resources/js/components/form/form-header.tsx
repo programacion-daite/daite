@@ -1,5 +1,6 @@
-import { Button, ButtonProps } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
+import type { ComponentProps } from 'react';
 
 interface FormHeaderProps {
   title: string;
@@ -9,9 +10,9 @@ interface FormHeaderProps {
   onClear?: () => void;
   children?: React.ReactNode;
 
-  backButtonProps?: Partial<ButtonProps>;
-  saveButtonProps?: Partial<ButtonProps>;
-  clearButtonProps?: Partial<ButtonProps>;
+  backButtonProps?: Partial<ComponentProps<typeof Button>>;
+  saveButtonProps?: Partial<ComponentProps<typeof Button>>;
+  clearButtonProps?: Partial<ComponentProps<typeof Button>>;
 }
 
 export function FormHeader({
@@ -37,17 +38,17 @@ export function FormHeader({
     ...clearRest
   } = clearButtonProps;
 
-  const defaultBack: ButtonProps = {
+  const defaultBack: ComponentProps<typeof Button> = {
     variant: 'ghost',
     size: 'icon',
     className: 'bg-blue-600 text-white h-8 w-8',
   };
-  const defaultSave: ButtonProps = {
+  const defaultSave: ComponentProps<typeof Button> = {
     type: 'submit',
     form: formId,
     className: 'bg-green-600 hover:bg-green-700 h-8',
   };
-  const defaultClear: ButtonProps = {
+  const defaultClear: ComponentProps<typeof Button> = {
     className: 'bg-yellow-500 hover:bg-yellow-600 text-black h-8',
   };
 

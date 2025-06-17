@@ -1,15 +1,10 @@
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@radix-ui/react-label';
-import DOMPurify from 'dompurify';
 import { Loader2, RefreshCw } from 'lucide-react';
-import { memo, useEffect, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { ApiClient } from '@/lib/api-client';
+import { memo, useState } from 'react';
 import { cn } from '@/lib/utils';
-
-// Estado global para compartir valores entre selects
-const selectValues = new Map<string, string>();
+import { useDynamicSelect } from '@/hooks/use-dynamic-select';
 
 interface DynamicSelectProps {
     id: string;
@@ -60,89 +55,25 @@ export const DynamicSelect = memo(function DynamicSelect({
 }: DynamicSelectProps) {
     const [isOpen, setIsOpen] = useState(false);
 
-    const [options, setOptions] = useState<{ value: string; label: string }[]>(() => {
-        const optionsParam = parametros.options;
-        if (Array.isArray(optionsParam)) {
-            return optionsParam;
-        }
-        if (typeof optionsParam === 'string') {
-            try {
-                return JSON.parse(optionsParam);
-            } catch {
-                return optionsParam.split(',').map(opt => {
-                    const [value, label] = opt.split(':');
-                    return { value, label };
-                });
-            }
-        }
-        return [];
+    const {
+        options,
+        isLoading,
+        errorMsg,
+        handleValueChange: handleSelectValueChange,
+        refetch
+    } = useDynamicSelect({
+        id,
+        parametros,
+        isDependent,
+        dependentOn,
+        procedure,
+        placeholder
     });
 
-    const [errorMsg, setErrorMsg] = useState('');
-    const api = ApiClient.getInstance();
-
-    // Manejar el cambio de valor
     const handleValueChange = (newValue: string) => {
-        selectValues.set(id, newValue);
+        handleSelectValueChange(newValue);
         onValueChange?.(newValue);
     };
-
-    // Query para cargar opciones
-    const { data: queryData, isLoading, refetch } = useQuery({
-        queryKey: ['select-options', id, procedure?.name, selectValues.get(dependentOn?.selectId || '')],
-        queryFn: async () => {
-
-            if (isDependent && !dependentOn) {
-                throw new Error('Select dependiente debe especificar de qué depende');
-            }
-
-            if (!procedure) {
-                throw new Error('Debe especificar un procedimiento para cargar las opciones');
-            }
-
-            const procedureParams: Record<string, string> = {};
-            for (const [key, value] of Object.entries(procedure.params)) {
-                if (typeof value === 'function') {
-                    const dependentValue = selectValues.get(dependentOn?.selectId || '') || '';
-                    procedureParams[key] = value(dependentValue);
-                } else {
-                    procedureParams[key] = value;
-                }
-            }
-
-            const response = await api.post(route('filters.json'), {
-                ...procedureParams
-            });
-
-            if (!response.success) {
-                throw new Error(response.error || 'Error al cargar los datos');
-            }
-            const data = JSON.parse(response.data[0].json as string);
-
-            if (!Array.isArray(data)) {
-                throw new Error('La respuesta no es válida');
-            }
-
-            if (data.length === 0) {
-                return [{
-                    value: '',
-                    label: placeholder || 'No hay opciones'
-                }];
-            }
-
-            return data.map(r => ({
-                value: DOMPurify.sanitize(r.valor?.toString() || '_empty'),
-                label: DOMPurify.sanitize(r.descripcion?.toString() || ''),
-            }));
-        },
-        enabled: !isDependent || !!selectValues.get(dependentOn?.selectId || ''),
-    });
-
-    useEffect(() => {
-        if (queryData) {
-            setOptions(queryData);
-        }
-    }, [queryData]);
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -150,12 +81,12 @@ export const DynamicSelect = memo(function DynamicSelect({
             setIsOpen(true);
         }
         if (isOpen && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
-            e.preventDefault(); // Prevenir el scroll de la página
+            e.preventDefault();
         }
     };
 
     return (
-        <div className="flex flex-col gap-2">
+        <div className={cn("flex flex-col gap-2", className)}>
             <Label htmlFor={id} className={cn("text-sm font-medium", required && "after:content-['*'] after:ml-0.5 after:text-red-500")}>
                 {label}
             </Label>
@@ -173,7 +104,7 @@ export const DynamicSelect = memo(function DynamicSelect({
                         className="flex-1"
                         aria-label={label}
                         aria-required={required}
-                        aria-invalid={!!error}
+                        aria-invalid={!!error || !!errorMsg}
                         tabIndex={tabIndex}
                         onKeyDown={handleKeyDown}
                     >
@@ -220,8 +151,8 @@ export const DynamicSelect = memo(function DynamicSelect({
                     </Button>
                 )}
             </div>
-            { error && <p className="text-sm text-red-500">{error}</p> }
-            { errorMsg && <p className="text-sm text-red-500">{errorMsg}</p> }
+            {error && <p className="text-sm text-red-500">{error}</p>}
+            {errorMsg && <p className="text-sm text-red-500">{errorMsg}</p>}
         </div>
     );
 });

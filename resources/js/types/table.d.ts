@@ -32,4 +32,4 @@ export interface TableColumnMeta {
     width?: string;
 }
 
-type TipoDato = 'int' | 'numeric' | 'datetime' | 'date' | 'string';
+export type DataType = 'varchar' | 'int' | 'decimal' | 'datetime' | 'bit' | 'numeric';

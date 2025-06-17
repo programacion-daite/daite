@@ -20,8 +20,8 @@ export const useSchemaQuery = (table: string, primaryId: string) => {
         .map((field: DatabaseField) => processField(field, primaryId));
     },
     enabled: !!table && !!primaryId,
-    staleTime: 30 * 60 * 1000, // 30 minutos
-    gcTime: 60 * 60 * 1000, // 1 hora
+    staleTime: 30 * 60 * 1000,
+    gcTime: 60 * 60 * 1000, 
     refetchOnWindowFocus: true,
     refetchOnMount: true,
     refetchOnReconnect: true

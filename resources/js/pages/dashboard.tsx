@@ -1,13 +1,11 @@
 import { Button } from '@/components/ui/button';
-// import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
-// import AppLayout from '@/layouts/app-layout';
 import { Head } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
 
 export default function Dashboard() {
     return (
         <>
-            <Head title="Dashboard" />
+            <Head title="Inicio" />
 
             <div className="bg-[#e6f0f9] p-4 rounded-t-md flex items-center w-full">
                 <Button variant="ghost" size="icon" className="bg-blue-600 text-white h-8 w-8">

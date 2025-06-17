@@ -62,7 +62,6 @@ export const FormFieldWrapper = React.memo(({
         ...baseProps,
         value: currentValue ? String(currentValue) : undefined,
         defaultValue: currentValue ? String(currentValue) : undefined,
-        onValueChange,
         placeholder: 'Seleccione una opción'
       };
     }
@@ -91,7 +90,6 @@ export const FormFieldWrapper = React.memo(({
     errors,
     parametros,
     className,
-    onValueChange,
     onSelect,
     handleInputChange
   ]);
@@ -99,6 +97,9 @@ export const FormFieldWrapper = React.memo(({
   return (
     <FormField
       component={Component}
+      data={data}
+      errors={errors}
+      onValueChange={Component.displayName === 'DynamicSelect' ? onValueChange : undefined}
       {...componentProps}
     />
   );

@@ -9,6 +9,8 @@ import { useRegisterRecordsMutation } from '@/lib/mutations';
 import { useTable } from '@/contexts/tableContext';
 import { ApiResponse } from '@/lib/api-client';
 import { Loader2 } from 'lucide-react';
+import { capitalize } from '@/lib/utils';
+import { getSuccessMessage, getErrorMessage, validateEditOperation } from '@/lib/form-utils';
 
 interface RegistroDinamicoProps {
     tabla: string;
@@ -108,7 +110,7 @@ function RegistroDinamicoContent({ tabla, id_primario }: RegistroDinamicoProps) 
 
     return (
         <>
-            <Head title={`Registro de ${tabla.replace(/_/g, ' ')}`} />
+            <Head title={`Registro de ${capitalize(tabla.replace(/_/g, ' '))}`} />
 
             <div className="flex h-full w-full flex-1 flex-col gap-4 rounded-xl p-4">
                 <Suspense fallback={<Loader2 className="animate-spin" />}>
@@ -149,27 +151,3 @@ function RegistroDinamicoContent({ tabla, id_primario }: RegistroDinamicoProps) 
         </>
     );
 }
-
-const getSuccessMessage = (mode: 'create' | 'edit' | null) => {
-    if (!mode) return 'Registro Guardado Correctamente!';
-    return `Registro ${mode === 'create' ? 'Creado' : 'Actualizado'} Correctamente!`;
-};
-
-const getErrorMessage = (error: unknown): string => {
-    if (error instanceof Error) {
-        return error.message;
-    }
-    if (typeof error === 'string') {
-        return error;
-    }
-    if (error && typeof error === 'object' && 'message' in error) {
-        return (error as { message: string }).message;
-    }
-    return 'Ha ocurrido un inconveniente, por favor intente nuevamente';
-};
-
-const validateEditOperation = (selectedItem: TableItem | null, primaryId: string) => {
-    if (!selectedItem?.[primaryId]) {
-        throw new Error('Invalid edit operation');
-    }
-};

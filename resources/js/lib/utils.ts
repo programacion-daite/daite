@@ -1,5 +1,5 @@
 import type { DatabaseField } from '@/types/form';
-import { TipoDato } from '@/resources/js/types/table';
+import { DataType } from '@/types/table';
 import { ValueFormatterParams } from 'ag-grid-community';
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -8,8 +8,8 @@ export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
-export function numericFormat(value: any, decimals = 0) {
-    const formatear = (formattedValue: any) => {
+export function numericFormat(value: number | string | number[] | string[], decimals = 0): string | string[] {
+    const formatear = (formattedValue: number | string): string => {
         if (!formattedValue) formattedValue = 0;
 
         formattedValue = Number(String(formattedValue).replaceAll(',', ''));
@@ -23,118 +23,95 @@ export function numericFormat(value: any, decimals = 0) {
     return Array.isArray(value) ? value.map((formattedValue) => formatear(formattedValue)) : formatear(value);
 }
 
-export function pluralize(palabra: string): string {
-    // ! Declaración de variables
-    let palabraPluralizada = null,
-        ultimaLetra = null,
-        penultimaLetra = null,
-        antepenultimaLetra = null,
-        trasantepenultimaLetra = null,
-        letraAntesY = null,
-        letraAntesZ = null;
+export function pluralize(word: string): string {
+    // Get the last few letters for analysis
+    const lastLetter = word.slice(-1);
+    const lastTwoLetters = word.slice(-2);
+    const lastThreeLetters = word.slice(-3);
+    const lastFourLetters = word.slice(-4);
 
-    // ! Asignando valores
-    ultimaLetra = palabra.slice(-1);
-    penultimaLetra = palabra.slice(-2);
-    antepenultimaLetra = palabra.slice(-3);
-    trasantepenultimaLetra = palabra.slice(-4);
-
-    // !
-    if (ultimaLetra === 'a' || ultimaLetra === 'e' || ultimaLetra === 'i' || ultimaLetra === 'o' || ultimaLetra === 'u') {
-        // + Asignando valor
-        palabraPluralizada = palabra + 's';
+    // Handle vowel endings
+    if (['a', 'e', 'i', 'o', 'u'].includes(lastLetter)) {
+        return word + 's';
     }
-    // !
-    else if (ultimaLetra === 'y') {
-        // +
-        if (penultimaLetra === 'ay' || penultimaLetra === 'ey' || penultimaLetra === 'oy' || penultimaLetra === 'uy') {
-            // ? Asignando valor
-            palabraPluralizada = palabra + 's';
+
+    // Handle words ending in 'y'
+    if (lastLetter === 'y') {
+        // If preceded by a vowel, just add 's'
+        if (['ay', 'ey', 'oy', 'uy'].includes(lastTwoLetters)) {
+            return word + 's';
         }
-        // +
-        else {
-            // ? Asignando valor
-            letraAntesY = palabra.slice(0, -1);
-
-            // ? Asignando valor
-            palabraPluralizada = letraAntesY + 'ies';
-        }
-    }
-    // !
-    else if (ultimaLetra === 'z') {
-        // + Asignando valor
-        letraAntesZ = palabra.slice(0, -1);
-
-        // + Asignando valor
-        palabraPluralizada = letraAntesZ + 'ces';
-    }
-    // !
-    else if (ultimaLetra === 'n' && (antepenultimaLetra === 'ión' || trasantepenultimaLetra === 'ción')) {
-        // + Asignando valor
-        palabraPluralizada = palabra;
-    }
-    // !
-    else {
-        // + Asignando valor
-        palabraPluralizada = palabra + 'es';
+        // Otherwise replace 'y' with 'ies'
+        return word.slice(0, -1) + 'ies';
     }
 
-    return palabraPluralizada;
+    // Handle words ending in 'z'
+    if (lastLetter === 'z') {
+        return word.slice(0, -1) + 'ces';
+    }
+
+    // Handle special cases ending in 'ion' or 'cion'
+    if (lastLetter === 'n' && (lastThreeLetters === 'ion' || lastFourLetters === 'cion')) {
+        return word;
+    }
+
+    // Default case - add 'es'
+    return word + 'es';
 }
 
-export function capitalize(texto: string, delimitador: string = ' '): string {
-    const palabras = texto.split(delimitador);
-    const resultado = palabras.map((palabra) => palabra.charAt(0).toUpperCase() + palabra.slice(1).toLowerCase());
-    return resultado.join(delimitador);
+export function capitalize(text: string, delimiter: string = ' '): string {
+    const words = text.split(delimiter);
+    const result = words.map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase());
+    return result.join(delimiter);
 }
 
 /**
- * Construye un objeto JSON en el formato específico requerido para el API
- * @param datos Los datos del formulario
- * @param tabla El nombre de la tabla para la operación
- * @returns Un objeto con la estructura esperada por el backend
+ * Builds a JSON object in the specific format required for the API
+ * @param data The form data
+ * @param table The table name for the operation
+ * @returns An object with the structure expected by the backend
  */
-export const construirJSONGenerico = (datos: Record<string, any>, tabla: string) => {
-    const campos = Object.keys(datos);
-    const camposExcluidos = ['json', '_token'];
+export const buildGenericJSON = (data: Record<string, unknown>, table: string) => {
+    const fields = Object.keys(data);
+    const excludedFields = ['json', '_token'];
 
-    const camposForaneos = campos.filter(campo => !campo.startsWith('id_') && datos[`id_${campo}`]);
-    const idsForaneos = camposForaneos.map(campo => `id_${campo}`);
+    const foreignFields = fields.filter(field => !field.startsWith('id_') && data[`id_${field}`]);
+    // const foreignIds = foreignFields.map(field => `id_${field}`);
 
-    // Filtrar campos excluyendo los descriptivos de foráneos
-    const camposFiltrados = campos
-        .filter(campo => !camposExcluidos.includes(campo))
-        .filter(campo => {
-            // Si es un campo foráneo descriptivo, lo excluimos
-            if (camposForaneos.includes(campo)) {
+    // Filter fields excluding foreign descriptive fields
+    const filteredFields = fields
+        .filter(field => !excludedFields.includes(field))
+        .filter(field => {
+            // If it's a foreign descriptive field, exclude it
+            if (foreignFields.includes(field)) {
                 return false;
             }
-            // Si es un ID de foráneo o cualquier otro campo, lo incluimos
+            // If it's a foreign ID or any other field, include it
             return true;
         });
 
-    // Obtener los valores correspondientes a los campos filtrados
-    const valores = camposFiltrados
-        .map((campo: string, index: number) => {
-            const valor = datos[campo]?.toString() || '';
+    // Get values corresponding to filtered fields
+    const values = filteredFields
+        .map((field: string, index: number) => {
+            const value = data[field]?.toString() || '';
 
-            // Eliminar comas en cualquier campo y reemplazarlas por un espacio
-            const valorSinComas = valor.replaceAll(',', ' ').toUpperCase();
+            // Remove commas in any field and replace them with a space
+            const valueWithoutCommas = value.replaceAll(',', ' ').toUpperCase();
 
             if (index === 0) {
-                return valorSinComas === '' ? '0' : valorSinComas;
+                return valueWithoutCommas === '' ? '0' : valueWithoutCommas;
             }
 
-            // Si el valor está vacío, reemplazarlo por "0"
-            return valorSinComas === '' ? '' : valorSinComas;
+            // If value is empty, replace with empty string
+            return valueWithoutCommas === '' ? '' : valueWithoutCommas;
         })
-        .join(','); // Unir los valores en una cadena separada por comas
+        .join(','); // Join values into a comma-separated string
 
-    // Retornar el objeto JSON
+    // Return JSON object
     return {
-        tabla: tabla,
-        campos: camposFiltrados.join(','), // Campos filtrados como string
-        valores: valores, // Valores correspondientes a los campos filtrados como string
+        tabla: table,
+        campos: filteredFields.join(','), // Filtered fields as string
+        valores: values, // Values corresponding to filtered fields as string
     };
 };
 
@@ -158,7 +135,7 @@ export const processField = (field: DatabaseField, primaryId: string): DatabaseF
         label = `ID ${label}`;
     }
 
-    let componente: any = 'InputLabel';
+    let componente: DatabaseField['componente'] = 'InputLabel';
     const tipo = field.tipo || 'text';
 
     if (esForanea) {
@@ -173,7 +150,7 @@ export const processField = (field: DatabaseField, primaryId: string): DatabaseF
         componente = 'MaskedInput';
     }
 
-    let parametros: Record<string, any> = {};
+    let parametros: Record<string, unknown> = {};
 
     if (componente === 'DynamicSelect') {
         if (tipo === 'bit') {
@@ -222,25 +199,21 @@ export const processField = (field: DatabaseField, primaryId: string): DatabaseF
 
 // Función para obtener el formateador de valores según el tipo de dato para la tabla
 export const getValueFormatterByType = <TData, TValue>(
-    tipo: TipoDato,
-): ((params: ValueFormatterParams<TData, TValue>) => string | number) | undefined => {
+    tipo: DataType,
+): ((params: ValueFormatterParams<TData, TValue>) => string | number | string[]) | undefined => {
     switch (tipo) {
         case 'int':
-            //!! TODO: No se formatea el valor para enteros (params) => parseInt(params.value as string).toString()
             return undefined;
         case 'numeric':
+        case 'decimal':
             return (params) => numericFormat(params.value as number | string, 2);
         case 'datetime':
             return (params) => {
                 if (!params.value) return '';
                 return new Date(params.value as string | number | Date).toLocaleDateString();
             };
-        case 'date':
-            return (params) => {
-                if (!params.value) return '';
-                return new Date(params.value as string | number | Date).toLocaleDateString('en-GB').replaceAll('.', '/');
-            };
-        case 'string':
+        case 'varchar':
+        case 'bit':
         default:
             return undefined;
     }

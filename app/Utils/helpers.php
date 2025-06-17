@@ -3,13 +3,44 @@
 namespace App\Utils;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use Inertia\Response;
 use Illuminate\Contracts\Routing\ResponseFactory;
+use App\Http\Services\DatabaseConnectionService;
 
 class Helpers
 {
+    private static ?DatabaseConnectionService $dbService = null;
+
+    private static function getDbService(): DatabaseConnectionService
+    {
+        if (self::$dbService === null) {
+            self::$dbService = app(DatabaseConnectionService::class);
+        }
+        return self::$dbService;
+    }
+
     private const DEFAULT_SCHEMA = 'dbo';
+
+    // Data type constants
+    private const TYPE_BIT = 'bit';
+    private const TYPE_INT = 'int';
+    private const TYPE_DECIMAL = 'decimal';
+    private const TYPE_NUMERIC = 'numeric';
+    private const TYPE_DATETIME = 'datetime';
+
+    // Entity type constants
+    private const ENTITY_FUNCTION = 'function';
+    private const ENTITY_PROCEDURE = 'procedure';
+    private const ENTITY_TABLE = 'table';
+
+    // Special procedure names
+    private const SPECIAL_PROCEDURES = [
+        'p_traer_valor',
+        'p_registrar_programas',
+        'p_register_records'
+    ];
 
     private const PARAMETERS_QUERY = "
         SELECT
@@ -44,7 +75,12 @@ class Helpers
 
     private static function getConnection()
     {
-        return DB::connection('tenant');
+        try {
+            return self::getDbService()->getConnection();
+        } catch (\Exception $e) {
+            self::logError($e, ['context' => 'Getting database connection']);
+            throw new \RuntimeException('No se pudo obtener la conexión a la base de datos');
+        }
     }
 
     private static function createEntity(array $request): object
@@ -171,66 +207,61 @@ class Helpers
         self::validateParameterLength($parameter, $request);
     }
 
+    private static function convertParameterType(object $parameter, array &$request, string $entityName): void
+    {
+        $type = $parameter->type ?? '';
+        $name = $parameter->name ?? '';
+        $value = $request[$name] ?? null;
+
+        $request[$name] = match($type) {
+            self::TYPE_BIT => boolval($value ?? false),
+            self::TYPE_INT => intval($value ?? 0),
+            self::TYPE_DECIMAL, self::TYPE_NUMERIC => floatval(str_replace(',', '', $value ?? '0')),
+            self::TYPE_DATETIME => date('Y-m-d H:i:s', strtotime($value ?? 'now')),
+            default => self::handleDefaultParameterType($parameter, $request, $entityName)
+        };
+    }
+
+    private static function handleDefaultParameterType(object $parameter, array &$request, string $entityName): string
+    {
+        $name = $parameter->name ?? '';
+        $value = $request[$name] ?? '';
+
+        // Handle special cases
+        if (in_array($entityName, self::SPECIAL_PROCEDURES)) {
+            return $value;
+        }
+
+        // Check for special parameter names
+        if (
+            strpos($name, 'json') === false &&
+            strpos($name, 'campo') === false &&
+            strpos($name, 'sql') === false
+        ) {
+            $value = strtoupper($value);
+        }
+
+        // Handle date-related parameters
+        if (
+            strpos($name, 'desde') === 0 ||
+            strpos($name, 'hasta') === 0 ||
+            strpos($name, 'fecha') === 0
+        ) {
+            $value = str_replace('-', '', $value);
+        }
+
+        return $value;
+    }
+
     private static function handleUserIdParameter(object $parameter, array &$request, string $entityName): void
     {
         if (
             $parameter->position === 1 &&
             strpos($parameter->name ?? '', 'id_usuario') === 0 &&
             !isset($request[$parameter->name]) &&
-            !in_array($entityName, ['p_traer_valor'])
+            !in_array($entityName, self::SPECIAL_PROCEDURES)
         ) {
             $request[$parameter->name] = session('usuario')->id_usuario ?? 1;
-        }
-    }
-
-    private static function convertParameterType(object $parameter, array &$request, string $entityName): void
-    {
-        switch ($parameter->type ?? '') {
-            case 'bit':
-                $request[$parameter->name] = boolval($request[$parameter->name] ?? false);
-                break;
-
-            case 'int':
-                $request[$parameter->name] = intval($request[$parameter->name] ?? 0);
-                break;
-
-            case 'decimal':
-            case 'numeric':
-                $request[$parameter->name] = floatval(
-                    str_replace(',', '', $request[$parameter->name] ?? '0')
-                );
-                break;
-
-            case 'datetime':
-                $request[$parameter->name] = date(
-                    'Y-m-d H:i:s',
-                    strtotime($request[$parameter->name] ?? 'now')
-                );
-                break;
-
-            default:
-                self::handleDefaultParameterType($parameter, $request, $entityName);
-                break;
-        }
-    }
-
-    private static function handleDefaultParameterType(object $parameter, array &$request, string $entityName): void
-    {
-        if (
-            $entityName !== 'p_registrar_programas' &&
-            strpos($parameter->name ?? '', 'json') === false &&
-            strpos($parameter->name ?? '', 'campo') === false &&
-            strpos($parameter->name ?? '', 'sql') === false
-        ) {
-            $request[$parameter->name] = strtoupper($request[$parameter->name] ?? '');
-        }
-
-        if (
-            strpos($parameter->name ?? '', 'desde') === 0 ||
-            strpos($parameter->name ?? '', 'hasta') === 0 ||
-            strpos($parameter->name ?? '', 'fecha') === 0
-        ) {
-            $request[$parameter->name] = str_replace('-', '', $request[$parameter->name] ?? '');
         }
     }
 
@@ -294,6 +325,17 @@ class Helpers
         return response($query->data, $query->data[0]?->codigo_estado ?? 200);
     }
 
+    private static function logError(\Exception $e, array $context = []): void
+    {
+        $context = array_merge([
+            'trace' => $e->getTraceAsString(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine()
+        ], $context);
+
+        info($e->getMessage(), $context);
+    }
+
     public static function executeProcedure(array|string $data, bool $isApi = false): Response|ResponseFactory|\Illuminate\Http\Response
     {
         try {
@@ -313,7 +355,9 @@ class Helpers
             $query = self::createQueryObject();
 
             if (empty($entity->parameters) && $entity->name != 'p_register_records') {
-                info("ENTITY HAS NO PARAMETERS {$entity->name}");
+                self::logError(new \RuntimeException("Entity has no parameters"), [
+                    'entity_name' => $entity->name
+                ]);
                 return self::createResponse(null, 422, "Entity has no parameters");
             }
 
@@ -328,9 +372,9 @@ class Helpers
             return self::handleQueryResult($query);
 
         } catch (\Exception $e) {
-            info("Error executing procedure: " . $e->getMessage(), [
+            self::logError($e, [
                 'data' => $data,
-                'trace' => $e->getTraceAsString()
+                'is_api' => $isApi
             ]);
 
             return response([

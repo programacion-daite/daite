@@ -14,9 +14,29 @@ import { CalendarIcon } from "lucide-react"
 import { Label } from "@/components/ui/label"
 import * as React from "react"
 
-export default function DatePicker({ label, id, required }: { label: string, id: string, required?: boolean }) {
-  const [date, setDate] = React.useState<Date>()
+interface DatePickerProps {
+  label: string;
+  id: string;
+  required?: boolean;
+  value?: Date;
+  onSelect?: (date: Date) => void;
+}
+
+export default function DatePicker({ label, id, required, value, onSelect }: DatePickerProps) {
+  const [date, setDate] = React.useState<Date | undefined>(value)
   const [open, setOpen] = React.useState(false)
+
+  React.useEffect(() => {
+    setDate(value)
+  }, [value])
+
+  const handleSelect = React.useCallback((newDate: Date | undefined) => {
+    setDate(newDate)
+    setOpen(false)
+    if (newDate && onSelect) {
+      onSelect(newDate)
+    }
+  }, [onSelect])
 
   return (
     <div className="flex flex-col gap-2">
@@ -40,10 +60,7 @@ export default function DatePicker({ label, id, required }: { label: string, id:
           <Calendar
             mode="single"
             selected={date}
-            onSelect={(date) => {
-              setDate(date)
-              setOpen(false)
-            }}
+            onSelect={handleSelect}
             id={id}
             locale={es}
           />

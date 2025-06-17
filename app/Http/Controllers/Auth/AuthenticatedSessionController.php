@@ -12,6 +12,7 @@ use Inertia\Inertia;
 use Inertia\Response;
 use App\Http\Services\TenantAuthService;
 use Illuminate\Support\Facades\Log;
+use App\Helpers\DynamicConnection;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -50,6 +51,14 @@ class AuthenticatedSessionController extends Controller
             return redirect()->back()->withErrors(['mensaje' => $resultado['data']->mensaje ?? 'Error de autenticación']);
         }
 
+        // Configurar la conexión en caché después de una autenticación exitosa
+        try {
+            DynamicConnection::setConnection($resultado['data']->conexion);
+        } catch (\Exception $e) {
+            Log::error('Error al configurar la conexión: ' . $e->getMessage());
+            return redirect()->back()->withErrors(['mensaje' => 'Error al configurar la conexión a la base de datos']);
+        }
+
         $request->session()->regenerate();
 
         return redirect()->intended(route('inicio', false));
@@ -61,6 +70,12 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        // Limpiar la conexión en caché antes de cerrar la sesión
+        try {
+            DynamicConnection::clearConnection();
+        } catch (\Exception $e) {
+            Log::error('Error al limpiar la conexión: ' . $e->getMessage());
+        }
 
         $request->session()->forget('conexion');
         $request->session()->forget('usuario');

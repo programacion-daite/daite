@@ -4,15 +4,21 @@ namespace App\Http\Services;
 
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class SessionService
 {
+    private DatabaseConnectionService $dbService;
+
     // Constantes para los tipos de programa
     private const TIPO_REGISTROS = 'R';
     private const TIPO_PROCESOS = 'P';
     private const TIPO_REPORTES = 'C';
+
+    public function __construct(DatabaseConnectionService $dbService)
+    {
+        $this->dbService = $dbService;
+    }
 
     /**
      * Obtiene la conexión del tenant
@@ -21,7 +27,7 @@ class SessionService
      */
     private function getTenantConnection()
     {
-        return DB::connection('tenant');
+        return $this->dbService->getConnection();
     }
 
     /**

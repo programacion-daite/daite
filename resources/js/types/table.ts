@@ -14,7 +14,7 @@ export interface TableItem {
     [key: string]: string | number | boolean | null | undefined;
 }
 
-export type TipoDato = 'varchar' | 'int' | 'decimal' | 'datetime' | 'bit' | 'numeric';
+export type DataType = 'varchar' | 'int' | 'decimal' | 'datetime' | 'bit' | 'numeric';
 
 export interface DataTableProps {
     rowData: TableItem[];

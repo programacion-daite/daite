@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { ApiClient } from '@/lib/api-client';
 import type { ColumnConfig, TableItem } from '@/types/table';
+import { useState } from 'react';
 
 const api = ApiClient.getInstance();
 
@@ -55,45 +56,79 @@ export const useTableColumns = (tableName: string | undefined, primaryId: string
 export const useTableData = (
   tableName: string | undefined,
   primaryId: string | undefined,
-  hasMultipleIds: boolean,
-  skipColumns: boolean = false // Nuevo parámetro para indicar si queremos solo los datos
+  skipColumns: boolean = false,
+  initialData?: TableItem[]
 ) => {
-  const shouldEnable = Boolean(tableName && primaryId);
+  // Usamos un estado local para controlar si ya hemos hecho la carga inicial
+  const [hasInitialLoad, setHasInitialLoad] = useState(false);
+
+  // Solo habilitamos la consulta si tenemos los parámetros necesarios y no hemos hecho la carga inicial
+  const enabled = Boolean(tableName && primaryId && !hasInitialLoad);
 
   const query = useQuery({
-    queryKey: ['table-data', tableName, hasMultipleIds, skipColumns],
+    queryKey: ['table-data', tableName, skipColumns],
+    queryFn: async () => {
+      if (!enabled) return initialData!;
+
+      const response = await api.post<ApiResponse<TableResponse>>(route('get.register.records'), {
+        renglon: tableName,
+        skipColumns,
+        salida: 'JSON_SIN_ENCABEZADO'
+      });
+
+      if (!response.success) throw new Error(response.error || 'Error loading data');
+
+      const data = JSON.parse(response.data[0].resultado) as TableResponse;
+      if (!data.datos || !Array.isArray(data.datos)) throw new Error('Invalid data response');
+
+      return data.datos;
+    },
+    enabled,
+    initialData,
+    staleTime: 0,
+    gcTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    onSuccess: () => {
+      // Marcamos que ya hemos hecho la carga inicial
+      setHasInitialLoad(true);
+    }
+  });
+
+  return query;
+};
+
+
+// Nuevo hook combinado para la carga inicial
+export const useInitialTableLoad = (tableName: string | undefined, primaryId: string | undefined) => {
+  return useQuery({
+    queryKey: ['initial-table-load', tableName],
     queryFn: async () => {
       if (!tableName) throw new Error('Table name is required');
       if (!primaryId) throw new Error('Primary ID is required');
 
-      const routeToUse = 'get.register.records';
-      const params = {
-        renglon: tableName,
-        skipColumns,
-        salida: 'JSON_SIN_ENCABEZADO'
-      }
-
-      const response = await api.post<ApiResponse<TableResponse>>(route(routeToUse), params);
+      const response = await api.post<ApiResponse<RawTableResponse>>(
+        route('get.register.records'),
+        { renglon: tableName, salida: 'JSON_CON_ENCABEZADO' }
+      );
 
       if (!response.success) {
-        throw new Error(response.error || 'Error loading data');
+        throw new Error(response.error || 'Error loading table data');
       }
 
-      const data = JSON.parse(response.data[0].resultado) as TableResponse;
+      const data = JSON.parse(response.data[0].resultado) as ParsedTableResponse;
 
-      if (!data.datos || !Array.isArray(data.datos)) {
-        throw new Error('Invalid data response');
-      }
-
-      return data.datos as TableItem[];
+      return {
+        encabezado: data.encabezado,
+        datos: data.datos
+      };
     },
-    enabled: shouldEnable,
-    staleTime: 0, // Los datos siempre se consideran stale para poder actualizarlos
+    enabled: Boolean(tableName && primaryId),
+    staleTime: 0,
     gcTime: 5 * 60 * 1000, // 5 minutos
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     refetchOnReconnect: false
   });
-
-  return query;
 };

@@ -4,7 +4,7 @@ import { TableItem } from '@/types/table';
 import { TABLE_LANGUAGE_ES } from '@/utils/table-language';
 import { ColDef, GridOptions } from 'ag-grid-community';
 import { useCallback, useMemo } from 'react';
-import { useTableColumns, useTableData, useInitialTableLoad } from '../table/use-table-queries';
+import { useTableData, useInitialTableLoad } from '../table/use-table-queries';
 
 /**
  * Propiedades necesarias para inicializar la tabla genérica

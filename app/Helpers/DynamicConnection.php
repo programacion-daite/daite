@@ -21,8 +21,6 @@ class DynamicConnection
         }
 
         $requiredParams = ['hospedaje', 'puerto', 'base_datos', 'usuario', 'contrasena'];
-        info($credenciales);
-        info('hola');
 
         foreach ($requiredParams as $param) {
             if (!property_exists($credenciales, $param) || empty($credenciales->$param)) {

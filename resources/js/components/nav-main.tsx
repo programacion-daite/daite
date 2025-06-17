@@ -36,6 +36,7 @@ const MenuItem = memo(({
 }) => (
     <Link
         href={route(programa.programa)}
+        prefetch={true}
         data-programa-id={programa.id_programa}
         {...(programa.favorito ? { 'data-programa-favorito': '' } : {})}
         className={cn(

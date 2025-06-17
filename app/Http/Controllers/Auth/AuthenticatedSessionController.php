@@ -39,7 +39,6 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-
         $usuario = $request->usuario ?? $request->nombre_usuario;
         $dispositivo = $request->dispositivo ?? $request->header('User-Agent');
         $origen = $request->origen ?? ($request->is('api/*') ? 'MÓVIL' : 'WEB');
@@ -51,28 +50,19 @@ class AuthenticatedSessionController extends Controller
             return redirect()->back()->withErrors(['mensaje' => $resultado['data']->mensaje ?? 'Error de autenticación']);
         }
 
-        // Configurar la conexión en caché después de una autenticación exitosa
-        try {
-            DynamicConnection::setConnection($resultado['data']->conexion);
-        } catch (\Exception $e) {
-            Log::error('Error al configurar la conexión: ' . $e->getMessage());
-            return redirect()->back()->withErrors(['mensaje' => 'Error al configurar la conexión a la base de datos']);
-        }
-
         $request->session()->regenerate();
 
         return redirect()->intended(route('inicio', false));
     }
-
 
     /**
      * Destroy an authenticated session.
      */
     public function destroy(Request $request): RedirectResponse
     {
-        // Limpiar la conexión en caché antes de cerrar la sesión
         try {
-            DynamicConnection::clearConnection();
+            // Limpiamos la conexión usando el servicio de autenticación
+            $this->tenantAuthService->setConnectionName('tenant');
         } catch (\Exception $e) {
             Log::error('Error al limpiar la conexión: ' . $e->getMessage());
         }

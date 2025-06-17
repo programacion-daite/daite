@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { ApiClient } from '@/lib/api-client';
 import type { ColumnConfig, TableItem } from '@/types/table';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const api = ApiClient.getInstance();
 
@@ -59,10 +59,7 @@ export const useTableData = (
   skipColumns: boolean = false,
   initialData?: TableItem[]
 ) => {
-  // Usamos un estado local para controlar si ya hemos hecho la carga inicial
   const [hasInitialLoad, setHasInitialLoad] = useState(false);
-
-  // Solo habilitamos la consulta si tenemos los parámetros necesarios y no hemos hecho la carga inicial
   const enabled = Boolean(tableName && primaryId && !hasInitialLoad);
 
   const query = useQuery({
@@ -89,12 +86,14 @@ export const useTableData = (
     gcTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
-    refetchOnReconnect: false,
-    onSuccess: () => {
-      // Marcamos que ya hemos hecho la carga inicial
+    refetchOnReconnect: false
+  });
+
+  useEffect(() => {
+    if (query.isSuccess) {
       setHasInitialLoad(true);
     }
-  });
+  }, [query.isSuccess]);
 
   return query;
 };

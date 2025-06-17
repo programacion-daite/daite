@@ -134,8 +134,8 @@ export const DataTable = forwardRef<DataTableRef, DataTableProps>(
                             theme={myTheme}
                             domLayout="normal"
                             pagination
-                            paginationPageSize={50}
-                            paginationPageSizeSelector={[100,200,500,1000,999999]}
+                            paginationPageSize={100}
+                            paginationPageSizeSelector={[100,200,500,1000]}
                             rowBuffer={10}
                             getRowStyle={({ node }) =>
                                 node?.rowPinned === 'bottom'

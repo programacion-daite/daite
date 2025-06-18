@@ -38,6 +38,7 @@ export default defineConfig((configEnv) => {
                     manualChunks: {
                         lucide: ['lucide-react'],
                         reactVendor: ['react', 'react-dom'],
+                        aggrid: ['ag-grid-community', 'ag-grid-react'],
                     },
                 } : undefined,
             },
@@ -45,5 +46,6 @@ export default defineConfig((configEnv) => {
         optimizeDeps: {
             include: ['react', 'react-dom'],
         },
+
     };
 });

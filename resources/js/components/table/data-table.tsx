@@ -137,6 +137,10 @@ export const DataTable = forwardRef<DataTableRef, DataTableProps>(
                             paginationPageSize={100}
                             paginationPageSizeSelector={[100,200,500,1000]}
                             rowBuffer={10}
+                            rowModelType="clientSide"
+                            enableCellTextSelection={true}
+                            suppressRowVirtualisation={false}
+                            suppressColumnVirtualisation={false}
                             getRowStyle={({ node }) =>
                                 node?.rowPinned === 'bottom'
                                     ? {

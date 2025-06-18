@@ -10,9 +10,9 @@ import {
     RowDoubleClickedEvent,
     themeQuartz,
 } from 'ag-grid-community';
-import { AgGridReact } from 'ag-grid-react';
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { InputLabel } from '../ui/input-label';
+import { AgGridReact } from 'ag-grid-react';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -43,7 +43,7 @@ export const DataTable = forwardRef<DataTableRef, DataTableProps>(
         const [gridApi, setGridApi] = useState<GridApi | null>(null);
         const [filterText, setFilterText] = useState('');
 
-        const footer = useCallback(() => {
+        const footerData = useMemo(() => {
             const result: Record<string, string | number> = {};
 
             columnDefs.forEach((col) => {
@@ -59,7 +59,8 @@ export const DataTable = forwardRef<DataTableRef, DataTableProps>(
                         const val = Number(data[field as keyof TableItem]);
                         return acc + (isNaN(val) ? 0 : val);
                     }, 0);
-                    result[field] = numericFormat(sum, 2);
+                    const formattedValue = numericFormat(sum, 2);
+                    result[field] = typeof formattedValue === 'string' ? formattedValue : String(formattedValue);
                 }
             });
 
@@ -67,24 +68,39 @@ export const DataTable = forwardRef<DataTableRef, DataTableProps>(
         }, [columnDefs, rowData]);
 
         useEffect(() => {
-            if (!gridApi) return;
-            const footerData = footer();
-            if (Object.keys(footerData).length > 0) {
-                gridApi.setGridOption('pinnedBottomRowData', [footerData]);
-            }
-        }, [gridApi, footer]);
+            if (!gridApi || Object.keys(footerData).length === 0) return;
+            gridApi.setGridOption('pinnedBottomRowData', [footerData]);
+        }, [gridApi, footerData]);
 
         useEffect(() => {
-            gridApi?.setGridOption('quickFilterText', filterText);
+            if (!gridApi) return;
+            gridApi.setGridOption('quickFilterText', filterText);
         }, [filterText, gridApi]);
 
         useEffect(() => {
             if (!gridApi || !selectedItem) return;
-            gridApi.forEachNode((node) => node.setSelected(node.data === selectedItem));
+            gridApi.forEachNode((node) => {
+                const isSelected = node.data === selectedItem;
+                if (node.isSelected() !== isSelected) {
+                    node.setSelected(isSelected);
+                }
+            });
         }, [gridApi, selectedItem]);
 
         const onGridReady = useCallback((params: GridReadyEvent) => {
             setGridApi(params.api);
+        }, []);
+
+        const handleRowClick = useCallback((e: RowClickedEvent) => {
+            onRowClick(e.data);
+        }, [onRowClick]);
+
+        const handleRowDoubleClick = useCallback((e: RowDoubleClickedEvent) => {
+            onDoubleClick(e.data);
+        }, [onDoubleClick]);
+
+        const handleFilterChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+            setFilterText(e.target.value);
         }, []);
 
         useImperativeHandle(
@@ -106,6 +122,25 @@ export const DataTable = forwardRef<DataTableRef, DataTableProps>(
             [gridApi, onAction],
         );
 
+        const gridOptions = useMemo(() => ({
+            rowBuffer: 20,
+            rowModelType: 'clientSide' as const,
+            suppressRowVirtualisation: false,
+            suppressColumnVirtualisation: false,
+            enableCellTextSelection: true,
+            animateRows: false,
+            pagination: true,
+            paginationPageSize: 50,
+            paginationPageSizeSelector: [25, 50, 100, 200, 500],
+            domLayout: 'normal' as const,
+            rowSelection: 'single' as const,
+            quickFilterDelay: 300,
+            suppressColumnMoveAnimation: true,
+            suppressRowHoverHighlight: false,
+            suppressScrollOnNewData: true,
+            suppressAnimationFrame: false,
+        }), []);
+
         return (
             <>
                 <div className="flex items-center space-x-2 p-2">
@@ -114,7 +149,7 @@ export const DataTable = forwardRef<DataTableRef, DataTableProps>(
                         id="buscar"
                         name="buscar"
                         value={filterText}
-                        onChange={(e) => setFilterText(e.target.value)}
+                        onChange={handleFilterChange}
                     />
                 </div>
 
@@ -127,30 +162,20 @@ export const DataTable = forwardRef<DataTableRef, DataTableProps>(
                             columnDefs={columnDefs}
                             defaultColDef={defaultColDef}
                             onGridReady={onGridReady}
-                            onRowClicked={(e: RowClickedEvent) => onRowClick(e.data)}
-                            onRowDoubleClicked={(e: RowDoubleClickedEvent) => onDoubleClick(e.data)}
-                            rowSelection="single"
-                            animateRows={false}
+                            onRowClicked={handleRowClick}
+                            onRowDoubleClicked={handleRowDoubleClick}
                             theme={myTheme}
-                            domLayout="normal"
-                            pagination
-                            paginationPageSize={100}
-                            paginationPageSizeSelector={[100,200,500,1000]}
-                            rowBuffer={10}
-                            rowModelType="clientSide"
-                            enableCellTextSelection={true}
-                            suppressRowVirtualisation={false}
-                            suppressColumnVirtualisation={false}
-                            getRowStyle={({ node }) =>
-                                node?.rowPinned === 'bottom'
+                            {...gridOptions}
+                            getRowStyle={(params) =>
+                                params.node?.rowPinned === 'bottom'
                                     ? {
                                           backgroundColor: '#005CAC',
                                           color: '#FFFFFF',
                                           fontWeight: 600,
                                       }
                                     : undefined
-                            }
-                        />
+                                }
+                            />
                     </div>
                 </div>
             </>

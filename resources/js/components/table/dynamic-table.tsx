@@ -1,6 +1,6 @@
 import { useDeepMemo } from '@/hooks/general/use-deepmemo';
 import { DynamicTableProps, TableItem } from '@/types/table';
-import { FC, useState, useEffect } from 'react';
+import { FC, useState, useRef, useLayoutEffect } from 'react';
 import { DataTable } from './data-table';
 import { useGenericTable } from '@/hooks/modal/use-generic-data-table';
 import { useTable } from '@/contexts/tableContext';
@@ -20,6 +20,7 @@ export const DynamicTable: FC<DynamicTableProps> = ({
 }) => {
     const { shouldRefresh } = useTable();
     const [selectedItem, setSelectedItem] = useState<TableItem | null>(null);
+    const isInitialMount = useRef(true);
 
     const tableParamsValue = {
         primaryId,
@@ -45,8 +46,10 @@ export const DynamicTable: FC<DynamicTableProps> = ({
         onAction?.(action);
     };
 
-    useEffect(() => {
-        if (shouldRefresh !== undefined) {
+    useLayoutEffect(() => {
+        if (isInitialMount.current) {
+            isInitialMount.current = false;
+        } else if (shouldRefresh !== undefined) {
             refreshData();
         }
     }, [shouldRefresh, refreshData]);

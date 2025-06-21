@@ -32,7 +32,7 @@ export default function RegistroDinamico({ tabla, id_primario }: RegistroDinamic
 function RegistroDinamicoContent({ tabla, id_primario }: RegistroDinamicoProps) {
     const { data: fields, isLoading } = useSchemaQuery(tabla, id_primario);
     const registerRecordsMutation = useRegisterRecordsMutation();
-    const { refreshTable } = useTable();
+    const { refreshTable, invalidateTableQueries } = useTable();
 
     const {
         formData,
@@ -74,12 +74,15 @@ function RegistroDinamicoContent({ tabla, id_primario }: RegistroDinamicoProps) 
             }
 
             showSuccess(getSuccessMessage(modalMode));
+
+            // Invalidar las queries de la tabla para forzar la actualización
+            await invalidateTableQueries(tabla);
             refreshTable();
 
         } catch (error: unknown) {
             showError(getErrorMessage(error));
         }
-    }, [modalMode, selectedItem, id_primario, showSuccess, showError, registerRecordsMutation, tabla, refreshTable, setErrors]);
+    }, [modalMode, selectedItem, id_primario, showSuccess, showError, registerRecordsMutation, tabla, refreshTable, setErrors, invalidateTableQueries]);
 
     const handleOpenNewForm = useCallback(() => {
         resetForm();

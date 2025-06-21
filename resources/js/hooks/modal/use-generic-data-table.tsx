@@ -202,7 +202,7 @@ export function useGenericTable({
             rowModelType: 'clientSide',
             enableCellTextSelection: false,   // Disable text selection for better performance
             suppressMovableColumns: true,     // Disable column moving for better performance
-            suppressColumnVirtualisation: false, // Enable column virtualization
+            suppressColumnVirtualization: false, // Enable column virtualization
             cacheBlockSize: 100,
             getRowId: (params) => params.data[primaryId as keyof TableItem]?.toString() ?? '',
         }),

@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { ApiClient } from '@/lib/api-client';
 import type { ColumnConfig, TableItem } from '@/types/table';
-import { useState, useEffect } from 'react';
 
 const api = ApiClient.getInstance();
 
@@ -17,6 +16,7 @@ interface RawTableResponse {
 
 interface ParsedTableResponse {
   encabezado: ColumnConfig[];
+  datos: TableItem[];
 }
 
 interface TableResponse {
@@ -59,13 +59,13 @@ export const useTableData = (
   skipColumns: boolean = false,
   initialData?: TableItem[]
 ) => {
-  const [hasInitialLoad, setHasInitialLoad] = useState(false);
-  const enabled = Boolean(tableName && primaryId && !hasInitialLoad);
-
   const query = useQuery({
     queryKey: ['table-data', tableName, skipColumns],
     queryFn: async () => {
-      if (!enabled) return initialData!;
+      if (!tableName || !primaryId) {
+        if (initialData) return initialData;
+        throw new Error('Table name and primary ID are required');
+      }
 
       const response = await api.post<ApiResponse<TableResponse>>(route('get.register.records'), {
         renglon: tableName,
@@ -75,12 +75,27 @@ export const useTableData = (
 
       if (!response.success) throw new Error(response.error || 'Error loading data');
 
-      const data = JSON.parse(response.data[0].resultado) as TableResponse;
-      if (!data.datos || !Array.isArray(data.datos)) throw new Error('Invalid data response');
+      if (!response.data[0]?.resultado) {
+        console.error('useTableData - no resultado found in response');
+        throw new Error('No resultado found in response');
+      }
 
-      return data.datos;
+      try {
+        const data = JSON.parse(response.data[0].resultado) as TableResponse;
+
+        if (!data.datos || !Array.isArray(data.datos)) {
+          console.error('useTableData - invalid datos:', data.datos);
+          throw new Error('Invalid data response');
+        }
+
+        return data.datos;
+      } catch (error) {
+        console.error('useTableData - JSON parse error:', error);
+        console.error('useTableData - raw resultado:', response.data[0].resultado);
+        throw new Error('Error parsing JSON response');
+      }
     },
-    enabled,
+    enabled: Boolean(tableName && primaryId),
     initialData,
     staleTime: 0,
     gcTime: 5 * 60 * 1000,
@@ -88,12 +103,6 @@ export const useTableData = (
     refetchOnMount: false,
     refetchOnReconnect: false
   });
-
-  useEffect(() => {
-    if (query.isSuccess) {
-      setHasInitialLoad(true);
-    }
-  }, [query.isSuccess]);
 
   return query;
 };
@@ -116,12 +125,22 @@ export const useInitialTableLoad = (tableName: string | undefined, primaryId: st
         throw new Error(response.error || 'Error loading table data');
       }
 
-      const data = JSON.parse(response.data[0].resultado) as ParsedTableResponse;
+      if (!response.data[0]?.resultado) {
+        console.error('useInitialTableLoad - no resultado found in response');
+        throw new Error('No resultado found in response');
+      }
 
-      return {
-        encabezado: data.encabezado,
-        datos: data.datos
-      };
+      try {
+        const data = JSON.parse(response.data[0].resultado) as ParsedTableResponse;
+
+        return {
+          encabezado: data.encabezado || [],
+          datos: data.datos || []
+        };
+      } catch (error) {
+        console.error('useInitialTableLoad - JSON parse error:', error);
+        throw new Error('Error parsing JSON response');
+      }
     },
     enabled: Boolean(tableName && primaryId),
     staleTime: 0,

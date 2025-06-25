@@ -2,9 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use App\Http\Controllers\GeneralController;
 use Illuminate\Support\Facades\DB;
-use App\Helpers\DynamicConnection;
 
 Route::get('/', fn() => redirect()->route('inicio'));
 
@@ -25,6 +23,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('examples.combobox');
 
 });
+
 require __DIR__.'/settings.php';
 require __DIR__.'/reportes.php';
 require __DIR__.'/registros.php';

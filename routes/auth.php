@@ -1,29 +1,17 @@
 <?php
 
-use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Auth\AuthController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
 
-    Route::get('/register', function () {
-        abort(404);
-    })->name('register');
-
-    Route::get('/passwordRequest', function () {
-        abort(404);
-    })->name('password.request');
-
-    Route::get('/home', function () {
-        abort(404);
-    })->name('home');
-
-    Route::get('login', [AuthenticatedSessionController::class, 'create'])
+    Route::get('login', [AuthController::class, 'index'])
         ->name('login');
 
-    Route::post('login', [AuthenticatedSessionController::class, 'store'])
+    Route::post('login', [AuthController::class, 'store'])
         ->name('login.store');
 });
 
-Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
+Route::post('logout', [AuthController::class, 'destroy'])
     ->name('logout')
     ->middleware('auth');

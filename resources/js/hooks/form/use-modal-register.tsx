@@ -1,13 +1,14 @@
-import { useState } from 'react';
-import { useInertiaFormWrapper } from '@/hooks/form/use-form';
 import { useForm } from '@inertiajs/react';
+import { useState } from 'react';
+
+import { useInertiaFormWrapper } from '@/hooks/form/use-form';
 import { TableItem } from '@/types/table';
 
 export const useRegistroModal = () => {
   const [modalAbierto, setModalAbierto] = useState(false);
   const [modo, setModo] = useState<'crear' | 'editar'>('crear');
   const [selectedItem, setSelectedItem] = useState<TableItem | null>(null);
-  const { data, errors, handleInputChange, handleComponentChange, resetForm, setData } = useInertiaFormWrapper(useForm({}));
+  const { data, errors, handleComponentChange, handleInputChange, resetForm, setData } = useInertiaFormWrapper(useForm({}));
 
   const abrirModalCrear = () => {
     setModo('crear');
@@ -24,11 +25,11 @@ export const useRegistroModal = () => {
   };
 
   return {
-    modalAbierto, setModalAbierto,
-    modo,
-    selectedItem,
-    abrirModalCrear,
-    abrirModalEditar,
-    data, errors, handleInputChange, handleComponentChange, resetForm, setData
+    abrirModalCrear, abrirModalEditar,
+    data,
+    errors,
+    handleComponentChange,
+    handleInputChange,
+    modalAbierto, modo, resetForm, selectedItem, setData, setModalAbierto
   };
 };

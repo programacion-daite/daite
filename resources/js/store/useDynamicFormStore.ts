@@ -1,5 +1,11 @@
 import { create } from 'zustand'
+
 import { TableItem } from '@/types/table';
+
+type Error = {
+  title: string
+  message: string
+}
 
 interface DynamicFormState {
   // Form state
@@ -16,6 +22,7 @@ interface DynamicFormState {
     isOpen: boolean
     isSuccess: boolean
     message: string
+    errors: Error[]
   }
 
   // Actions
@@ -30,7 +37,7 @@ interface DynamicFormState {
 
   // Result actions
   showSuccess: (message: string) => void
-  showError: (message: string) => void
+  showError: (message: string, errors?: Error[]) => void
   closeResult: () => void
 
   // Reset
@@ -38,83 +45,78 @@ interface DynamicFormState {
 }
 
 const initialState = {
-  formData: {},
   errors: {},
+  formData: {},
   isModalOpen: false,
   modalMode: null,
-  selectedItem: null,
   result: {
+    errors: [],
     isOpen: false,
     isSuccess: false,
     message: ''
-  }
+  },
+  selectedItem: null
 }
 
 export const useDynamicFormStore = create<DynamicFormState>((set) => ({
   ...initialState,
 
-  // Form actions
-  setFormData: (data) => set({ formData: data }),
-  setFieldValue: (field, value) =>
-    set((state) => ({
-      formData: { ...state.formData, [field]: value }
-    })),
-  setErrors: (errors) => set({ errors }),
-
-  // Modal actions
-  openCreateModal: () => set({
-    isModalOpen: true,
-    modalMode: 'create',
-    selectedItem: null,
-    formData: {},
-    errors: {}
-  }),
-  openEditModal: (item) => {
-    console.log('Opening edit modal with item:', item);
-    // Asegurarse de que todos los valores sean strings
-    const formattedData = Object.entries(item).reduce((acc, [key, value]) => ({
-      ...acc,
-      [key]: value !== null && value !== undefined ? String(value) : ''
-    }), {});
-
-    console.log('Formatted data:', formattedData);
-
-    set({
-      isModalOpen: true,
-      modalMode: 'edit',
-      selectedItem: item,
-      formData: formattedData,
-      errors: {}
-    });
-  },
   closeModal: () => set({
     isModalOpen: false,
     modalMode: null,
     selectedItem: null
   }),
-
-  // Result actions
-  showSuccess: (message) => set((state) => {
-    console.log('showSuccess called, current state:', state);
-    return {
-      result: { isOpen: true, isSuccess: true, message },
-      isModalOpen: state.isModalOpen
-    };
-  }),
-  showError: (message) => set((state) => {
-    console.log('showError called, current state:', state);
-    return {
-      result: { isOpen: true, isSuccess: false, message },
-      isModalOpen: state.isModalOpen
-    };
-  }),
   closeResult: () => set((state) => {
     console.log('closeResult called, current state:', state);
     return {
-      result: { isOpen: false, isSuccess: false, message: '' }
+      result: { errors: [], isOpen: false, isSuccess: false, message: '' }
+    };
+  }),
+  // Modal actions
+  openCreateModal: () => set({
+    errors: {},
+    formData: {},
+    isModalOpen: true,
+    modalMode: 'create',
+    selectedItem: null
+  }),
+
+  openEditModal: (item) => {
+    const formattedData = Object.entries(item).reduce((acc, [key, value]) => ({
+      ...acc,
+      [key]: value !== null && value !== undefined ? String(value) : ''
+    }), {});
+
+    set({
+      errors: {},
+      formData: formattedData,
+      isModalOpen: true,
+      modalMode: 'edit',
+      selectedItem: item
+    });
+  },
+  // Reset
+  resetForm: () => set(initialState),
+  setErrors: (errors) => set({ errors }),
+
+  setFieldValue: (field, value) =>
+    set((state) => ({
+      formData: { ...state.formData, [field]: value }
+    })),
+  // Form actions
+  setFormData: (data) => set({ formData: data }),
+  showError: (message, errors = []) => set((state) => {
+    return {
+      isModalOpen: state.isModalOpen,
+      result: { errors, isOpen: true, isSuccess: false, message }
     };
   }),
 
-  // Reset
-  resetForm: () => set(initialState)
+  // Result actions
+  showSuccess: (message) => set((state) => {
+    return {
+      isModalOpen: state.isModalOpen,
+      result: { errors: [], isOpen: true, isSuccess: true, message }
+    };
+  })
 }))

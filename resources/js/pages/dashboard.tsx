@@ -1,6 +1,7 @@
-import { Button } from '@/components/ui/button';
 import { Head } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
+
+import { Button } from '@/components/ui/button';
 
 export default function Dashboard() {
     return (

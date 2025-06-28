@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+
 import { FormDataType } from '@/types/form';
 
 // Tipo genérico para la función setData de Inertia
@@ -10,7 +11,7 @@ export function useInertiaFormWrapper<T extends FormDataType>(form: {
   setData: SetDataFn<T>;
   [key: string]: any;
 }) {
-  const { data, setData, errors } = form;
+  const { data, errors, setData } = form;
 
   // Manejador genérico para inputs estándar
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -35,9 +36,9 @@ export function useInertiaFormWrapper<T extends FormDataType>(form: {
   return {
     data,
     errors,
-    setData,
-    handleInputChange,
     handleComponentChange,
-    resetForm
+    handleInputChange,
+    resetForm,
+    setData
   };
 }

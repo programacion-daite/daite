@@ -1,6 +1,3 @@
-import { numericFormat } from '@/lib/utils';
-import { DataTableProps, DataTableRef, TableItem } from '@/types/table';
-import { TABLE_LANGUAGE_ES } from '@/utils/table-language';
 import {
     AllCommunityModule,
     GridApi,
@@ -10,9 +7,18 @@ import {
     RowDoubleClickedEvent,
     themeQuartz,
 } from 'ag-grid-community';
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
-import { InputLabel } from '../ui/input-label';
 import { AgGridReact } from 'ag-grid-react';
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+
+import { numericFormat } from '@/lib/utils';
+import { DataTableProps, DataTableRef, TableItem } from '@/types/table';
+import { TABLE_LANGUAGE_ES } from '@/utils/table-language';
+
+import { InputLabel } from '../ui/input-label';
+
+
+
+
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -38,7 +44,7 @@ const myTheme = themeQuartz.withParams({
 });
 
 export const DataTable = forwardRef<DataTableRef, DataTableProps>(
-    ({ rowData, columnDefs, defaultColDef, selectedItem, onRowClick, onDoubleClick, onAction = () => {} }, ref) => {
+    ({ columnDefs, defaultColDef, onAction = () => {}, onDoubleClick, onRowClick, rowData, selectedItem }, ref) => {
         const gridRef = useRef<AgGridReact>(null);
         const [gridApi, setGridApi] = useState<GridApi | null>(null);
         const [filterText, setFilterText] = useState('');
@@ -112,33 +118,33 @@ export const DataTable = forwardRef<DataTableRef, DataTableProps>(
                         gridApi.refreshCells({ force: true });
                     }
                 },
-                setRowData: (data: TableItem[]) => {
-                    gridApi?.setGridOption('rowData', data);
-                },
                 onAction: (action: string) => {
                     onAction?.(action);
+                },
+                setRowData: (data: TableItem[]) => {
+                    gridApi?.setGridOption('rowData', data);
                 },
             }),
             [gridApi, onAction],
         );
 
         const gridOptions = useMemo(() => ({
-            rowBuffer: 20,
-            rowModelType: 'clientSide' as const,
-            suppressRowVirtualisation: false,
-            suppressColumnVirtualisation: false,
-            enableCellTextSelection: true,
             animateRows: false,
+            domLayout: 'normal' as const,
+            enableCellTextSelection: true,
             pagination: true,
             paginationPageSize: 50,
             paginationPageSizeSelector: [25, 50, 100, 200, 500],
-            domLayout: 'normal' as const,
-            rowSelection: 'single' as const,
             quickFilterDelay: 300,
-            suppressColumnMoveAnimation: true,
-            suppressRowHoverHighlight: false,
-            suppressScrollOnNewData: true,
+            rowBuffer: 20,
+            rowModelType: 'clientSide' as const,
+            rowSelection: 'single' as const,
             suppressAnimationFrame: false,
+            suppressColumnMoveAnimation: true,
+            suppressColumnVirtualisation: false,
+            suppressRowHoverHighlight: false,
+            suppressRowVirtualisation: false,
+            suppressScrollOnNewData: true,
         }), []);
 
         return (

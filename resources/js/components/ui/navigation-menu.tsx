@@ -1,13 +1,13 @@
-import * as React from "react"
 import * as NavigationMenuPrimitive from "@radix-ui/react-navigation-menu"
 import { cva } from "class-variance-authority"
 import { ChevronDownIcon } from "lucide-react"
+import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
 function NavigationMenu({
-  className,
   children,
+  className,
   viewport = true,
   ...props
 }: React.ComponentProps<typeof NavigationMenuPrimitive.Root> & {
@@ -63,8 +63,8 @@ const navigationMenuTriggerStyle = cva(
 )
 
 function NavigationMenuTrigger({
-  className,
   children,
+  className,
   ...props
 }: React.ComponentProps<typeof NavigationMenuPrimitive.Trigger>) {
   return (

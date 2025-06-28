@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { FormField } from '@/components/form/form-field';
 import { cn } from '@/lib/utils';
 import { FormDataType } from '@/types/form';
@@ -17,16 +18,16 @@ interface FormFieldWrapperProps {
 }
 
 export const FormFieldWrapper = React.memo(({
+  className,
   component: Component,
+  data,
+  errors,
+  handleComponentChange,
+  handleInputChange,
   id,
   label,
   name,
-  parametros,
-  data,
-  errors,
-  handleInputChange,
-  handleComponentChange,
-  className
+  parametros
 }: FormFieldWrapperProps) => {
   // Crear una función onValueChange específica para DynamicSelect
   const onValueChange = React.useCallback(
@@ -47,12 +48,12 @@ export const FormFieldWrapper = React.memo(({
   // Determinar qué props pasar según el tipo de componente
   const componentProps = React.useMemo(() => {
     const baseProps = {
+      className: cn(className, 'col-span-1'),
+      error: errors[name],
       id,
       label,
       name,
-      error: errors[name],
-      parametros,
-      className: cn(className, 'col-span-1')
+      parametros
     };
 
     // Si es un DynamicSelect
@@ -60,26 +61,37 @@ export const FormFieldWrapper = React.memo(({
       const currentValue = data[name];
       return {
         ...baseProps,
-        value: currentValue ? String(currentValue) : undefined,
         defaultValue: currentValue ? String(currentValue) : undefined,
-        placeholder: 'Seleccione una opción'
+        placeholder: 'Seleccione una opción',
+        value: currentValue ? String(currentValue) : undefined
       };
+    }
+
+    // Si es un SelectComponent
+    if (Component.displayName === 'SelectComponent') {
+    const currentValue = data[name];
+    return {
+        ...baseProps,
+        defaultValue: currentValue ? String(currentValue) : undefined,
+        placeholder: 'Seleccione una opción',
+        value: currentValue ? String(currentValue) : undefined
+    };
     }
 
     // Si es un DatePicker
     if (Component.displayName === 'DatePicker') {
       return {
         ...baseProps,
-        value: data[name] ? new Date(data[name] as string) : undefined,
-        onSelect
+        onSelect,
+        value: data[name] ? new Date(data[name] as string) : undefined
       };
     }
 
     // Para inputs regulares
     return {
       ...baseProps,
-      value: data[name] || '',
-      onChange: handleInputChange
+      onChange: handleInputChange,
+      value: data[name] || ''
     };
   }, [
     Component.displayName,
@@ -99,7 +111,7 @@ export const FormFieldWrapper = React.memo(({
       component={Component}
       data={data}
       errors={errors}
-      onValueChange={Component.displayName === 'DynamicSelect' ? onValueChange : undefined}
+      onValueChange={Component.displayName === 'DynamicSelect' || Component.displayName === 'SelectComponent' ? onValueChange : undefined}
       {...componentProps}
     />
   );

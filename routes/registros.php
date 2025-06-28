@@ -13,6 +13,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('beneficiarios', fn() => Inertia::render('registros/beneficiarios'))
         ->name('registros.beneficiarios');
 
+        Route::get('beneficiarios', fn() => Inertia::render('registros/beneficiarios'))
+        ->name('registros.beneficiarios');
+
         Route::get('provincias', fn() => Inertia::render('registros/administracion/provincias'))
         ->name('registros.provincias');
 

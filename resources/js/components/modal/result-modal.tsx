@@ -1,4 +1,5 @@
 import { CheckCircle, XCircle } from "lucide-react"
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,7 +19,7 @@ interface ResultModalProps {
   status: "success" | "error"
 }
 
-export default function ResultModal({ open, onClose, title, message, status }: ResultModalProps) {
+export default function ResultModal({ message, onClose, open, status, title }: ResultModalProps) {
   return (
     <AlertDialog open={open}>
       <AlertDialogContent className="max-w-md border-0 shadow-lg">

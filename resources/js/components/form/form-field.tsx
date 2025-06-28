@@ -1,6 +1,7 @@
-import React, { forwardRef } from 'react';
-import { FormDataType } from '@/types/form';
 import { FormDataConvertible } from '@inertiajs/core';
+import React, { forwardRef } from 'react';
+
+import { FormDataType } from '@/types/form';
 
 type FormComponentProps = {
   id: string;
@@ -37,24 +38,24 @@ interface FormFieldProps {
 }
 
 export const FormField = forwardRef<HTMLInputElement, FormFieldProps>(({
+  autoFocus,
   component: Component,
   onChange,
   onInput,
-  onValueChange,
   onKeyDown,
-  autoFocus,
+  onValueChange,
   tabIndex,
   ...props
 }, ref) => {
   const componentProps = {
     ...props,
+    autoFocus,
     onChange,
     onInput,
-    onValueChange,
     onKeyDown,
-    value: props.data[props.name] || '',
-    autoFocus,
+    onValueChange,
     ref,
+    value: props.data[props.name] || '',
     ...props.parametros,
     tabIndex
   };

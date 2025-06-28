@@ -7,7 +7,7 @@ interface CustomDatePickerProps extends Omit<React.ComponentProps<typeof Origina
     onSelect: (date: Date, name: string) => void;
 }
 
-export function CustomDatePicker({ name, id, selected, onSelect, ...props }: CustomDatePickerProps) {
+export function CustomDatePicker({ id, name, onSelect, selected, ...props }: CustomDatePickerProps) {
   return (
     <OriginalDatePicker
       {...props}

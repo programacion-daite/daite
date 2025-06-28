@@ -1,11 +1,8 @@
-import { memo, useCallback, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { ApiClient } from '@/lib/api-client';
-import { ErrorHandler } from '@/services/error-handler';
-import { ApiResponse } from '@/types/errors';
 import DOMPurify from 'dompurify';
 import { Loader2, RefreshCw, Check, ChevronsUpDown } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { memo, useCallback, useState } from 'react';
+
 import { Button } from '@/components/ui/button';
 import {
     Command,
@@ -19,6 +16,10 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from '@/components/ui/popover';
+import { ApiClient } from '@/lib/api-client';
+import { cn } from '@/lib/utils';
+import { ErrorHandler } from '@/services/error-handler';
+import { ApiResponse } from '@/types/errors';
 
 interface CustomComboboxProps {
     id: string;
@@ -50,22 +51,22 @@ interface CustomComboboxProps {
 const selectValues = new Map<string, string>();
 
 export const CustomCombobox = memo(function CustomCombobox({
-    id,
-    name,
-    value,
-    defaultValue,
-    placeholder = 'Seleccione una opción',
-    disabled = false,
-    required = false,
-    error,
     className,
-    procedure,
-    isDependent = false,
+    defaultValue,
     dependentOn,
-    onValueChange,
-    withRefresh = true,
-    searchable = true,
+    disabled = false,
+    error,
+    id,
+    isDependent = false,
     maxHeight = 300,
+    name,
+    onValueChange,
+    placeholder = 'Seleccione una opción',
+    procedure,
+    required = false,
+    searchable = true,
+    value,
+    withRefresh = true,
 }: CustomComboboxProps) {
     const [open, setOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -73,7 +74,8 @@ export const CustomCombobox = memo(function CustomCombobox({
     const errorHandler = ErrorHandler.getInstance();
 
     const { data: options, refetch } = useQuery({
-        queryKey: ['select-options', id, procedure?.name, selectValues.get(dependentOn?.selectId || '')],
+        enabled: !isDependent || !!selectValues.get(dependentOn?.selectId || ''),
+        gcTime: 30 * 60 * 1000,
         queryFn: async () => {
             try {
                 setIsLoading(true);
@@ -120,14 +122,14 @@ export const CustomCombobox = memo(function CustomCombobox({
 
                 if (data.length === 0) {
                     return [{
-                        value: '',
-                        label: placeholder || 'No hay opciones'
+                        label: placeholder || 'No hay opciones',
+                        value: ''
                     }];
                 }
 
                 return data.map(r => ({
-                    value: DOMPurify.sanitize(r.valor?.toString() || '_empty'),
                     label: DOMPurify.sanitize(r.descripcion?.toString() || ''),
+                    value: DOMPurify.sanitize(r.valor?.toString() || '_empty'),
                     ...r
                 }));
             } catch (error) {
@@ -138,9 +140,8 @@ export const CustomCombobox = memo(function CustomCombobox({
                 setIsLoading(false);
             }
         },
-        enabled: !isDependent || !!selectValues.get(dependentOn?.selectId || ''),
+        queryKey: ['select-options', id, procedure?.name, selectValues.get(dependentOn?.selectId || '')],
         staleTime: 5 * 60 * 1000,
-        gcTime: 30 * 60 * 1000,
     });
 
     const handleValueChange = useCallback((newValue: string) => {

@@ -12,14 +12,14 @@ type BeneficiariosForm = {
 }
 
 export const useBeneficiarios = () => {
-    const { data, setData, post, processing, errors, reset } = useForm<Required<BeneficiariosForm>>({
-        id_beneficiario: '',
-        renglon: '',
-        id_cuenta: '',
+    const { data, errors, post, processing, reset, setData } = useForm<Required<BeneficiariosForm>>({
         id_banco: '',
-        id_tipo_cuenta: '',
+        id_beneficiario: '',
+        id_cuenta: '',
         id_moneda: '',
+        id_tipo_cuenta: '',
         numero_cuenta: '',
+        renglon: '',
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement> | string, id?: string) => {
@@ -32,5 +32,5 @@ export const useBeneficiarios = () => {
         }
     };
 
-    return { data, setData, post, processing, errors, reset, handleChange };
+    return { data, errors, handleChange, post, processing, reset, setData };
 }

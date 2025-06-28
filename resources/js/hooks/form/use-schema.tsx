@@ -1,8 +1,10 @@
+import { useEffect, useState } from 'react';
+
+import type { DatabaseField } from '@/types/form';
+
+import { ApiClient } from '@/lib/api-client';
 // hooks/useSchema.ts
 import { processField } from '@/lib/utils';
-import { useEffect, useState } from 'react';
-import type { DatabaseField } from '@/types/form';
-import { ApiClient } from '@/lib/api-client';
 
 export const useSchema = (table: string, primaryId: string) => {
   const [fields, setFields] = useState<DatabaseField[]>([]);

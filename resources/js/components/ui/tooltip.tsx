@@ -1,5 +1,5 @@
-import * as React from "react"
 import * as TooltipPrimitive from "@radix-ui/react-tooltip"
+import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
@@ -33,9 +33,9 @@ function TooltipTrigger({
 }
 
 function TooltipContent({
+  children,
   className,
   sideOffset = 4,
-  children,
   ...props
 }: React.ComponentProps<typeof TooltipPrimitive.Content>) {
   return (

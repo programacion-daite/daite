@@ -3,7 +3,7 @@ import { useInitials } from '@/hooks/use-initials';
 import { cn } from '@/lib/utils';
 import { type User } from '@/types';
 
-export function UserInfo({ user, fontColor }: { user: User, fontColor?: string }) {
+export function UserInfo({ fontColor, user }: { user: User, fontColor?: string }) {
     const getInitials = useInitials();
     return (
         <>

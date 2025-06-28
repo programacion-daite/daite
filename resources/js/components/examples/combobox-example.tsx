@@ -1,7 +1,9 @@
 import { useState } from 'react';
-import { CustomCombobox } from '../custom-combobox';
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
+import { CustomCombobox } from '../custom-combobox';
 
 export const ComboboxExample = () => {
     const [selectedValue, setSelectedValue] = useState<string>('');

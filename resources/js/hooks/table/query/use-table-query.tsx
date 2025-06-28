@@ -1,8 +1,15 @@
+import axios from 'axios';
 // hooks/useTableQuery.ts
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+
 import { ColumnConfig, TableItem } from '@/types/table';
+
 import { useTableColumns } from '../columns/use-table-columns';
+
+
+
+
+
 
 interface UseTableQueryProps {
   table: string;
@@ -10,7 +17,7 @@ interface UseTableQueryProps {
   open: boolean; // recibe si el modal está abierto para evitar llamadas innecesarias
 }
 
-export function useTableQuery({ table, field, open }: UseTableQueryProps) {
+export function useTableQuery({ field, open, table }: UseTableQueryProps) {
   const [columns, setColumns] = useState<ColumnConfig[]>([]);
   const [data, setData] = useState<TableItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -44,7 +51,7 @@ export function useTableQuery({ table, field, open }: UseTableQueryProps) {
       try {
         const response = await axios.post(
           route('traerEntidades'),
-          { renglon: table, filtro: '', entidad: '' },
+          { entidad: '', filtro: '', renglon: table },
           { headers: { 'Content-Type': 'application/json' }, withCredentials: true }
         );
         const result = response.data[0].original;

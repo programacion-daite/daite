@@ -1,3 +1,6 @@
+import { Head, useForm } from '@inertiajs/react';
+import React, { useState } from 'react';
+
 import FormBody from '@/components/form/form-body';
 import {FormHeader} from '@/components/form/form-header';
 // import { LotesPagosForm } from '@/components/lotesPagos/lotesPagosForm';
@@ -9,13 +12,11 @@ import { useAgGridData } from '@/hooks/modal/use-data-table';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import { TableItem } from '@/types/table';
-import { Head, useForm } from '@inertiajs/react';
-import React, { useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Procesos',
         href: '/procesos',
+        title: 'Procesos',
     },
 ];
 
@@ -31,12 +32,12 @@ interface LotesPagosData {
 
 // Define los datos iniciales
 const initialData: LotesPagosData = {
-    id_cuenta_banco: '',
-    id_sucursal: '',
+    buscar: '',
     desde_fecha_pago: null,
     hasta_fecha_pago: null,
+    id_cuenta_banco: '',
+    id_sucursal: '',
     numero_lote: '',
-    buscar: '',
 };
 
 export default function LotesPagos() {
@@ -48,21 +49,21 @@ export default function LotesPagos() {
 
     const columnsParamValue = { programa: 'registros.seguimientos' };
 
-    const dataParamValue = { renglon: '', desde_fecha: '20240101', tipo_reporte: '00'};
+    const dataParamValue = { desde_fecha: '20240101', renglon: '', tipo_reporte: '00'};
 
     const tableParamsValue = {
-        loadColumns: true,
-        fetchData: cargarDatosInicio,
         columnsRoute: 'traerEncabezadoRegistros',
         dataRoute: 'traerLotesPagos',
+        fetchData: cargarDatosInicio,
+        isGeneric: false,
+        loadColumns: true,
         parametrosColumna: columnsParamValue,
-        parametrosDatos: dataParamValue,
-        isGeneric: false
+        parametrosDatos: dataParamValue
     };
 
     const stableTableParams = useDeepMemo(tableParamsValue, tableParamsValue);
 
-    const { rowData, columnDefs, defaultColDef, loading } = useAgGridData(stableTableParams);
+    const { columnDefs, defaultColDef, loading, rowData } = useAgGridData(stableTableParams);
 
     const handleRowClick = (item: TableItem) => {
         setSelectedItem(item);
@@ -99,9 +100,9 @@ export default function LotesPagos() {
 
                         saveButtonProps={{
                             children: 'Buscar',
-                            type: 'submit',
-                            form: 'lotesPagosForm',
                             className: 'bg-indigo-600 hover:bg-indigo-700 h-8',
+                            form: 'lotesPagosForm',
+                            type: 'submit',
                         }}
                     >
 

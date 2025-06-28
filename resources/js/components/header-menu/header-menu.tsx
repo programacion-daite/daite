@@ -1,6 +1,5 @@
 "use client"
 
-import { useState, useEffect } from "react"
 import {
   Search,
   FileText,
@@ -13,32 +12,38 @@ import {
   ChevronDown,
   HomeIcon,
 } from "lucide-react"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
+import { useState, useEffect } from "react"
+
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
 
 // Datos de ejemplo basados en la imagen
 const menuData = {
-  financieros: [
-    "Especialidades",
-    "Cajeros",
-    "Certificados",
-    "Clientes",
-    "Cobradores",
-    "Colores",
-    "Cuentas",
-    "Formas de Pagos",
-    "Garantías",
-    "Gestores",
-    "Notas",
-    "Oficiales",
-    "Tipos de Cálculos",
-    "Tipos de Cargos",
-    "Tipos de Créditos",
-    "Tipos de Notas",
-    "Tipos de Tasas",
+  administracion: [
+    "prueba",
+    "Actividades",
+    "Comentarios",
+    "Configuraciones",
+    "Distritos",
+    "Empresas",
+    "Estados Civiles",
+    "Géneros",
+    "Instituciones Educativas",
+    "Marcas",
+    "Municipios",
+    "Países",
+    "Programas",
+    "Provincias",
+    "Rutas",
+    "Sectores",
+    "Seguimientos",
+    "Sucursales",
+    "Tipos de Contactos",
+    "Tipos de Seguimientos",
+    "Usuarios",
   ],
   contabilidad: [
     "Activos",
@@ -64,6 +69,25 @@ const menuData = {
     "Tipos de Relaciones",
     "Vehículos",
   ],
+  financieros: [
+    "Especialidades",
+    "Cajeros",
+    "Certificados",
+    "Clientes",
+    "Cobradores",
+    "Colores",
+    "Cuentas",
+    "Formas de Pagos",
+    "Garantías",
+    "Gestores",
+    "Notas",
+    "Oficiales",
+    "Tipos de Cálculos",
+    "Tipos de Cargos",
+    "Tipos de Créditos",
+    "Tipos de Notas",
+    "Tipos de Tasas",
+  ],
   nomina: [
     "AFP",
     "Conceptos",
@@ -74,29 +98,6 @@ const menuData = {
     "Permiso de Empleado",
     "Proyectos",
     "Tipos Permisos",
-  ],
-  administracion: [
-    "prueba",
-    "Actividades",
-    "Comentarios",
-    "Configuraciones",
-    "Distritos",
-    "Empresas",
-    "Estados Civiles",
-    "Géneros",
-    "Instituciones Educativas",
-    "Marcas",
-    "Municipios",
-    "Países",
-    "Programas",
-    "Provincias",
-    "Rutas",
-    "Sectores",
-    "Seguimientos",
-    "Sucursales",
-    "Tipos de Contactos",
-    "Tipos de Seguimientos",
-    "Usuarios",
   ],
 }
 
@@ -134,10 +135,10 @@ export default function Home() {
   // Función para traducir nombres de categorías
   const translateCategory = (category: string) => {
     const translations: { [key: string]: string } = {
-      financieros: "Financieros",
-      contabilidad: "Contabilidad",
-      nomina: "Nómina",
       administracion: "Administración",
+      contabilidad: "Contabilidad",
+      financieros: "Financieros",
+      nomina: "Nómina",
     }
     return translations[category] || category
   }

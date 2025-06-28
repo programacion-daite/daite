@@ -4,7 +4,7 @@ export default function PieChartGraphic({ data, title }: { data: { x: string; y:
     const COLORS = ['#0067b4', '#f68b25', '#2ecc71', '#e74c3c', '#9b59b6', '#f1c40f'];
 
     const RADIAN = Math.PI / 180;
-    const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: {
+    const renderCustomizedLabel = ({ cx, cy, innerRadius, midAngle, outerRadius, percent }: {
         cx: number;
         cy: number;
         midAngle: number;
@@ -31,8 +31,8 @@ export default function PieChartGraphic({ data, title }: { data: { x: string; y:
     };
 
     return (
-        <div style={{ width: '100%', height: 500, padding: '20px' }}>
-            <h2 style={{ textAlign: 'center', color: '#0067b4', fontWeight: 700, marginBottom: '20px' }}>{title}</h2>
+        <div style={{ height: 500, padding: '20px', width: '100%' }}>
+            <h2 style={{ color: '#0067b4', fontWeight: 700, marginBottom: '20px', textAlign: 'center' }}>{title}</h2>
             <ResponsiveContainer width="100%" height="90%">
                 <PieChart>
                     <Pie

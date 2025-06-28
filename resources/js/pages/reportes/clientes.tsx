@@ -1,12 +1,13 @@
-import { Button } from '@/components/ui/button';
 import { Head } from '@inertiajs/react';
-import { ArrowLeft } from 'lucide-react';
-import { DynamicSelect } from '@/components/dynamic-select';
 import { useForm } from '@inertiajs/react';
-import DatePicker from '@/components/date-picker';
-import { DataTable } from '@/components/table/data-table';
-import { useAgGridData } from '@/hooks/modal/use-data-table';
+import { ArrowLeft } from 'lucide-react';
 import { useState } from 'react';
+
+import DatePicker from '@/components/date-picker';
+import { DynamicSelect } from '@/components/dynamic-select';
+import { DataTable } from '@/components/table/data-table';
+import { Button } from '@/components/ui/button';
+import { useAgGridData } from '@/hooks/modal/use-data-table';
 import { TableItem } from '@/types/table';
 
 interface FormData {
@@ -25,30 +26,30 @@ interface FormData {
 export default function Clientes() {
     const [selectedItem, setSelectedItem] = useState<TableItem | null>(null);
 
-    const { data, setData, processing, errors, reset } = useForm<FormData>({
-        id_sucursal: '',
-        id_grupo: '',
-        id_ubicacion: '',
-        id_categoria: '',
-        tipo: '',
-        id_estado: '',
-        id_usuario_registro: '',
+    const { data, errors, processing, reset, setData } = useForm<FormData>({
         fecha_registro: '',
+        id_categoria: '',
+        id_estado: '',
+        id_grupo: '',
+        id_sucursal: '',
+        id_ubicacion: '',
+        id_usuario_registro: '',
+        tipo: '',
         tipo_reporte: '01',
     });
 
     const {
-        rowData,
         columnDefs,
         defaultColDef,
         loading,
-        refreshData,
         refreshColumns,
+        refreshData,
+        rowData,
     } = useAgGridData({
-        loadColumns: true,
-        fetchData: false,
         columnsRoute: 'reports.header',
         dataRoute: 'get.active.data',
+        fetchData: false,
+        loadColumns: true,
         parametrosColumna: {
             programa: 'reportes.activos',
             tipo_reporte: data.tipo_reporte
@@ -100,8 +101,8 @@ export default function Clientes() {
                             procedure={{
                                 name: "p_traer_filtros",
                                 params: {
-                                    valor: (value) => value,
-                                    renglon: "sucursales"
+                                    renglon: "sucursales",
+                                    valor: (value) => value
                                 }
                             }}
                             onValueChange={(value) => setData('sucursal', value)}
@@ -124,8 +125,8 @@ export default function Clientes() {
                             procedure={{
                                 name: "p_traer_filtros",
                                 params: {
-                                    valor: (value) => value,
-                                    renglon: "grupos"
+                                    renglon: "grupos",
+                                    valor: (value) => value
                                 }
                             }}
                             onValueChange={(value) => setData('grupo', value)}
@@ -144,8 +145,8 @@ export default function Clientes() {
                             procedure={{
                                 name: "p_traer_filtros",
                                 params: {
-                                    valor: (value) => value,
-                                    renglon: "ubicaciones"
+                                    renglon: "ubicaciones",
+                                    valor: (value) => value
                                 }
                             }}
                             onValueChange={(value) => setData('ubicacion', value)}
@@ -164,8 +165,8 @@ export default function Clientes() {
                             procedure={{
                                 name: "p_traer_filtros",
                                 params: {
-                                    valor: (value) => value,
-                                    renglon: "categorias"
+                                    renglon: "categorias",
+                                    valor: (value) => value
                                 }
                             }}
                             onValueChange={(value) => setData('categoria', value)}
@@ -184,8 +185,8 @@ export default function Clientes() {
                             procedure={{
                                 name: "p_traer_filtros",
                                 params: {
-                                    valor: (value) => value,
-                                    renglon: "estados"
+                                    renglon: "estados",
+                                    valor: (value) => value
                                 }
                             }}
                             onValueChange={(value) => setData('estado', value)}
@@ -204,8 +205,8 @@ export default function Clientes() {
                             procedure={{
                                 name: "p_traer_filtros",
                                 params: {
-                                    valor: (value) => value,
-                                    renglon: "tipos"
+                                    renglon: "tipos",
+                                    valor: (value) => value
                                 }
                             }}
                             onValueChange={(value) => setData('tipo', value)}

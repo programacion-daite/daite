@@ -58,14 +58,32 @@ class HandleInertiaRequests extends Middleware
     {
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
 
-        $sesionData = [];
-        $sidebarItems = [];
+        $userModules = [];
+        $userPrograms = [];
+        $companyData = [];
+        $applicationRoutes = [];
+        $userGlobalConfig = [];
 
         if ($request->session()->has('conexion') && $request->user()) {
+
+            // Get session data (cache of 5 minutes)
             $cacheKey = "sesion_data_{$request->user()->id_usuario}";
             $sesionData = Cache::remember($cacheKey, now()->addMinutes(5), function() use ($request) {
                 return $this->sessionService->getSessionData($request);
             });
+
+            // Extract specific data
+            $userModules = $sesionData['modulos'] ?? [];
+            $userPrograms = $sesionData['programas'] ?? [];
+            $companyData = $sesionData['empresa'] ?? [];
+            $applicationRoutes = $sesionData['aplicacion']['rutas'] ?? [];
+
+            // Get user global configurations (cache of 30 minutes)
+            $userConfigKey = "user_config_{$request->user()->id_usuario}";
+            $userGlobalConfig = Cache::remember($userConfigKey, now()->addMinutes(30), function() use ($request) {
+                return $this->getUserGlobalConfig($request);
+            });
+
         }
 
         return [
@@ -80,41 +98,38 @@ class HandleInertiaRequests extends Middleware
                 'location' => $request->url(),
             ],
             'programa' => $request->route()->getName(),
-            'sessionData' => $sesionData,
+
+            // Distributed Session Data
+            'userModules' => $userModules,
+            'userPrograms' => $userPrograms,
+            'companyData' => $companyData,
+            'applicationRoutes' => $applicationRoutes,
+            'userGlobalConfig' => $userGlobalConfig,
         ];
     }
 
     /**
-     * Extrae los elementos para la barra lateral de los datos de sesión
+     * Obtiene las configuraciones globales del usuario
      *
-     * @param array $sesionData
+     * @param Request $request
      * @return array
      */
-    protected function obtenerSidebarItems(array $sesionData): array
+    protected function getUserGlobalConfig(Request $request): array
     {
-        $items = [];
+        $idUsuario = $request->user()->id_usuario;
+        
+        $configuraciones = app(\App\Http\Services\DatabaseConnectionService::class)
+            ->getConnection()
+            ->select('EXEC [dbo].[p_traer_configuraciones] ?, ?, ?', [$idUsuario, '', '']);
 
-        if (empty($sesionData['programas'])) {
-            return $items;
+        $configItems = [];
+        foreach ($configuraciones as $configuracion) {
+            $configItems[] = [
+                'campo' => $configuracion->campo,
+                'valor' => $configuracion->valor,
+            ];
         }
 
-        foreach (['registros', 'procesos', 'reportes'] as $tipo) {
-            if (!empty($sesionData['programas'][$tipo])) {
-                foreach ($sesionData['programas'][$tipo] as $idModulo => $programasModulo) {
-                    foreach ($programasModulo as $programa) {
-                        $items[] = [
-                            'id' => $programa->id_programa,
-                            'name' => $programa->descripcion,
-                            'route' => $programa->programa,
-                            'type' => $tipo,
-                            'module_id' => $idModulo,
-                            'icon' => $programa->icono ?? 'default-icon'
-                        ];
-                    }
-                }
-            }
-        }
-
-        return $items;
+        return $configItems;
     }
 }

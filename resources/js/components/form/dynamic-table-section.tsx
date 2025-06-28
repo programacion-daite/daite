@@ -1,8 +1,8 @@
-import { FormHeader } from '@/components/form/form-header';
 import FormBody from '@/components/form/form-body';
+import { FormHeader } from '@/components/form/form-header';
 import { DynamicTable } from '@/components/table/dynamic-table';
-import { TableItem } from '@/types/table';
 import { capitalize } from '@/lib/utils';
+import { TableItem } from '@/types/table';
 
 interface DynamicTableSectionProps {
     table: string;
@@ -12,10 +12,10 @@ interface DynamicTableSectionProps {
 }
 
 export default function DynamicTableSection({
-    table,
-    primaryId,
+    onEditClick,
     onNewClick,
-    onEditClick
+    primaryId,
+    table
 }: DynamicTableSectionProps) {
     const titulo = `Registros de ${capitalize(table.replace(/_/g, ' '))}`;
 

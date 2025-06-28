@@ -1,6 +1,8 @@
-import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
 import type { ComponentProps } from 'react';
+
+import { ArrowLeft } from 'lucide-react';
+
+import { Button } from '@/components/ui/button';
 
 interface FormHeaderProps {
   title: string;
@@ -16,15 +18,15 @@ interface FormHeaderProps {
 }
 
 export function FormHeader({
-  title,
+  backButtonProps = {},
+  children,
+  clearButtonProps = {},
   formId,
   onBack,
-  onSave,
   onClear,
-  backButtonProps = {},
+  onSave,
   saveButtonProps = {},
-  clearButtonProps = {},
-  children,
+  title,
 }: FormHeaderProps) {
   const {
     children: saveOverrideChildren,
@@ -39,14 +41,14 @@ export function FormHeader({
   } = clearButtonProps;
 
   const defaultBack: ComponentProps<typeof Button> = {
-    variant: 'ghost',
-    size: 'icon',
     className: 'bg-blue-600 text-white h-8 w-8',
+    size: 'icon',
+    variant: 'ghost',
   };
   const defaultSave: ComponentProps<typeof Button> = {
-    type: 'submit',
-    form: formId,
     className: 'bg-green-600 hover:bg-green-700 h-8',
+    form: formId,
+    type: 'submit',
   };
   const defaultClear: ComponentProps<typeof Button> = {
     className: 'bg-yellow-500 hover:bg-yellow-600 text-black h-8',

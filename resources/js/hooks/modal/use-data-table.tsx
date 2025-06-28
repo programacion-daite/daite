@@ -1,9 +1,10 @@
-import { getValueFormatterByType } from '@/lib/utils';
-import { ColumnConfig, TableItem } from '@/types/table';
-import { TABLE_LANGUAGE_ES } from '@/utils/table-language';
 import { ColDef, GridOptions } from 'ag-grid-community';
 import axios from 'axios';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+
+import { getValueFormatterByType } from '@/lib/utils';
+import { ColumnConfig, TableItem } from '@/types/table';
+import { TABLE_LANGUAGE_ES } from '@/utils/table-language';
 
 interface UseAgGridDataProps {
     loadColumns: boolean;
@@ -29,10 +30,10 @@ interface UseAgGridDataReturn {
 }
 
 export function useAgGridData({
-    loadColumns,
     columnsRoute,
-    fetchData,
     dataRoute,
+    fetchData,
+    loadColumns,
     parametrosColumna = {},
     parametrosDatos = {},
 }: UseAgGridDataProps): UseAgGridDataReturn {
@@ -110,27 +111,27 @@ export function useAgGridData({
     // Generate column definitions
     const columnDefs = useMemo<ColDef<TableItem>[]>(() => {
         return columns.map((col) => ({
-            field: col.columna || '',
-            headerName: col.titulo || '',
             cellStyle: {
-                textAlign: col.alineacion === 'derecha' ? 'right' : col.alineacion === 'izquierda' ? 'left' : 'center',
                 fontWeight: 'bold',
+                textAlign: col.alineacion === 'derecha' ? 'right' : col.alineacion === 'izquierda' ? 'left' : 'center',
             },
             context: {
                 sumar: col.sumar,
             },
+            field: col.columna || '',
+            flex: 1,
+            headerName: col.titulo || '',
             valueFormatter: getValueFormatterByType(col.tipo),
             wrapText: true,
-            flex: 1,
         }));
     }, [columns]);
 
     // Default column definitions
     const defaultColDef = useMemo<Partial<ColDef<TableItem>>>(
         () => ({
+            filter: true,
             resizable: true,
             sortable: true,
-            filter: true,
             wrapHeaderText: true,
         }),
         [],
@@ -139,26 +140,26 @@ export function useAgGridData({
     // Grid options
     const gridOptions = useMemo<GridOptions<TableItem>>(
         () => ({
-            localeText: TABLE_LANGUAGE_ES,
-            columnDefs,
-            rowData,
-            defaultColDef,
             animateRows: true,
-            suppressCellFocus: true,
-            rowSelection: 'single',
+            columnDefs,
             columnSize: 'autoSize',
             columnSizeOptions: { skipHeader: true },
+            defaultColDef,
+            localeText: TABLE_LANGUAGE_ES,
+            rowData,
+            rowSelection: 'single',
+            suppressCellFocus: true,
         }),
         [columnDefs, rowData, defaultColDef],
     );
 
     return {
-        rowData,
         columnDefs,
         defaultColDef,
-        loading,
         gridOptions,
-        refreshData,
+        loading,
         refreshColumns,
+        refreshData,
+        rowData,
     };
 }

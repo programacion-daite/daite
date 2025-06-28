@@ -1,5 +1,5 @@
-import { useRef } from 'react';
 import isEqual from 'lodash/isEqual';
+import { useRef } from 'react';
 
 export function useDeepMemo<T, D>(value: T, dependencies: D): T {
     const ref = useRef<T>(value);

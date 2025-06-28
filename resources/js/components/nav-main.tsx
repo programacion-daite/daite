@@ -1,15 +1,18 @@
 import { Link, usePage } from '@inertiajs/react';
-import { cn } from '@/lib/utils';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { Home, FileText, BarChart, ChevronDown, CreditCard, ChartBar } from "lucide-react";
+import { useState, useCallback, memo } from 'react';
+
+import type { Modulo, Programa } from '@/types/index';
+
+import { Button } from "@/components/ui/button";
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { Home, FileText, BarChart, ChevronDown, CreditCard, ChartBar } from "lucide-react";
-import { SessionData, Modulo, Programa } from '@/types';
-import { useState, useCallback, memo } from 'react';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { useUserModules, useUserPrograms } from '@/hooks/use-session-data';
+import { cn } from '@/lib/utils';
 
 type MenuConfig = {
     title: string;
@@ -20,15 +23,15 @@ type MenuConfig = {
 type ProgramType = 'registros' | 'procesos' | 'reportes' | 'favoritos' | 'genericos';
 
 const MENU_CONFIG: MenuConfig[] = [
-    { title: 'Registros', icon: FileText, key: 'registros' },
-    { title: 'Procesos', icon: FileText, key: 'procesos' },
-    { title: 'Reportes', icon: BarChart, key: 'reportes' },
+    { icon: FileText, key: 'registros', title: 'Registros' },
+    { icon: FileText, key: 'procesos', title: 'Procesos' },
+    { icon: BarChart, key: 'reportes', title: 'Reportes' },
 ];
 
 const MenuItem = memo(({
-    programa,
     isActive,
-    onClose
+    onClose,
+    programa
 }: {
     programa: Programa;
     isActive: boolean;
@@ -51,10 +54,10 @@ const MenuItem = memo(({
 ));
 
 const ModuleSection = memo(({
-    modulo,
-    programas,
     isActive,
-    onClose
+    modulo,
+    onClose,
+    programas
 }: {
     modulo: Modulo;
     programas: Programa[];
@@ -82,21 +85,22 @@ const ModuleSection = memo(({
 ));
 
 export const NavMain = memo(function NavMain() {
-    const sessionData = usePage().props.sessionData as SessionData;
+    const userModules = useUserModules();
+    const userPrograms = useUserPrograms();
     const page = usePage();
     const isMobile = useIsMobile();
-    const [openMenu, setOpenMenu] = useState<string | null>(null);
+    const [openMenu, setOpenMenu] = useState<string | undefined>(undefined);
 
-    const handleMenuChange = useCallback((key: string | null) => {
+    const handleMenuChange = useCallback((key: string | undefined) => {
         setOpenMenu(key);
     }, []);
 
     const handleLinkClick = useCallback(() => {
-        setOpenMenu(null);
+        setOpenMenu(undefined);
     }, []);
 
-    if (!sessionData) return <div>Cargando...</div>;
-    if (isMobile) return null;
+    if (!userModules.length) return <div>Cargando...</div>;
+    if (isMobile) return undefined;
 
     return (
         <div className="flex items-center">
@@ -108,11 +112,11 @@ export const NavMain = memo(function NavMain() {
                 <span>Inicio</span>
             </Link>
 
-            {MENU_CONFIG.map(({ title, icon: Icon, key }) => (
+            {MENU_CONFIG.map(({ icon: Icon, key, title }) => (
                 <DropdownMenu
                     key={key}
                     open={openMenu === key}
-                    onOpenChange={(open) => handleMenuChange(open ? key : null)}
+                    onOpenChange={(open) => handleMenuChange(open ? key : undefined)}
                 >
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="text-white gap-1 font-bold hover:bg-blue-900 hover:text-white">
@@ -126,11 +130,11 @@ export const NavMain = memo(function NavMain() {
                         className="w-[1000px] bg-white p-1 text-gray-900 overflow-y-auto max-h-[90vh] [&>*]:text-sm"
                     >
                         <div className="grid grid-cols-4">
-                            {sessionData.modulos?.map((modulo: Modulo, idx) => (
+                            {userModules.map((modulo: Modulo, idx) => (
                                 <ModuleSection
                                     key={idx}
                                     modulo={modulo}
-                                    programas={sessionData.programas[key]?.[modulo.id_modulo] || []}
+                                    programas={(userPrograms[key as keyof typeof userPrograms] as Record<string, Programa[]>)?.[modulo.id_modulo] || []}
                                     isActive={page.url === '#'}
                                     onClose={handleLinkClick}
                                 />

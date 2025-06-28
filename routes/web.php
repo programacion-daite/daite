@@ -19,8 +19,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ]);
     })->name('estadisticas');
 
-    Route::get('examples/combobox', fn() => Inertia::render('examples'))
-        ->name('examples.combobox');
+    Route::get('test-select', function () {
+        return Inertia::render('examples');
+    })->name('test-select');
 
 });
 

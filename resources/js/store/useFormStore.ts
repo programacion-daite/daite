@@ -10,13 +10,13 @@ interface FormState {
 }
 
 export const useFormStore = create<FormState>((set) => ({
-  formData: {},
+  clearForm: () => set({ errors: {}, formData: {} }),
   errors: {},
-  setFormData: (data) => set({ formData: data }),
+  formData: {},
+  setErrors: (errors) => set({ errors }),
   setFieldValue: (field, value) =>
     set((state) => ({
       formData: { ...state.formData, [field]: value }
     })),
-  setErrors: (errors) => set({ errors }),
-  clearForm: () => set({ formData: {}, errors: {} }),
+  setFormData: (data) => set({ formData: data }),
 }))

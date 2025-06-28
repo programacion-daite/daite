@@ -1,22 +1,28 @@
-import { useDeepMemo } from '@/hooks/general/use-deepmemo';
-import { DynamicTableProps, TableItem } from '@/types/table';
 import { FC, useState, useRef, useLayoutEffect } from 'react';
-import { DataTable } from './data-table';
-import { useGenericTable } from '@/hooks/modal/use-generic-data-table';
+
 import { useTable } from '@/contexts/tableContext';
+import { useDeepMemo } from '@/hooks/general/use-deepmemo';
+import { useGenericTable } from '@/hooks/modal/use-generic-data-table';
+import { DynamicTableProps, TableItem } from '@/types/table';
+
+import { DataTable } from './data-table';
+
+
+
+
 
 export const DynamicTable: FC<DynamicTableProps> = ({
-    table,
-    primaryId,
-    onRowClick,
-    onDoubleClick,
     onAction,
+    onDoubleClick,
+    onRowClick,
+    primaryId,
     styleConfig = {
-        theme: 'ag-theme-quartz',
         headerColor: '#005CAC',
+        oddRowColor: '#BFD6EA',
         rowColor: '#FFFFFF',
-        oddRowColor: '#BFD6EA'
-    }
+        theme: 'ag-theme-quartz'
+    },
+    table
 }) => {
     const { shouldRefresh } = useTable();
     const [selectedItem, setSelectedItem] = useState<TableItem | null>(null);
@@ -28,7 +34,7 @@ export const DynamicTable: FC<DynamicTableProps> = ({
     };
 
     const stableTableParams = useDeepMemo(tableParamsValue, tableParamsValue);
-    const { rowData, columnDefs, defaultColDef, loading, refreshData } = useGenericTable(stableTableParams);
+    const { columnDefs, defaultColDef, loading, refreshData, rowData } = useGenericTable(stableTableParams);
 
     const handleRowClick = (item: TableItem) => {
         setSelectedItem(item);

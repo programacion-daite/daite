@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import DOMPurify from 'dompurify';
+import { useState, useEffect } from 'react';
+
 import { ApiClient } from '@/lib/api-client';
 import { ErrorHandler } from '@/services/error-handler';
 import { ApiResponse } from '@/types/errors';
-import DOMPurify from 'dompurify';
 
 const selectValues = new Map<string, string>();
 
@@ -33,12 +34,12 @@ interface UseDynamicSelectReturn {
 }
 
 export function useDynamicSelect({
-    id,
-    parametros = {},
-    isDependent = false,
     dependentOn,
-    procedure,
+    id,
+    isDependent = false,
+    parametros = {},
     placeholder = 'Seleccione una opción',
+    procedure,
 }: UseDynamicSelectProps): UseDynamicSelectReturn {
     const [options, setOptions] = useState<{ value: string; label: string }[]>(() => {
         const optionsParam = parametros.options;
@@ -51,7 +52,7 @@ export function useDynamicSelect({
             } catch {
                 return optionsParam.split(',').map(opt => {
                     const [value, label] = opt.split(':');
-                    return { value, label };
+                    return { label, value };
                 });
             }
         }
@@ -67,7 +68,8 @@ export function useDynamicSelect({
     };
 
     const { data: queryData, isLoading, refetch } = useQuery({
-        queryKey: ['select-options', id, procedure?.name, selectValues.get(dependentOn?.selectId || '')],
+        enabled: !isDependent || !!selectValues.get(dependentOn?.selectId || ''),
+        gcTime: 30 * 60 * 1000,
         queryFn: async () => {
             try {
                 if (isDependent && !dependentOn) {
@@ -110,14 +112,14 @@ export function useDynamicSelect({
 
                 if (data.length === 0) {
                     return [{
-                        value: '',
-                        label: placeholder || 'No hay opciones'
+                        label: placeholder || 'No hay opciones',
+                        value: ''
                     }];
                 }
 
                 return data.map(r => ({
-                    value: DOMPurify.sanitize(r.valor?.toString() || '_empty'),
                     label: DOMPurify.sanitize(r.descripcion?.toString() || ''),
+                    value: DOMPurify.sanitize(r.valor?.toString() || '_empty'),
                 }));
             } catch (error) {
                 const appError = errorHandler.handleError(error);
@@ -125,9 +127,8 @@ export function useDynamicSelect({
                 throw appError;
             }
         },
-        enabled: !isDependent || !!selectValues.get(dependentOn?.selectId || ''),
+        queryKey: ['select-options', id, procedure?.name, selectValues.get(dependentOn?.selectId || '')],
         staleTime: 5 * 60 * 1000,
-        gcTime: 30 * 60 * 1000,
     });
 
     useEffect(() => {
@@ -137,10 +138,10 @@ export function useDynamicSelect({
     }, [queryData]);
 
     return {
-        options,
-        isLoading,
         errorMsg,
         handleValueChange,
+        isLoading,
+        options,
         refetch,
     };
 }

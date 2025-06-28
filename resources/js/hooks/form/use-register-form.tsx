@@ -1,8 +1,10 @@
-import { useReducer, useCallback } from 'react';
 import axios from 'axios';
+import { useReducer, useCallback } from 'react';
+
+import type { TableItem } from '@/types/table';
+
 import { construirJSONGenerico } from '@/lib/utils';
 import { formReducer, initialFormState } from '@/reducers/formReducer';
-import type { TableItem } from '@/types/table';
 
 type SubmitData = Record<string, unknown>;
 
@@ -16,7 +18,7 @@ export function useRegistroForm(
 
   const mostrarResultado = useCallback(
     (mensaje: string, esExito: boolean, campo?: string) => {
-      dispatch({ type: 'SHOW_RESULT', mensaje, esExito, campoEnfocar: campo });
+      dispatch({ campoEnfocar: campo, esExito, mensaje, type: 'SHOW_RESULT' });
     },
     []
   );
@@ -34,19 +36,19 @@ export function useRegistroForm(
         const data = response.data[0].original[0];
 
         if (data.codigo_estado !== '200') {
-          dispatch({ type: 'SET_FORM_DATA', data: datos });
-          dispatch({ type: 'SET_FOCUS', campoEnfocar: data.campo_enfocar || null });
+          dispatch({ data: datos, type: 'SET_FORM_DATA' });
+          dispatch({ campoEnfocar: data.campo_enfocar || null, type: 'SET_FOCUS' });
           mostrarResultado(data.mensaje, false, data.campo_enfocar);
         } else {
-          dispatch({ type: 'SET_FORM_DATA', data: null });
-          dispatch({ type: 'SET_FOCUS', campoEnfocar: null });
+          dispatch({ data: null, type: 'SET_FORM_DATA' });
+          dispatch({ campoEnfocar: null, type: 'SET_FOCUS' });
           mostrarResultado('Datos guardados correctamente', true);
           refreshTable();
           setModalAbierto(false);
         }
       } catch (error) {
         console.error('Error al enviar datos:', error);
-        dispatch({ type: 'SET_FORM_DATA', data: datos });
+        dispatch({ data: datos, type: 'SET_FORM_DATA' });
         mostrarResultado('Error al enviar los datos. Por favor, inténtelo de nuevo.', false);
       } finally {
         setIsLoading(false);
@@ -57,28 +59,28 @@ export function useRegistroForm(
   );
 
   const openNew = useCallback(() => {
-    dispatch({ type: 'SET_FORM_DATA', data: null });
+    dispatch({ data: null, type: 'SET_FORM_DATA' });
     setModalAbierto(true);
   }, [setModalAbierto]);
 
   const openEdit = useCallback(
     (item: TableItem) => {
-      dispatch({ type: 'SET_FORM_DATA', data: item });
+      dispatch({ data: item, type: 'SET_FORM_DATA' });
       setModalAbierto(true);
     },
     [setModalAbierto]
   );
 
   const closeForm = useCallback(() => {
-    dispatch({ type: 'SET_FORM_DATA', data: null });
+    dispatch({ data: null, type: 'SET_FORM_DATA' });
     setModalAbierto(false);
   }, [setModalAbierto]);
 
   return {
-    state,
-    handleSubmit,
-    openNew,
-    openEdit,
     closeForm,
+    handleSubmit,
+    openEdit,
+    openNew,
+    state,
   };
 }

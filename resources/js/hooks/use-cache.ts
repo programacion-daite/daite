@@ -56,9 +56,9 @@ export function useCache<T>(key: string, fetcher: () => Promise<T>, options: Cac
 
     return {
         data,
-        loading,
         error,
-        refetch: () => fetchData(true),
         invalidate,
+        loading,
+        refetch: () => fetchData(true),
     };
 }

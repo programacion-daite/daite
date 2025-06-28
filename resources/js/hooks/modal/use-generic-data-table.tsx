@@ -1,10 +1,16 @@
+import { ColDef, GridOptions } from 'ag-grid-community';
+import { useCallback, useMemo } from 'react';
+
 import { RenderEditButton } from '@/components/table/utils/shared-table-utils';
 import { getValueFormatterByType } from '@/lib/utils';
 import { TableItem } from '@/types/table';
 import { TABLE_LANGUAGE_ES } from '@/utils/table-language';
-import { ColDef, GridOptions } from 'ag-grid-community';
-import { useCallback, useMemo } from 'react';
+
 import { useTableData, useInitialTableLoad } from '../table/use-table-queries';
+
+
+
+
 
 /**
  * Propiedades necesarias para inicializar la tabla genérica
@@ -37,7 +43,7 @@ interface TableColumn {
     columna: string;
     titulo: string;
     tipo: string;
-    alineacion: 'derecha' | 'izquierda' | 'centro';
+    alineacion: 'right' | 'left' | 'center';
     sumar?: string;
 }
 
@@ -49,9 +55,9 @@ interface TableColumnsData {
  * Constantes que definen los modos de suma disponibles
  */
 const SUMA_MODO = {
+    CONTAR_FILAS: 'filas',   // Contar número de filas
     NO_SUMAR: '0',          // No realizar suma
-    SUMAR: '1',             // Sumar valores numéricos
-    CONTAR_FILAS: 'filas'   // Contar número de filas
+    SUMAR: '1'             // Sumar valores numéricos
 } as const;
 
 type SumaModoType = typeof SUMA_MODO[keyof typeof SUMA_MODO];
@@ -65,14 +71,14 @@ type SumaModoType = typeof SUMA_MODO[keyof typeof SUMA_MODO];
  * - Loading and error state management
  */
 export function useGenericTable({
-    tableName,
-    primaryId
+    primaryId,
+    tableName
 }: UseGenericTableProps): UseAgGridDataReturn {
     // Carga inicial combinada de columnas y datos
     const {
         data: initialData,
-        isLoading: isLoadingInitial,
         error: initialError,
+        isLoading: isLoadingInitial,
         refetch: refetchInitial
     } = useInitialTableLoad(tableName, primaryId);
 
@@ -80,8 +86,8 @@ export function useGenericTable({
 
     const {
         data: rowData = [],
-        isLoading: isLoadingData,
         error: dataError,
+        isLoading: isLoadingData,
         refetch: refetchData
     } = useTableData(
         tableName,
@@ -136,28 +142,28 @@ export function useGenericTable({
         const colDefs: ColDef<TableItem>[] = initialData.encabezado.map((col: TableColumn) => {
             const formatter = getValueFormatterByType(col.tipo);
             return {
-                field: col.columna || '',
-                headerName: col.titulo || '',
                 cellStyle: {
-                    textAlign: col.alineacion === 'derecha' ? 'right' : col.alineacion === 'izquierda' ? 'left' : 'center',
                     fontWeight: 'bold',
+                    textAlign: col.alineacion 
                 },
                 context: {
                     sumar: col.sumar,
                 },
+                field: col.columna || '',
+                flex: 1,
+                headerName: col.titulo || '',
                 valueFormatter: formatter,
                 wrapText: true,
-                flex: 1,
             } as ColDef<TableItem>;
         });
 
         colDefs.push({
+            cellRenderer: RenderEditButton,
+            cellStyle: { fontWeight: 'bold', textAlign: 'center' },
             field: 'acciones',
             headerName: '',
-            width: 100,
             pinned: 'right',
-            cellRenderer: RenderEditButton,
-            cellStyle: { textAlign: 'center', fontWeight: 'bold' }
+            width: 100
         } as ColDef<TableItem>);
 
         return colDefs;
@@ -169,16 +175,16 @@ export function useGenericTable({
      */
     const defaultColDef = useMemo<Partial<ColDef<TableItem>>>(
         () => ({
-            resizable: true,
-            sortable: true,
             filter: true,
-            wrapHeaderText: true,
-            // Performance optimizations for columns
-            suppressSizeToFit: true,      // Prevent auto-sizing calculations
-            suppressAutoSize: true,       // Prevent auto-sizing calculations
             filterParams: {
                 suppressAndOrCondition: true, // Simpler filter UI
             },
+            resizable: true,
+            sortable: true,
+            suppressAutoSize: true,       // Prevent auto-sizing calculations
+            // Performance optimizations for columns
+            suppressSizeToFit: true,      // Prevent auto-sizing calculations
+            wrapHeaderText: true,
         }),
         [],
     );
@@ -189,35 +195,35 @@ export function useGenericTable({
      */
     const gridOptions = useMemo<GridOptions<TableItem>>(
         () => ({
-            localeText: TABLE_LANGUAGE_ES,
-            columnDefs,
-            rowData: finalRowData,
-            defaultColDef,
-            rowBuffer: 10,                    // Number of rows rendered outside viewport
             animateRows: false,               // Disable row animations for better performance
-            suppressCellFocus: true,
-            rowSelection: 'single',
+            cacheBlockSize: 100,
+            columnDefs,
             columnSize: 'autoSize',
             columnSizeOptions: { skipHeader: true },
-            rowModelType: 'clientSide',
+            defaultColDef,
             enableCellTextSelection: false,   // Disable text selection for better performance
-            suppressMovableColumns: true,     // Disable column moving for better performance
-            suppressColumnVirtualization: false, // Enable column virtualization
-            cacheBlockSize: 100,
             getRowId: (params) => params.data[primaryId as keyof TableItem]?.toString() ?? '',
+            localeText: TABLE_LANGUAGE_ES,
+            rowBuffer: 10,                    // Number of rows rendered outside viewport
+            rowData: finalRowData,
+            rowModelType: 'clientSide',
+            rowSelection: 'single',
+            suppressCellFocus: true,
+            suppressColumnVirtualization: false, // Enable column virtualization
+            suppressMovableColumns: true,     // Disable column moving for better performance
         }),
         [columnDefs, finalRowData, defaultColDef, primaryId],
     );
 
     return {
         columnDefs,
-        rowData: finalRowData,
-        gridOptions,
-        loading,
-        error,
         defaultColDef,
-        refreshData,
+        error,
+        gridOptions,
+        loadData,
+        loading,
         refreshColumns,
-        loadData
+        refreshData,
+        rowData: finalRowData
     };
 }

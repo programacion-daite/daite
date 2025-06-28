@@ -1,20 +1,20 @@
-import InputError from '@/components/input-error';
-import AppLayout from '@/layouts/app-layout';
-import SettingsLayout from '@/layouts/settings/layout';
-import { type BreadcrumbItem } from '@/types';
 import { Transition } from '@headlessui/react';
 import { Head, useForm } from '@inertiajs/react';
 import { FormEventHandler, useRef } from 'react';
 
 import HeadingSmall from '@/components/heading-small';
+import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import AppLayout from '@/layouts/app-layout';
+import SettingsLayout from '@/layouts/settings/layout';
+import { type BreadcrumbItem } from '@/types';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Password settings',
         href: '/settings/password',
+        title: 'Password settings',
     },
 ];
 
@@ -22,7 +22,7 @@ export default function Password() {
     const passwordInput = useRef<HTMLInputElement>(null);
     const currentPasswordInput = useRef<HTMLInputElement>(null);
 
-    const { data, setData, errors, put, reset, processing, recentlySuccessful } = useForm({
+    const { data, errors, processing, put, recentlySuccessful, reset, setData } = useForm({
         current_password: '',
         password: '',
         password_confirmation: '',
@@ -32,8 +32,6 @@ export default function Password() {
         e.preventDefault();
 
         put(route('password.update'), {
-            preserveScroll: true,
-            onSuccess: () => reset(),
             onError: (errors) => {
                 if (errors.password) {
                     reset('password', 'password_confirmation');
@@ -45,6 +43,8 @@ export default function Password() {
                     currentPasswordInput.current?.focus();
                 }
             },
+            onSuccess: () => reset(),
+            preserveScroll: true,
         });
     };
 

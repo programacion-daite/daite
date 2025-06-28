@@ -1,12 +1,13 @@
-import { Button } from '@/components/ui/button';
 import { Head, usePage } from '@inertiajs/react';
-import { ArrowLeft, Loader2 } from 'lucide-react';
-import { DynamicSelect } from '@/components/dynamic-select';
-import { useState } from 'react';
-import BarChartGraphic from '@/components/barchartgraphic';
 import { useQuery } from '@tanstack/react-query';
-import { fetchSingleEntity, fetchDatos } from '@/lib/api';
+import { ArrowLeft, Loader2 } from 'lucide-react';
+import { useState } from 'react';
+
+import BarChartGraphic from '@/components/barchartgraphic';
+import { DynamicSelect } from '@/components/dynamic-select';
 import PieChartGraphic from '@/components/piechartgraphic';
+import { Button } from '@/components/ui/button';
+import { fetchSingleEntity, fetchDatos } from '@/lib/api';
 
 export default function Estadisticas() {
     const { modules } = usePage().props as unknown as { modules: { valor: string; descripcion: string }[] };
@@ -14,16 +15,16 @@ export default function Estadisticas() {
     const [selectedInforme, setSelectedInforme] = useState<string>('');
 
     const { data: detalles, isLoading: loadingDetalles } = useQuery({
-      queryKey: ['detalles', selectedInforme],
-      queryFn: () => fetchSingleEntity(selectedInforme),
       enabled: !!selectedInforme,
+      queryFn: () => fetchSingleEntity(selectedInforme),
+      queryKey: ['detalles', selectedInforme],
       select: (data) => data[0],
     });
 
     const { data: datos, isLoading: loadingDatos } = useQuery({
-      queryKey: ['datos', selectedInforme],
-      queryFn: () => fetchDatos(selectedInforme),
       enabled: !!selectedInforme && !!detalles,
+      queryFn: () => fetchDatos(selectedInforme),
+      queryKey: ['datos', selectedInforme],
     });
 
     const chartData = (datos || []).map((item: { x: string; y: string | number }) => ({
@@ -50,8 +51,8 @@ export default function Estadisticas() {
                         name="module"
                         parametros={{
                             options: modules.map(module => ({
-                                value: module.valor,
-                                label: module.descripcion
+                                label: module.descripcion,
+                                value: module.valor
                             }))
                         }}
                         onValueChange={(value) => setSelectedModule(value)}
@@ -73,9 +74,9 @@ export default function Estadisticas() {
                         procedure={{
                             name: "p_traer_filtros",
                             params: {
-                                valor: (value) => value,
                                 renglon: "informes",
-                                tipo_filtro: "modulo"
+                                tipo_filtro: "modulo",
+                                valor: (value) => value
                             }
                         }}
                         onValueChange={(value) => {
@@ -100,7 +101,7 @@ export default function Estadisticas() {
                 ) : detalles && detalles.tipo === 'CIRCULAR' && chartData.length > 0 ? (
                 <PieChartGraphic data={chartData} title={detalles.informe} />
                 ) : (
-                <div style={{ textAlign: 'center', color: '#aaa' }}></div>
+                <div style={{ color: '#aaa', textAlign: 'center' }}></div>
                 )}
             </div>
 

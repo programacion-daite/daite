@@ -2,7 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use App\Http\Controllers\GeneralController;
+use App\Http\Controllers\registros\RecordsController;
+use App\Http\Middleware\HandleDinamicConnections;
 
 $genericos = [
     'areas' => ['tabla' => 'areas', 'id_primario'=>'id_area'],
@@ -54,7 +55,7 @@ $genericos = [
     'tiposVehiculos' => ['tabla' => 'tipos_vehiculos', 'id_primario'=>'id_tipo_vehiculo'],
 ];
 
-Route::middleware(['auth'])->group(function () use ($genericos) {
+Route::middleware(['auth', HandleDinamicConnections::class])->group(function () use ($genericos) {
 
     // Registros del sistema
     Route::prefix('registros')->group(function () use ($genericos) {
@@ -63,8 +64,9 @@ Route::middleware(['auth'])->group(function () use ($genericos) {
         foreach ($genericos as $key => $value) {
             Route::get(
                 $key,
-                fn() => Inertia::render('registros/genericos', $value)
-            )->name('registros.'.$key);
+                [RecordsController::class, 'dynamicRecords']
+            )->name('registros.'.$key)
+            ->defaults('metadata', $value);
         }
 
         Route::get('beneficiarios', fn() => Inertia::render('registros/beneficiarios'))

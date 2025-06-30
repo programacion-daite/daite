@@ -93,10 +93,10 @@ export class ApiClient {
         const errorData = response.data as ApiErrorData[];
         return {
           data: {} as T,
-          success: false,
           error: errorData[0].mensaje,
+          errorData: errorData,
           message: errorData[0].mensaje,
-          errorData: errorData
+          success: false
         };
       }
 
@@ -109,9 +109,9 @@ export class ApiClient {
       const errorData = apiError.response?.data as ApiErrorData[];
       return {
         data: {} as T,
-        success: false,
         error: errorData?.[0]?.mensaje || apiError.message,
-        errorData: errorData
+        errorData: errorData,
+        success: false
       };
     }
   }
@@ -119,24 +119,24 @@ export class ApiClient {
   public async get<T>(url: string, params?: Record<string, string | number | boolean>): Promise<ApiResponse<T>> {
     return this.request<T>({
       method: 'GET',
-      url,
       params,
+      url,
     });
   }
 
   public async post<T>(url: string, data?: Record<string, unknown>): Promise<ApiResponse<T>> {
     return this.request<T>({
+      data,
       method: 'POST',
       url,
-      data,
     });
   }
 
   public async put<T>(url: string, data?: Record<string, unknown>): Promise<ApiResponse<T>> {
     return this.request<T>({
+      data,
       method: 'PUT',
       url,
-      data,
     });
   }
 

@@ -1,13 +1,15 @@
 import '../css/app.css';
 import { createInertiaApp } from '@inertiajs/react';
-import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
-import { createRoot } from 'react-dom/client';
-import { initializeTheme } from './hooks/use-appearance';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
+import { ReactNode } from 'react';
+import { createRoot } from 'react-dom/client';
+
 import AppLayout from '@/layouts/app-layout';
 import AuthLayout from '@/layouts/auth-layout';
-import { ReactNode } from 'react';
+
+import { initializeTheme } from './hooks/use-appearance';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -22,7 +24,9 @@ const queryClient = new QueryClient({
 });
 
 createInertiaApp({
-    title: (title) => `${appName} | ${title}`,
+    progress: {
+        color: '#4B5563',
+    },
     resolve: async (name) => {
         const page = await resolvePageComponent(`./pages/${name}.tsx`, import.meta.glob('./pages/**/*.tsx')) as { default: { layout?: (page: ReactNode) => ReactNode } };
         page.default.layout = page.default.layout || ((page: ReactNode) => {
@@ -34,15 +38,13 @@ createInertiaApp({
         });
         return page;
     },
-    setup({ el, App, props }) {
+    setup({ App, el, props }) {
         createRoot(el).render(<QueryClientProvider client={queryClient}>
             <App {...props} />
             <ReactQueryDevtools initialIsOpen={false} />
           </QueryClientProvider>);
     },
-    progress: {
-        color: '#4B5563',
-    },
+    title: (title) => `${appName} | ${title}`,
 });
 
 // This will set light / dark mode on load...

@@ -6,10 +6,10 @@ import axios from 'axios';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 export function useAgGridData({
-    loadColumns,
     columnsRoute,
-    fetchData,
     dataRoute,
+    fetchData,
+    loadColumns,
     parametrosColumna = {},
     parametrosDatos = {},
 }: UseAgGridDataProps): UseAgGridDataReturn {
@@ -87,27 +87,25 @@ export function useAgGridData({
     // Generate column definitions
     const columnDefs = useMemo<ColDef<TableItem>[]>(() => {
         return columns.map((col) => ({
-            field: col.columna || '',
-            headerName: col.titulo || '',
             cellStyle: {
                 textAlign: col.alineacion as 'left' | 'right' | 'center',
                 fontWeight: 'bold',
+                textAlign: col.alineacion === 'derecha' ? 'right' : col.alineacion === 'izquierda' ? 'left' : 'center',
             },
             context: {
                 sumar: col.sumar,
             },
             valueFormatter: getValueFormatterByType(col.tipo as DataType),
             wrapText: true,
-            flex: 1,
         }));
     }, [columns]);
 
     // Default column definitions
     const defaultColDef = useMemo<Partial<ColDef<TableItem>>>(
         () => ({
+            filter: true,
             resizable: true,
             sortable: true,
-            filter: true,
             wrapHeaderText: true,
         }),
         [],
@@ -116,26 +114,26 @@ export function useAgGridData({
     // Grid options
     const gridOptions = useMemo<GridOptions<TableItem>>(
         () => ({
-            localeText: TABLE_LANGUAGE_ES,
-            columnDefs,
-            rowData,
-            defaultColDef,
             animateRows: true,
-            suppressCellFocus: true,
-            rowSelection: 'single',
+            columnDefs,
             columnSize: 'autoSize',
             columnSizeOptions: { skipHeader: true },
+            defaultColDef,
+            localeText: TABLE_LANGUAGE_ES,
+            rowData,
+            rowSelection: 'single',
+            suppressCellFocus: true,
         }),
         [columnDefs, rowData, defaultColDef],
     );
 
     return {
-        rowData,
         columnDefs,
         defaultColDef,
-        loading,
         gridOptions,
-        refreshData,
+        loading,
         refreshColumns,
+        refreshData,
+        rowData,
     };
 }

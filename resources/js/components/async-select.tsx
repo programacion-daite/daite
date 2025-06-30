@@ -1,12 +1,13 @@
+import { Label } from '@radix-ui/react-label';
+import { useQuery } from '@tanstack/react-query';
+import DOMPurify from 'dompurify';
+import { Loader2, RefreshCw } from 'lucide-react';
 import { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import AsyncSelect from 'react-select/async';
-import { Loader2, RefreshCw } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import { Label } from '@radix-ui/react-label';
-import DOMPurify from 'dompurify';
-import { useQuery } from '@tanstack/react-query';
 import { ApiClient } from '@/lib/api-client';
+import { cn } from '@/lib/utils';
 
 interface Option {
   value: string;
@@ -28,21 +29,21 @@ interface AsyncSearchSelectProps {
   required?: boolean;
 }
 
-export const AsyncSearchSelect = forwardRef<any, AsyncSearchSelectProps>(
+export const AsyncSearchSelect = forwardRef<React.ComponentRef<typeof AsyncSelect>, AsyncSearchSelectProps>(
   (
     {
+      defaultValue,
+      disabled = false,
+      error,
       id,
       label,
       name,
+      onValueChange,
       parametros,
       placeholder = 'Seleccione una opción',
-      defaultValue,
-      value,
-      disabled = false,
-      onValueChange,
-      error,
-      withRefresh = true,
       required = false,
+      value,
+      withRefresh = true,
     },
     ref
   ) => {
@@ -54,12 +55,11 @@ export const AsyncSearchSelect = forwardRef<any, AsyncSearchSelectProps>(
     // Memoizar el valor actual
     const currentValue = useMemo(() => value || defaultValue, [value, defaultValue]);
 
-    // Memoizar los parámetros serializados
     const serializedParams = useMemo(() => JSON.stringify(parametros), [parametros]);
 
     // Query para cargar opciones
     const { data: queryData, isLoading, refetch } = useQuery({
-      queryKey: ['select-options', parametros],
+      enabled: false,
       queryFn: async () => {
         const body = { ...parametros, search: '' };
         const response = await api.post(route('traerFiltros'), body);
@@ -74,11 +74,11 @@ export const AsyncSearchSelect = forwardRef<any, AsyncSearchSelectProps>(
         }
 
         return data.map(r => ({
-          value: DOMPurify.sanitize(r.valor?.toString() || '_empty'),
           label: DOMPurify.sanitize(r.descripcion?.toString() || ''),
+          value: DOMPurify.sanitize(r.valor?.toString() || '_empty'),
         }));
       },
-      enabled: false, // No cargar automáticamente
+      queryKey: ['select-options', parametros],
     });
 
     // Lógica genérica de fetch según inputValue
@@ -97,8 +97,8 @@ export const AsyncSearchSelect = forwardRef<any, AsyncSearchSelectProps>(
         }
 
         return data.map(r => ({
-          value: DOMPurify.sanitize(r.valor?.toString() || '_empty'),
           label: DOMPurify.sanitize(r.descripcion?.toString() || ''),
+          value: DOMPurify.sanitize(r.valor?.toString() || '_empty'),
         }));
       } catch (err) {
         console.error('Error cargando opciones:', err);

@@ -1,16 +1,15 @@
 import { FormAction } from "@/types/generic";
-
 import { FormState } from "@/types/generic";
 
 export const initialFormState: FormState = {
-    resultado: {
-      abierto: false,
-      mensaje: '',
-      esExito: false,
-    },
+    campoEnfocar: null,
     formData: null,
     isSubmitting: false,
-    campoEnfocar: null,
+    resultado: {
+      abierto: false,
+      esExito: false,
+      mensaje: '',
+    },
   }
 
 // Reducer para manejar todos los estados relacionados con el formulario
@@ -19,12 +18,12 @@ export function formReducer(state: FormState, action: FormAction): FormState {
         case 'SHOW_RESULT':
             return {
                 ...state,
+                campoEnfocar: action.campoEnfocar || null,
                 resultado: {
                     abierto: true,
-                    mensaje: action.mensaje,
-                    esExito: action.esExito
-                },
-                campoEnfocar: action.campoEnfocar || null
+                    esExito: action.esExito,
+                    mensaje: action.mensaje
+                }
             };
         case 'HIDE_RESULT':
             return {

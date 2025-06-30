@@ -1,8 +1,9 @@
+import { Link, usePage } from '@inertiajs/react';
+import { memo } from 'react';
+
+import { Collapsible, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarGroupContent } from '@/components/ui/sidebar';
 import { type sidebarItem } from '@/types';
-import { Link, usePage } from '@inertiajs/react';
-import { Collapsible, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { memo } from 'react';
 
 // Use memo to prevent unnecessary re-renders
 export const NavMain = memo(function NavMain() {

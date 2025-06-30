@@ -1,14 +1,67 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+
+import type { FormDataType } from '@/types/form';
+
 import { ApiClient } from './api-client';
-import { FormDataType } from '@/types/form';
 
 const api = ApiClient.getInstance();
+
+export const useCreateMutation = <T>(endpoint: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: Record<string, unknown>) => {
+      const response = await api.post<T>(endpoint, data);
+      if (!response.success) {
+        throw new Error(response.error || 'Error creating record');
+      }
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [endpoint] });
+    },
+  });
+};
+
+export const useUpdateMutation = <T>(endpoint: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ data, id }: { id: string | number; data: Record<string, unknown> }) => {
+      const response = await api.put<T>(`${endpoint}/${id}`, data);
+      if (!response.success) {
+        throw new Error(response.error || 'Error updating record');
+      }
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [endpoint] });
+    },
+  });
+};
+
+export const useDeleteMutation = (endpoint: string) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string | number) => {
+      const response = await api.delete(`${endpoint}/${id}`);
+      if (!response.success) {
+        throw new Error(response.error || 'Error deleting record');
+      }
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [endpoint] });
+    },
+  });
+};
 
 export const useRegisterRecordsMutation = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ table, primaryId, formData }: {
+    mutationFn: async ({ formData, primaryId, table }: {
       table: string;
       primaryId: string;
       formData: FormDataType;
@@ -53,8 +106,8 @@ export const useRegisterRecordsMutation = () => {
 
       const payload = {
         json: JSON.stringify({
-          tabla: table,
           campos: fields,
+          tabla: table,
           valores: values
         })
       };
@@ -67,8 +120,17 @@ export const useRegisterRecordsMutation = () => {
 
       return response;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['register-records'] });
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ['table-data', variables.table]
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['initial-table-load', variables.table]
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ['register-records']
+      });
     },
   });
 };

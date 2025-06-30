@@ -38,8 +38,6 @@ class SessionService
      */
     public function getSessionData(Request $request)
     {
-        Log::info('Procesando datos de sesión');
-
         $esApiRequest = $request->is('api/*');
         $this->handleSessionApi($request, $esApiRequest);
 
@@ -47,7 +45,6 @@ class SessionService
         $usuario = $this->getUser($idUsuario);
 
         $sesion = $this->initializeSession($usuario);
-        $this->loadConfigurations($sesion, $idUsuario);
         $this->processCompanyData($sesion);
         $this->loadAssignedPrograms($sesion, $idUsuario, $esApiRequest);
         $this->loadFavoritePrograms($sesion, $idUsuario, $esApiRequest);
@@ -99,7 +96,6 @@ class SessionService
                 'genericos' => []
             ],
             'empresa' => $this->getCompanyData($usuario->id_usuario),
-            'configuracion' => []
         ];
     }
 
@@ -123,22 +119,6 @@ class SessionService
     private function getCompanyData(int $idUsuario): array
     {
         return $this->getTenantConnection()->select('EXEC [dbo].[p_traer_registros] @id_usuario = ?, @renglon = ?', [$idUsuario, 'DATOS_INICIO_SESION', '']);
-    }
-
-    /**
-     * Carga las configuraciones del usuario
-     *
-     * @param array $sesion
-     * @param int $idUsuario
-     * @return void
-     */
-    private function loadConfigurations(array &$sesion, int $idUsuario): void
-    {
-        $configuraciones = $this->getTenantConnection()->select('EXEC [dbo].[p_traer_configuraciones] ?, ?, ?', [$idUsuario, '', '']);
-
-        foreach ($configuraciones as $configuracion) {
-            $sesion['configuracion'][$configuracion->campo] = $configuracion->valor;
-        }
     }
 
     /**

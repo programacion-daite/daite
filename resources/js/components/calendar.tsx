@@ -1,5 +1,3 @@
-import { Button, buttonVariants } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
 import { differenceInCalendarDays } from "date-fns"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import * as React from "react"
@@ -10,6 +8,9 @@ import {
   useDayPicker,
   type DayPickerProps,
 } from "react-day-picker"
+
+import { Button, buttonVariants } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 
 export type CalendarProps = DayPickerProps & {
   /**
@@ -58,11 +59,11 @@ type NavView = "days" | "years"
  */
 function Calendar({
   className,
+  components,
+  numberOfMonths,
   showOutsideDays = true,
   showYearSwitcher = true,
   yearRange = 12,
-  numberOfMonths,
-  components,
   ...props
 }: CalendarProps) {
   const [navView, setNavView] = React.useState<NavView>("days")
@@ -79,7 +80,7 @@ function Calendar({
     }, [yearRange])
   )
 
-  const { onNextClick, onPrevClick, startMonth, endMonth } = props
+  const { endMonth, onNextClick, onPrevClick, startMonth } = props
 
   const columnsDisplayed = navView === "years" ? 1 : numberOfMonths
 
@@ -103,9 +104,9 @@ function Calendar({
     props.captionLabelClassName
   )
   const buttonNavClassName = buttonVariants({
-    variant: "outline",
     className:
       "absolute h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100",
+    variant: "outline",
   })
   const _buttonNextClassName = cn(
     buttonNavClassName,
@@ -171,34 +172,55 @@ function Calendar({
         width: 248.8 * (columnsDisplayed ?? 1) + "px",
       }}
       classNames={{
-        months: _monthsClassName,
-        month_caption: _monthCaptionClassName,
-        weekdays: _weekdaysClassName,
-        weekday: _weekdayClassName,
-        month: _monthClassName,
-        caption: _captionClassName,
-        caption_label: _captionLabelClassName,
         button_next: _buttonNextClassName,
         button_previous: _buttonPreviousClassName,
-        nav: _navClassName,
-        month_grid: _monthGridClassName,
-        week: _weekClassName,
+        caption: _captionClassName,
+        caption_label: _captionLabelClassName,
         day: _dayClassName,
         day_button: _dayButtonClassName,
-        range_start: _rangeStartClassName,
-        range_middle: _rangeMiddleClassName,
-        range_end: _rangeEndClassName,
-        selected: _selectedClassName,
-        today: _todayClassName,
-        outside: _outsideClassName,
         disabled: _disabledClassName,
         hidden: _hiddenClassName,
+        month: _monthClassName,
+        month_caption: _monthCaptionClassName,
+        month_grid: _monthGridClassName,
+        months: _monthsClassName,
+        nav: _navClassName,
+        outside: _outsideClassName,
+        range_end: _rangeEndClassName,
+        range_middle: _rangeMiddleClassName,
+        range_start: _rangeStartClassName,
+        selected: _selectedClassName,
+        today: _todayClassName,
+        week: _weekClassName,
+        weekday: _weekdayClassName,
+        weekdays: _weekdaysClassName,
       }}
       components={{
+        CaptionLabel: (props) => (
+          <CaptionLabel
+            showYearSwitcher={showYearSwitcher}
+            navView={navView}
+            setNavView={setNavView}
+            displayYears={displayYears}
+            {...props}
+          />
+        ),
         Chevron: ({ orientation }) => {
           const Icon = orientation === "left" ? ChevronLeft : ChevronRight
           return <Icon className="h-4 w-4" />
         },
+        MonthGrid: ({ children, className, ...props }) => (
+          <MonthGrid
+            children={children}
+            className={className}
+            displayYears={displayYears}
+            startMonth={startMonth}
+            endMonth={endMonth}
+            navView={navView}
+            setNavView={setNavView}
+            {...props}
+          />
+        ),
         Nav: ({ className }) => (
           <Nav
             className={className}
@@ -209,27 +231,6 @@ function Calendar({
             endMonth={endMonth}
             onPrevClick={onPrevClick}
             onNextClick={onNextClick}
-          />
-        ),
-        CaptionLabel: (props) => (
-          <CaptionLabel
-            showYearSwitcher={showYearSwitcher}
-            navView={navView}
-            setNavView={setNavView}
-            displayYears={displayYears}
-            {...props}
-          />
-        ),
-        MonthGrid: ({ className, children, ...props }) => (
-          <MonthGrid
-            children={children}
-            className={className}
-            displayYears={displayYears}
-            startMonth={startMonth}
-            endMonth={endMonth}
-            navView={navView}
-            setNavView={setNavView}
-            {...props}
           />
         ),
         ...components,
@@ -243,13 +244,13 @@ Calendar.displayName = "Calendar"
 
 function Nav({
   className,
-  navView,
-  startMonth,
-  endMonth,
   displayYears,
-  setDisplayYears,
-  onPrevClick,
+  endMonth,
+  navView,
   onNextClick,
+  onPrevClick,
+  setDisplayYears,
+  startMonth,
 }: {
   className?: string
   navView: NavView
@@ -262,7 +263,7 @@ function Nav({
   onPrevClick?: (date: Date) => void
   onNextClick?: (date: Date) => void
 }) {
-  const { nextMonth, previousMonth, goToMonth } = useDayPicker()
+  const { goToMonth, nextMonth, previousMonth } = useDayPicker()
 
   const isPreviousDisabled = (() => {
     if (navView === "years") {
@@ -380,10 +381,10 @@ function Nav({
 
 function CaptionLabel({
   children,
-  showYearSwitcher,
+  displayYears,
   navView,
   setNavView,
-  displayYears,
+  showYearSwitcher,
   ...props
 }: {
   showYearSwitcher?: boolean
@@ -407,13 +408,13 @@ function CaptionLabel({
 }
 
 function MonthGrid({
-  className,
   children,
+  className,
   displayYears,
-  startMonth,
   endMonth,
   navView,
   setNavView,
+  startMonth,
   ...props
 }: {
   className?: string
@@ -447,10 +448,10 @@ function MonthGrid({
 function YearGrid({
   className,
   displayYears,
-  startMonth,
   endMonth,
-  setNavView,
   navView,
+  setNavView,
+  startMonth,
   ...props
 }: {
   className?: string

@@ -3,18 +3,15 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Inertia\Response;
 use App\Http\Services\TenantAuthService;
 use Illuminate\Support\Facades\Log;
-use App\Helpers\DynamicConnection;
 
-class AuthenticatedSessionController extends Controller
+class AuthController extends Controller
 {
 
     protected $tenantAuthService;
@@ -27,7 +24,7 @@ class AuthenticatedSessionController extends Controller
     /**
      * Show the login page.
      */
-    public function create(Request $request): Response
+    public function index(Request $request): Response
     {
         return Inertia::render('auth/login', [
             'status' => $request->session()->get('status'),
@@ -39,15 +36,20 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $usuario = $request->usuario ?? $request->nombre_usuario;
-        $dispositivo = $request->dispositivo ?? $request->header('User-Agent');
-        $origen = $request->origen ?? ($request->is('api/*') ? 'MÓVIL' : 'WEB');
+        $user = $request->usuario ?? $request->nombre_usuario;
+        $device = $request->dispositivo ?? $request->header('User-Agent');
+        $origin = $request->origen ?? ($request->is('api/*') ? 'MÓVIL' : 'WEB');
 
-        $resultado = $this->tenantAuthService->authenticateUser($usuario, $request->contrasena, $dispositivo, $origen);
+        $result = $this->tenantAuthService->authenticateUser(
+            $user,
+            $request->contrasena,
+            $device,
+            $origin
+        );
 
-        if ($resultado['error']) {
-            Log::error('Error al autenticar usuario: ' . json_encode($resultado['data']));
-            return redirect()->back()->withErrors(['mensaje' => $resultado['data']->mensaje ?? 'Error de autenticación']);
+        if ($result['error']) {
+            Log::error('Error al autenticar usuario: ' . json_encode($result['data']));
+            return redirect()->back()->withErrors(['mensaje' => $result['data']->mensaje ?? 'Error de autenticación']);
         }
 
         $request->session()->regenerate();
@@ -61,7 +63,6 @@ class AuthenticatedSessionController extends Controller
     public function destroy(Request $request): RedirectResponse
     {
         try {
-            // Limpiamos la conexión usando el servicio de autenticación
             $this->tenantAuthService->setConnectionName('tenant');
         } catch (\Exception $e) {
             Log::error('Error al limpiar la conexión: ' . $e->getMessage());

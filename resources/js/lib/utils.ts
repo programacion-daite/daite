@@ -1,8 +1,10 @@
-import type { DatabaseField } from '@/types/form';
-import { DataType } from '@/types/table';
 import { ValueFormatterParams } from 'ag-grid-community';
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+
+import type { DatabaseField } from '@/types/form';
+
+import { DataType } from '@/types/table';
 
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
@@ -15,8 +17,8 @@ export function numericFormat(value: number | string | number[] | string[], deci
         formattedValue = Number(String(formattedValue).replaceAll(',', ''));
 
         return formattedValue.toLocaleString('es-419', {
-            minimumFractionDigits: decimals,
             maximumFractionDigits: decimals,
+            minimumFractionDigits: decimals,
         });
     };
 
@@ -109,8 +111,8 @@ export const buildGenericJSON = (data: Record<string, unknown>, table: string) =
 
     // Return JSON object
     return {
-        tabla: table,
         campos: filteredFields.join(','), // Filtered fields as string
+        tabla: table,
         valores: values, // Values corresponding to filtered fields as string
     };
 };
@@ -128,9 +130,10 @@ export const processField = (field: DatabaseField, primaryId: string): DatabaseF
     const esPrimaria = nombre === primaryId;
     const isVisible = field.visible === '1';
     const maxLength = field.longitud || 255;
+    const isRequired = field.requerido === '1';
 
     // Get field label
-    let label = field.titulo || capitalize(nombre?.replace('id_', '').replace(/_/g, ' ') || '');
+    let label = `${field.titulo} ${isRequired ? '*' : ''}`;
     if (esPrimaria) {
         label = `ID ${label}`;
     }
@@ -156,15 +159,15 @@ export const processField = (field: DatabaseField, primaryId: string): DatabaseF
         if (tipo === 'bit') {
             parametros = {
                 options: [
-                    { value: '0', label: 'No' },
-                    { value: '1', label: 'Si' },
+                    { label: 'No', value: '0' },
+                    { label: 'Si', value: '1' },
                 ],
             };
         } else {
             parametros = {
                 options: field.json ? JSON.parse(field.json).map((option: { valor: string, descripcion: string }) => ({
-                        value: option.valor.toString(),
                         label: option.descripcion,
+                        value: option.valor.toString(),
                     }))
                     : [],
             };
@@ -185,15 +188,15 @@ export const processField = (field: DatabaseField, primaryId: string): DatabaseF
 
     // Create field structure
     return {
-        nombre: nombre || '',
-        tipo,
-        label,
+        classname: isVisible ? 'col-span-1' : 'hidden',
         componente,
         foranea: esForanea,
-        parametros,
+        label,
         longitud: maxLength.toString(),
-        classname: isVisible ? 'col-span-1' : 'hidden',
+        nombre: nombre || '',
+        parametros,
         requerido: field.requerido || false,
+        tipo,
     };
 };
 

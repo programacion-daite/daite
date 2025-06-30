@@ -1,18 +1,19 @@
 "use client"
 
+import { format } from "date-fns"
+import { es } from "date-fns/locale"
+import { CalendarIcon } from "lucide-react"
+import * as React from "react"
+
 import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
+import { Label } from "@/components/ui/label"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
-import { Calendar } from "@/components/ui/calendar"
-import { format } from "date-fns"
-import { es } from "date-fns/locale"
-import { CalendarIcon } from "lucide-react"
-import { Label } from "@/components/ui/label"
-import * as React from "react"
 
 interface DatePickerProps {
   label: string;
@@ -22,7 +23,7 @@ interface DatePickerProps {
   onSelect?: (date: Date) => void;
 }
 
-export default function DatePicker({ label, id, required, value, onSelect }: DatePickerProps) {
+export default function DatePicker({ id, label, onSelect, required, value }: DatePickerProps) {
   const [date, setDate] = React.useState<Date | undefined>(value)
   const [open, setOpen] = React.useState(false)
 

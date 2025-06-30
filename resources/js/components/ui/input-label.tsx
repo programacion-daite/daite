@@ -1,6 +1,7 @@
 import { forwardRef } from 'react';
-import { Label } from "@/components/ui/label";
+
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
 export interface InputLabelProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -14,19 +15,19 @@ const inputClassNames = "h-8 px-2 py-1 uppercase";
 const errorInputClassNames = "border-red-500 focus:ring-red-500 focus:border-red-500";
 
 export const InputLabel = forwardRef<HTMLInputElement, InputLabelProps>(({
-  id,
-  type = "text",
-  label,
-  value,
-  error,
-  placeholder,
-  required = false,
-  autoFocus = false,
-  tabIndex = 1,
   autoComplete = 'off',
-  disabled = false,
-  readOnly = false,
+  autoFocus = false,
   className,
+  disabled = false,
+  error,
+  id,
+  label,
+  placeholder,
+  readOnly = false,
+  required = false,
+  tabIndex = 1,
+  type = "text",
+  value,
   ...props
 }, ref) => {
   return (

@@ -1,3 +1,7 @@
+import { useForm } from '@inertiajs/react';
+import { CheckCircle, Loader2, PlusCircle, Save, X } from 'lucide-react';
+import React, { useEffect } from 'react';
+
 import { AsyncSearchSelect } from '@/components/async-select';
 import DatePicker  from '@/components/date-picker';
 import { DynamicSelect } from '@/components/dynamic-select';
@@ -7,17 +11,15 @@ import { InputLabel } from '@/components/ui/input-label';
 import MaskedInput from '@/components/ui/masked-input';
 import { useDynamicFormStore } from '@/store/useDynamicFormStore';
 import { DatabaseField, FormDataType } from '@/types/form';
-import { useForm } from '@inertiajs/react';
-import { CheckCircle, Loader2, PlusCircle, Save, X } from 'lucide-react';
-import React, { useEffect } from 'react';
+
 import { FormField } from './form-field';
 
 const componentMap = {
-    InputLabel,
-    DynamicSelect,
-    DatePicker,
     AsyncSearchSelect,
-    MaskedInput,
+    DatePicker,
+    DynamicSelect,
+    InputLabel,
+    MaskedInput
 };
 
 interface ModalFormProps {
@@ -32,8 +34,8 @@ interface ModalFormProps {
     isLoading?: boolean;
 }
 
-export default function ModalForm({ isOpen, onClose, mode, title, initialData, onSubmit, fields, disableClose = false, isLoading = false }: ModalFormProps) {
-    const { data, setData, processing, errors, reset } = useForm<FormDataType>(initialData);
+export default function ModalForm({ disableClose = false, fields, initialData, isLoading = false, isOpen, mode, onClose, onSubmit, title }: ModalFormProps) {
+    const { data, errors, processing, reset, setData } = useForm<FormDataType>(initialData);
     const { setErrors, showError } = useDynamicFormStore();
 
     useEffect(() => {

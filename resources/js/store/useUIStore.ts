@@ -10,10 +10,10 @@ interface UIState {
 }
 
 export const useUIStore = create<UIState>((set) => ({
-  isModalOpen: false,
   activeModal: null,
   isLoading: false,
-  setModalOpen: (isOpen) => set({ isModalOpen: isOpen }),
+  isModalOpen: false,
   setActiveModal: (modalName) => set({ activeModal: modalName }),
   setLoading: (isLoading) => set({ isLoading }),
+  setModalOpen: (isOpen) => set({ isModalOpen: isOpen }),
 }))

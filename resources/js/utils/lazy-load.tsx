@@ -1,5 +1,5 @@
-import { lazy, Suspense, ComponentType } from 'react';
 import { Loader2 } from 'lucide-react';
+import { lazy, Suspense, ComponentType } from 'react';
 
 // Componente de carga por defecto
 const DefaultLoading = () => (

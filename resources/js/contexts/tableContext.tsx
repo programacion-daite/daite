@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { createContext, useContext, useState, useCallback } from 'react';
 
 interface TableContextType {
@@ -5,11 +6,13 @@ interface TableContextType {
     isLoading: boolean;
     setIsLoading: (loading: boolean) => void;
     shouldRefresh?: boolean;
+    invalidateTableQueries: (tableName: string) => Promise<void>;
 }
 
 const TableContext = createContext<TableContextType>({
-    refreshTable: () => {},
+    invalidateTableQueries: async () => {},
     isLoading: false,
+    refreshTable: () => {},
     setIsLoading: () => {},
     shouldRefresh: false,
 });
@@ -17,13 +20,29 @@ const TableContext = createContext<TableContextType>({
 export const TableProvider = ({ children }: { children: React.ReactNode }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [shouldRefresh, setShouldRefresh] = useState(false);
+    const queryClient = useQueryClient();
+
+    const invalidateTableQueries = useCallback(async (tableName: string) => {
+        await queryClient.invalidateQueries({
+            queryKey: ['table-data', tableName]
+        });
+        await queryClient.invalidateQueries({
+            queryKey: ['initial-table-load', tableName]
+        });
+    }, [queryClient]);
 
     const refreshTable = useCallback(() => {
-        setShouldRefresh(prev => !prev); // Toggle para forzar la actualización
+        setShouldRefresh(prev => !prev);
     }, []);
 
     return (
-        <TableContext.Provider value={{ refreshTable, isLoading, setIsLoading, shouldRefresh }}>
+        <TableContext.Provider value={{
+            invalidateTableQueries,
+            isLoading,
+            refreshTable,
+            setIsLoading,
+            shouldRefresh
+        }}>
             {children}
         </TableContext.Provider>
     );

@@ -1,12 +1,13 @@
-import { memo, useCallback, useState } from 'react';
-import Select, { components, GroupBase, OptionProps } from 'react-select';
 import { useQuery } from '@tanstack/react-query';
-import { ApiClient } from '@/lib/api-client';
-import { ErrorHandler } from '@/services/error-handler';
-import { ApiResponse } from '@/types/errors';
 import DOMPurify from 'dompurify';
 import { Loader2, RefreshCw } from 'lucide-react';
+import { memo, useCallback, useState } from 'react';
+import Select, { components, GroupBase, OptionProps } from 'react-select';
+
+import { ApiClient } from '@/lib/api-client';
 import { cn } from '@/lib/utils';
+import { ErrorHandler } from '@/services/error-handler';
+import { ApiResponse } from '@/types/errors';
 
 interface CustomSelectProps {
     id: string;
@@ -49,29 +50,30 @@ const CustomOption = ({ children, ...props }: OptionProps<any, boolean, GroupBas
 };
 
 export const CustomSelect = memo(function CustomSelect({
-    id,
-    name,
-    value,
-    defaultValue,
-    placeholder = 'Seleccione una opción',
-    disabled = false,
-    required = false,
-    error,
     className,
-    procedure,
-    isDependent = false,
+    defaultValue,
     dependentOn,
-    onValueChange,
-    withRefresh = true,
-    minimumResultsForSearch = 10,
+    disabled = false,
+    error,
+    id,
+    isDependent = false,
     maxHeight = 300,
+    minimumResultsForSearch = 10,
+    name,
+    onValueChange,
+    placeholder = 'Seleccione una opción',
+    procedure,
+    required = false,
+    value,
+    withRefresh = true,
 }: CustomSelectProps) {
     const [isLoading, setIsLoading] = useState(false);
     const api = ApiClient.getInstance();
     const errorHandler = ErrorHandler.getInstance();
 
     const { data: options, refetch } = useQuery({
-        queryKey: ['select-options', id, procedure?.name, selectValues.get(dependentOn?.selectId || '')],
+        enabled: !isDependent || !!selectValues.get(dependentOn?.selectId || ''),
+        gcTime: 30 * 60 * 1000,
         queryFn: async () => {
             try {
                 setIsLoading(true);
@@ -118,14 +120,14 @@ export const CustomSelect = memo(function CustomSelect({
 
                 if (data.length === 0) {
                     return [{
-                        value: '',
-                        label: placeholder || 'No hay opciones'
+                        label: placeholder || 'No hay opciones',
+                        value: ''
                     }];
                 }
 
                 return data.map(r => ({
-                    value: DOMPurify.sanitize(r.valor?.toString() || '_empty'),
                     label: DOMPurify.sanitize(r.descripcion?.toString() || ''),
+                    value: DOMPurify.sanitize(r.valor?.toString() || '_empty'),
                     ...r
                 }));
             } catch (error) {
@@ -136,9 +138,8 @@ export const CustomSelect = memo(function CustomSelect({
                 setIsLoading(false);
             }
         },
-        enabled: !isDependent || !!selectValues.get(dependentOn?.selectId || ''),
+        queryKey: ['select-options', id, procedure?.name, selectValues.get(dependentOn?.selectId || '')],
         staleTime: 5 * 60 * 1000,
-        gcTime: 30 * 60 * 1000,
     });
 
     const handleChange = useCallback((selectedOption: any) => {
@@ -177,17 +178,17 @@ export const CustomSelect = memo(function CustomSelect({
                         styles={{
                             control: (base) => ({
                                 ...base,
-                                minHeight: '38px',
-                                borderColor: error ? 'rgb(239, 68, 68)' : base.borderColor,
                                 '&:hover': {
                                     borderColor: error ? 'rgb(239, 68, 68)' : base.borderColor,
                                 },
+                                borderColor: error ? 'rgb(239, 68, 68)' : base.borderColor,
+                                minHeight: '38px',
                             }),
                             menu: (base) => ({
                                 ...base,
-                                zIndex: 9999,
-                                width: '100%',
                                 minWidth: '100%',
+                                width: '100%',
+                                zIndex: 9999,
                             }),
                             menuList: (base) => ({
                                 ...base,

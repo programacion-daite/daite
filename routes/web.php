@@ -22,6 +22,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('examples/combobox', fn() => Inertia::render('examples'))
         ->name('examples.combobox');
 });
+
 require __DIR__.'/settings.php';
 require __DIR__.'/reportes.php';
 require __DIR__.'/registros.php';

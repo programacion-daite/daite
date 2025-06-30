@@ -1,9 +1,11 @@
 import React from 'react';
-import { FormHeader } from '@/components/form/form-header';
-import FormBody from '@/components/form/form-body';
-import { DynamicTable } from '@/components/table/dynamic-table';
+
 import type { RegistroDinamicoProps } from '@/types/form';
 import type { TableItem } from '@/types/table';
+
+import FormBody from '@/components/form/form-body';
+import { FormHeader } from '@/components/form/form-header';
+import { DynamicTable } from '@/components/table/dynamic-table';
 
 interface Props extends RegistroDinamicoProps {
   titulo: string;
@@ -12,7 +14,7 @@ interface Props extends RegistroDinamicoProps {
   onEdit: (item: TableItem) => void;
 }
 
-export function RegistroTable({ titulo, onCreate, onEdit, tabla, id_primario, campos }: Props) {
+export function RegistroTable({ campos, id_primario, onCreate, onEdit, tabla, titulo }: Props) {
   return (
     <>
       <FormHeader

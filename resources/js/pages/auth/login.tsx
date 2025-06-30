@@ -1,11 +1,11 @@
 import { Head, useForm } from '@inertiajs/react';
+import { LoaderCircle } from 'lucide-react';
 import { FormEventHandler } from 'react';
 
-import { LoaderCircle } from 'lucide-react';
+import logotipo from '@/../../public/img/logotipo.png';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { InputLabel } from '@/components/ui/input-label';
-import logotipo from '@/../../public/img/logotipo.png';
 
 type LoginForm = {
     nombre_usuario: string;
@@ -14,9 +14,9 @@ type LoginForm = {
 };
 
 export default function Login() {
-    const { data, setData, post, processing, errors, reset } = useForm<Required<LoginForm>>({
-        nombre_usuario: '',
+    const { data, errors, post, processing, reset, setData } = useForm<Required<LoginForm>>({
         contrasena: '',
+        nombre_usuario: '',
         remember: true,
     });
 

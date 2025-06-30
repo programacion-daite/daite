@@ -1,4 +1,4 @@
-export default function HeadingSmall({ title, description }: { title: string; description?: string }) {
+export default function HeadingSmall({ description, title }: { title: string; description?: string }) {
     return (
         <header>
             <h3 className="mb-0.5 text-base font-medium">{title}</h3>

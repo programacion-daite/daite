@@ -34,7 +34,7 @@ export type DatabaseField = {
     requerido?: boolean;
     parametros?: Record<string, unknown>;
     placeholder?: string;
-    componente?: 'InputLabel' | 'DynamicSelect' | 'DatePicker' | 'AsyncSearchSelect' | 'MaskedInput';
+    componente?: 'InputLabel' | 'DynamicSelect' | 'DatePicker' | 'AsyncSearchSelect' | 'MaskedInput' | 'SelectComponent';
     classname?: string;
     foranea?: boolean;
     tabla_referencia?: string;
@@ -51,6 +51,7 @@ export type DatabaseField = {
     json?: string
     color?: string
     selector?: string
+    requerido?: string
 }
 
 export interface ModalFormProps {

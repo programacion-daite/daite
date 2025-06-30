@@ -38,8 +38,8 @@ export async function getOpcionesGenericas<T extends BaseItem = BaseItem>(
         const data: T[] = await res.json();
 
         return data.map((item) => ({
-            value: String(item[valueKey]),
             label: String(item[labelKey]),
+            value: String(item[valueKey]),
         }));
     } catch (error) {
         console.error("getOpcionesGenericas error:", error);

@@ -1,6 +1,7 @@
+import { useState, useEffect } from 'react';
+
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
-import { useState, useEffect } from 'react';
 
 interface AppShellProps {
     children: React.ReactNode;

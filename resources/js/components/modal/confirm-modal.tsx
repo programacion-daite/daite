@@ -19,10 +19,10 @@ import {
 
 
    export const ConfirmModal: React.FC<ConfirmModal> = ({
-    open,
+    mensaje = '¿Deseas enviar el formulario? Esta acción no se puede deshacer.',
     onClose,
     onConfirm,
-    mensaje = '¿Deseas enviar el formulario? Esta acción no se puede deshacer.',
+    open,
    }) => {
     return (
     <AlertDialog open={open}>

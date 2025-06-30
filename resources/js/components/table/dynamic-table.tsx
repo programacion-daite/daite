@@ -5,18 +5,19 @@ import { DataTable } from './data-table';
 import { useGenericTable } from '@/hooks/modal/use-generic-data-table';
 import { useTable } from '@/contexts/tableContext';
 
+const styleConfig = {
+    theme: 'ag-theme-quartz',
+    headerColor: '#005CAC',
+    rowColor: '#FFFFFF',
+    oddRowColor: '#BFD6EA'
+} as const;
+
 export const DynamicTable: FC<DynamicTableProps> = ({
     table,
     primaryId,
     onRowClick,
     onDoubleClick,
     onAction,
-    styleConfig = {
-        theme: 'ag-theme-quartz',
-        headerColor: '#005CAC',
-        rowColor: '#FFFFFF',
-        oddRowColor: '#BFD6EA'
-    }
 }) => {
     const { shouldRefresh } = useTable();
     const [selectedItem, setSelectedItem] = useState<TableItem | null>(null);

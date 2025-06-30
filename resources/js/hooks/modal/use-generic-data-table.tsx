@@ -68,7 +68,6 @@ export function useGenericTable({
     tableName,
     primaryId
 }: UseGenericTableProps): UseAgGridDataReturn {
-    // Carga inicial combinada de columnas y datos
     const {
         data: initialData,
         isLoading: isLoadingInitial,

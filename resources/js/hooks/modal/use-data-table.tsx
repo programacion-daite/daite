@@ -1,32 +1,9 @@
 import { getValueFormatterByType } from '@/lib/utils';
-import { ColumnConfig, TableItem } from '@/types/table';
+import { ColumnConfig, DataType, TableItem, UseAgGridDataProps, UseAgGridDataReturn } from '@/types/table.d';
 import { TABLE_LANGUAGE_ES } from '@/utils/table-language';
 import { ColDef, GridOptions } from 'ag-grid-community';
 import axios from 'axios';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-
-interface UseAgGridDataProps {
-    loadColumns: boolean;
-    fetchData: boolean;
-    columnsRoute: string;
-    dataRoute: string;
-    parametrosColumna?: Record<string, unknown>;
-    parametrosDatos?: Record<string, unknown>;
-    isGeneric?: boolean;
-    shouldRefresh?: boolean;
-    primaryId?: string;
-    tableName?: string;
-}
-
-interface UseAgGridDataReturn {
-    rowData: TableItem[];
-    columnDefs: ColDef<TableItem>[];
-    defaultColDef: Partial<ColDef<TableItem>>;
-    loading: boolean;
-    gridOptions: GridOptions<TableItem>;
-    refreshData: () => Promise<void>;
-    refreshColumns: () => Promise<void>;
-}
 
 export function useAgGridData({
     loadColumns,
@@ -40,8 +17,8 @@ export function useAgGridData({
     const [rowData, setRowData] = useState<TableItem[]>([]);
     const [loading, setLoading] = useState(false);
 
-    const memoizedColumnsParams = useMemo(() => parametrosColumna, [JSON.stringify(parametrosColumna)]);
-    const memoizedDataParams = useMemo(() => parametrosDatos, [JSON.stringify(parametrosDatos)]);
+    const memoizedColumnsParams = useMemo(() => parametrosColumna, [parametrosColumna]);
+    const memoizedDataParams = useMemo(() => parametrosDatos, [parametrosDatos]);
 
     // Fetch columns
     const fetchColumns = useCallback(async () => {
@@ -113,13 +90,13 @@ export function useAgGridData({
             field: col.columna || '',
             headerName: col.titulo || '',
             cellStyle: {
-                textAlign: col.alineacion === 'derecha' ? 'right' : col.alineacion === 'izquierda' ? 'left' : 'center',
+                textAlign: col.alineacion as 'left' | 'right' | 'center',
                 fontWeight: 'bold',
             },
             context: {
                 sumar: col.sumar,
             },
-            valueFormatter: getValueFormatterByType(col.tipo),
+            valueFormatter: getValueFormatterByType(col.tipo as DataType),
             wrapText: true,
             flex: 1,
         }));

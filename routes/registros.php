@@ -4,160 +4,70 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\GeneralController;
 
-Route::middleware(['auth'])->group(function () {
+$genericos = [
+    'areas' => ['tabla' => 'areas', 'id_primario'=>'id_area'],
+    'provincias' => ['tabla' => 'provincias', 'id_primario'=>'id_provincia'],
+    'actividades' => ['tabla' => 'actividades', 'id_primario'=>'id_actividad'],
+    'distritos' => ['tabla' => 'distritos', 'id_primario'=>'id_distrito'],
+    'generos' => ['tabla' => 'generos', 'id_primario'=>'id_genero'],
+    'municipios' => ['tabla' => 'municipios', 'id_primario'=>'id_municipio'],
+    'afps' => ['tabla' => 'afps', 'id_primario'=>'id_afp'],
+    'argumentos' => ['tabla' => 'argumentos', 'id_primario'=>'id_argumento'],
+    'bancos' => ['tabla' => 'bancos', 'id_primario'=>'id_banco'],
+    'barrios' => ['tabla' => 'barrios', 'id_primario'=>'id_barrio'],
+    'billetes' => ['tabla' => 'billetes', 'id_primario'=>'id_billete'],
+    'cajeros' => ['tabla' => 'cajeros', 'id_primario'=>'id_cajero'],
+    'categorias' => ['tabla' => 'categorias', 'id_primario'=>'id_categoria'],
+    'clasificacionesContables' => ['tabla' => 'clasificaciones_contables', 'id_primario'=>'id_clasificacion_contable'],
+    'cobradores' => ['tabla' => 'cobradores', 'id_primario'=>'id_cobrador'],
+    'conceptos' => ['tabla' => 'conceptos', 'id_primario'=>'id_concepto'],
+    'departamentos' => ['tabla' => 'departamentos', 'id_primario'=>'id_departamento'],
+    'empresas' => ['tabla' => 'empresas', 'id_primario'=>'id_empresa'],
+    'especialidades' => ['tabla' => 'especialidades', 'id_primario'=>'id_especialidad'],
+    'estadosCiviles' => ['tabla' => 'estados_civiles', 'id_primario'=>'id_estado_civil'],
+    'formasPagos' => ['tabla' => 'formas_pagos', 'id_primario'=>'id_forma_pago'],
+    'garantias' => ['tabla' => 'garantias', 'id_primario'=>'id_garantia'],
+    'gestores' => ['tabla' => 'gestores', 'id_primario'=>'id_gestor'],
+    'grupos' => ['tabla' => 'grupos', 'id_primario'=>'id_grupo'],
+    'marcas' => ['tabla' => 'marcas', 'id_primario'=>'id_marca'],
+    'monedas' => ['tabla' => 'monedas', 'id_primario'=>'id_moneda'],
+    'oficiales' => ['tabla' => 'oficiales', 'id_primario'=>'id_oficial'],
+    'paises' => ['tabla' => 'paises', 'id_primario'=>'id_pais'],
+    'posiciones' => ['tabla' => 'posiciones', 'id_primario'=>'id_posicion'],
+    'renglones' => ['tabla' => 'renglones', 'id_primario'=>'id_renglon'],
+    'rutas' => ['tabla' => 'rutas', 'id_primario'=>'id_ruta'],
+    'sectores' => ['tabla' => 'sectores', 'id_primario'=>'id_sector'],
+    'seguros' => ['tabla' => 'seguros', 'id_primario'=>'id_seguro'],
+    'subCategorias' => ['tabla' => 'subcategorias', 'id_primario'=>'id_sub_categoria'],
+    'sucursales' => ['tabla' => 'sucursales', 'id_primario'=>'id_sucursal'],
+    'supervisores' => ['tabla' => 'supervisores', 'id_primario'=>'id_supervisor'],
+    'tiposCalculos' => ['tabla' => 'tipos_calculos', 'id_primario'=>'id_tipo_calculo'],
+    'tiposCargos' => ['tabla' => 'tipos_cargos', 'id_primario'=>'id_tipo_cargo'],
+    'tiposConstribuyentes' => ['tabla' => 'tipos_constribuyentes', 'id_primario'=>'id_tipo_constribuyente'],
+    'tiposContactos' => ['tabla' => 'tipos_contactos', 'id_primario'=>'id_tipo_contacto'],
+    'tiposDocumentos' => ['tabla' => 'tipos_documentos', 'id_primario'=>'id_tipo_documento'],
+    'tiposNotas' => ['tabla' => 'tipos_notas', 'id_primario'=>'id_tipo_nota'],
+    'tiposPermisos' => ['tabla' => 'tipos_permisos', 'id_primario'=>'id_tipo_permiso'],
+    'tiposRelaciones' => ['tabla' => 'tipos_relaciones', 'id_primario'=>'id_tipo_relacion'],
+    'tiposSeguimientos' => ['tabla' => 'tipos_seguimientos', 'id_primario'=>'id_tipo_seguimiento'],
+    'tiposTasas' => ['tabla' => 'tipos_tasas', 'id_primario'=>'id_tipo_tasa'],
+    'tiposVehiculos' => ['tabla' => 'tipos_vehiculos', 'id_primario'=>'id_tipo_vehiculo'],
+];
+
+Route::middleware(['auth'])->group(function () use ($genericos) {
 
     // Registros del sistema
-    Route::prefix('registros')
-        ->group(function () {
+    Route::prefix('registros')->group(function () use ($genericos) {
+        
+        //? Registros genéricos
+        foreach ($genericos as $key => $value) {
+            Route::get(
+                $key,
+                fn() => Inertia::render('registros/genericos', $value)
+            )->name('registros.'.$key);
+        }
 
         Route::get('beneficiarios', fn() => Inertia::render('registros/beneficiarios'))
         ->name('registros.beneficiarios');
-
-        Route::get('beneficiarios', fn() => Inertia::render('registros/beneficiarios'))
-        ->name('registros.beneficiarios');
-
-        Route::get('provincias', fn() => Inertia::render('registros/administracion/provincias'))
-        ->name('registros.provincias');
-
-        Route::get('actividades', fn() => Inertia::render('registros/administracion/actividades'))
-        ->name('registros.actividades');
-
-        Route::get('generos', fn() => Inertia::render('registros/administracion/generos'))
-        ->name('registros.generos');
-
-        Route::get('municipios', fn() => Inertia::render('registros/administracion/municipios'))
-        ->name('registros.municipios');
-
-        Route::get('distritos', fn() => Inertia::render('registros/administracion/distritos'))
-        ->name('registros.distritos');
-
-        Route::get('afps', fn() => Inertia::render('registros/afps'))
-        ->name('registros.afps');
-
-        Route::get('bancos', fn() => Inertia::render('registros/bancos'))
-        ->name('registros.bancos');
-
-        Route::get('areas', fn() => Inertia::render('registros/areas'))
-        ->name('registros.areas');
-
-        Route::get('argumentos', fn() => Inertia::render('registros/argumentos'))
-        ->name('registros.argumentos');
-
-        Route::get('garantias', fn() => Inertia::render('registros/garantias'))
-        ->name('registros.garantias');
-
-        Route::get('tiposNotas', fn() => Inertia::render('registros/tiposNotas'))
-        ->name('registros.tiposNotas');
-
-        Route::get('empresas', fn() => Inertia::render('registros/empresas'))
-        ->name('registros.empresas');
-
-        Route::get('billetes', fn() => Inertia::render('registros/billetes'))
-        ->name('registros.billetes');
-
-        Route::get('barrios', fn() => Inertia::render('registros/barrios'))
-        ->name('registros.barrios');
-
-        Route::get('estadosCiviles', fn() => Inertia::render('registros/estadosCiviles'))
-        ->name('registros.estadosCiviles');
-
-        Route::get('cajeros', fn() => Inertia::render('registros/cajeros'))
-        ->name('registros.cajeros');
-
-        Route::get('categorias', fn() => Inertia::render('registros/categorias'))
-        ->name('registros.categorias');
-
-        Route::get('especialidades', fn() => Inertia::render('registros/especialidades'))
-        ->name('registros.especialidades');
-
-        Route::get('cobradores', fn() => Inertia::render('registros/cobradores'))
-        ->name('registros.cobradores');
-
-        Route::get('gestores', fn() => Inertia::render('registros/gestores'))
-        ->name('registros.gestores');
-
-        Route::get('tiposCargos', fn() => Inertia::render('registros/tiposCargos'))
-        ->name('registros.tiposCargos');
-
-        Route::get('monedas', fn() => Inertia::render('registros/monedas'))
-        ->name('registros.monedas');
-
-        Route::get('posiciones', fn() => Inertia::render('registros/posiciones'))
-        ->name('registros.posiciones');
-
-        Route::get('seguros', fn() => Inertia::render('registros/seguros'))
-        ->name('registros.seguros');
-
-        Route::get('tiposPermisos', fn() => Inertia::render('registros/tiposPermisos'))
-        ->name('registros.tiposPermisos');
-
-        Route::get('tiposTasas', fn() => Inertia::render('registros/tiposTasas'))
-        ->name('registros.tiposTasas');
-
-        Route::get('conceptos', fn() => Inertia::render('registros/conceptos'))
-        ->name('registros.conceptos');
-
-        Route::get('departamentos', fn() => Inertia::render('registros/departamentos'))
-        ->name('registros.departamentos');
-
-        Route::get('paises', fn() => Inertia::render('registros/paises'))
-        ->name('registros.paises');
-
-        Route::get('rutas', fn() => Inertia::render('registros/rutas'))
-        ->name('registros.rutas');
-
-        Route::get('tiposSeguiientos', fn() => Inertia::render('registros/tiposSeguimientos'))
-        ->name('registros.tiposSeguimientos');
-
-        Route::get('grupos', fn() => Inertia::render('registros/grupos'))
-        ->name('registros.grupos');
-
-        Route::get('renglones', fn() => Inertia::render('registros/renglones'))
-        ->name('registros.renglones');
-
-        Route::get('subCategorias', fn() => Inertia::render('registros/subCategorias'))
-        ->name('registros.subCategorias');
-
-        Route::get('supervisores', fn() => Inertia::render('registros/supervisores'))
-        ->name('registros.supervisores');
-
-        Route::get('tiposConstribuyentes', fn() => Inertia::render('registros/tiposConstribuyentes'))
-        ->name('registros.tiposConstribuyentes');
-
-        Route::get('tiposDocumentos', fn() => Inertia::render('registros/tiposDocumentos'))
-        ->name('registros.tiposDocumentos');
-
-        Route::get('tiposRelaciones', fn() => Inertia::render('registros/tiposRelaciones'))
-        ->name('registros.tiposRelaciones');
-
-        Route::get('clasificacionesContables', fn() => Inertia::render('registros/clasificacionesContables'))
-        ->name('registros.clasificacionesContables');
-
-        Route::get('tiposCalculos', fn() => Inertia::render('registros/tiposCalculos'))
-        ->name('registros.tiposCalculos');
-
-        Route::get('formasPagos', fn() => Inertia::render('registros/formasPagos'))
-        ->name('registros.formasPagos');
-
-        Route::get('oficiales', fn() => Inertia::render('registros/oficiales'))
-        ->name('registros.oficiales');
-
-        Route::get('marcas', fn() => Inertia::render('registros/marcas'))
-        ->name('registros.marcas');
-
-        Route::get('sectores', fn() => Inertia::render('registros/sectores'))
-        ->name('registros.sectores');
-
-        Route::get('sucursales', fn() => Inertia::render('registros/sucursales'))
-        ->name('registros.sucursales');
-
-        Route::get('tiposContactos', fn() => Inertia::render('registros/tiposContactos'))
-        ->name('registros.tiposContactos');
-
-        Route::get('tiposVehiculos', fn() => Inertia::render('registros/tiposVehiculos'))
-        ->name('registros.tiposVehiculos');
-
-
     });
-
 });

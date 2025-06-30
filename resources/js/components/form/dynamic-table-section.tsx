@@ -1,11 +1,11 @@
 import FormBody from '@/components/form/form-body';
 import { FormHeader } from '@/components/form/form-header';
 import { DynamicTable } from '@/components/table/dynamic-table';
-import { capitalize } from '@/lib/utils';
 import { TableItem } from '@/types/table';
 
 interface DynamicTableSectionProps {
     table: string;
+    title: string;
     primaryId: string;
     onNewClick: () => void;
     onEditClick: (item: TableItem) => void;
@@ -14,10 +14,11 @@ interface DynamicTableSectionProps {
 export default function DynamicTableSection({
     onEditClick,
     onNewClick,
-    primaryId,
-    table
+    title,
+    table,
+    primaryId
 }: DynamicTableSectionProps) {
-    const titulo = `Registros de ${capitalize(table.replace(/_/g, ' '))}`;
+    const titulo = `Registros de ${title}`;
 
     return (
         <div className="w-full">

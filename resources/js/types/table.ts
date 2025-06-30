@@ -10,6 +10,31 @@ export interface ColumnConfig {
     sumar?: string;
 }
 
+export interface TableColumn {
+    titulo: string
+    columna: string
+    tipo: string
+    columna_primaria: number
+    visible: number
+    ancho: string
+    alineacion: string
+    negrita: number
+    ordenable: number
+    buscable: number
+    sumar: string
+    agrupar: number
+    campo_atributos: string
+    acciones?: any // Campo virtual para botones
+}
+
+export interface TableButton extends ColDef<TableColumn> {
+    cellRenderer: (params: any) => React.ReactNode;
+    cellStyle: { fontWeight: 'bold', textAlign: 'center' };
+    field: 'acciones';
+    headerName: '';
+    pinned: 'right';
+}
+
 export interface TableItem {
     [key: string]: string | number | boolean | null | undefined;
 }
@@ -18,8 +43,8 @@ export type DataType = 'varchar' | 'int' | 'decimal' | 'datetime' | 'bit' | 'num
 
 export interface DataTableProps {
     rowData: TableItem[];
-    columnDefs: ColDef<TableItem>[];
-    defaultColDef?: Partial<ColDef<TableItem>>;
+    columnDefs: ColDef<TableColumn>[];
+    defaultColDef?: Partial<ColDef<TableColumn>>;
     loading: boolean;
     selectedItem: TableItem | null;
     onRowClick: (item: TableItem) => void;

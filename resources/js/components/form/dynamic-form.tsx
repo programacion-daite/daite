@@ -1,38 +1,39 @@
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import { Loader2 } from 'lucide-react';
 import { lazy, Suspense } from 'react';
 
-import type { FormDataType } from '@/types/form';
+import type { DatabaseField, FormDataType } from '@/types/form';
 
 import { SUCCESS_TITLES } from '@/constants';
 import { TableProvider } from '@/contexts/tableContext';
 import { useDynamicFormModal } from '@/hooks/form/use-dynamic-form-modal';
 import { useDynamicFormSubmission } from '@/hooks/form/use-dynamic-form-submission';
-import { useSchemaQuery } from '@/hooks/form/use-schema-query';
-import { capitalize } from '@/lib/utils';
-import { useDynamicFormStore } from '@/store/useDynamicFormStore';
-
-interface RegistroDinamicoProps {
-    tabla: string;
-    id_primario: string;
-}
+import { capitalize, processFieldsFromAPI } from '@/lib/utils';
+import { FIELDS, ENCABEZADO, DATOS } from '@/constants';
 
 const DynamicTableSection = lazy(() => import('@/components/form/dynamic-table-section'));
 const ModalForm = lazy(() => import('@/components/form/modal-form'));
 const ResultModalNew = lazy(() => import('@/components/modal/result-modal-new'));
 
-export default function RegistroDinamico({ id_primario, tabla }: RegistroDinamicoProps) {
+export default function RegistroDinamico() {
     return (
         <TableProvider>
-            <RegistroDinamicoContent tabla={tabla} id_primario={id_primario} />
+            <RegistroDinamicoContent />
         </TableProvider>
     );
 }
 
-function RegistroDinamicoContent({ id_primario, tabla }: RegistroDinamicoProps) {
-    const { data: fields, isLoading } = useSchemaQuery(tabla, id_primario);
-    const { formData } = useDynamicFormStore();
-    const registerName = tabla.replace(/_/g, ' ');
+function RegistroDinamicoContent() {
+    // const { data: fields, isLoading } = useSchemaQuery(tabla, id_primario);
+    // const { formData } = useDynamicFormStore();
+    const props = usePage().props;
+    const table = (props.table as string);
+    const fields = props.fields as DatabaseField[];
+    const Dbfields = processFieldsFromAPI(fields.original);
+    const primaryId = (props.primaryId as string);
+    const formData = {};
+    const isLoading = false;
+    const registerName = table.replace(/_/g, ' ');
 
     const {
         handleCloseModal,
@@ -45,19 +46,20 @@ function RegistroDinamicoContent({ id_primario, tabla }: RegistroDinamicoProps) 
     } = useDynamicFormModal();
 
     const { handleSubmit } = useDynamicFormSubmission({
-        id_primario,
-        tabla
+        id_primario: primaryId,
+        tabla: table
     });
 
     return (
         <>
-            <Head title={`Registro de ${capitalize(registerName)}`} />
+            <Head title={`Registro de ${capitalize(table)}`} />
 
             <div className="flex h-full w-full flex-1 flex-col gap-4 rounded-xl p-4">
                 <Suspense fallback={<Loader2 className="animate-spin" />}>
                     <DynamicTableSection
-                        table={tabla}
-                        primaryId={id_primario}
+                        title={registerName}
+                        table={table}
+                        primaryId={primaryId}
                         onNewClick={handleOpenNewForm}
                         onEditClick={handleOpenEditForm}
                     />
@@ -70,10 +72,10 @@ function RegistroDinamicoContent({ id_primario, tabla }: RegistroDinamicoProps) 
                         isOpen={isModalOpen}
                         onClose={handleCloseModal}
                         mode={modalMode || 'create'}
-                        title={tabla}
+                        title={registerName}
                         initialData={formData as FormDataType}
                         onSubmit={handleSubmit}
-                        fields={fields || []}
+                        fields={Dbfields || []}
                         disableClose={result.isOpen}
                         isLoading={isLoading}
                     />

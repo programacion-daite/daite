@@ -29,6 +29,8 @@ class RecordsController extends Controller
             'columns' => $data['encabezado'],
             'data' => $data['datos'],
             'fields' => $fields,
+            'table' => $metadata['tabla'],
+            'primaryId' => $metadata['id_primario'],
         ]);
     }
 

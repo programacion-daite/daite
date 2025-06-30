@@ -52,6 +52,7 @@ export type DatabaseField = {
     color?: string
     selector?: string
     requerido?: string
+    comentario?: string
 }
 
 export interface ModalFormProps {

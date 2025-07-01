@@ -2,14 +2,13 @@ import { Head, usePage } from '@inertiajs/react';
 import { Loader2 } from 'lucide-react';
 import { lazy, Suspense } from 'react';
 
-import type { DatabaseField, FormDataType } from '@/types/form';
-
 import { SUCCESS_TITLES } from '@/constants';
+import type { FormDataType } from '@/types/form';
 import { TableProvider } from '@/contexts/tableContext';
 import { useDynamicFormModal } from '@/hooks/form/use-dynamic-form-modal';
 import { useDynamicFormSubmission } from '@/hooks/form/use-dynamic-form-submission';
-import { capitalize, processFieldsFromAPI } from '@/lib/utils';
-import { FIELDS, ENCABEZADO, DATOS } from '@/constants';
+import { capitalize } from '@/lib/utils';
+import { Deferred } from '@inertiajs/react'
 
 const DynamicTableSection = lazy(() => import('@/components/form/dynamic-table-section'));
 const ModalForm = lazy(() => import('@/components/form/modal-form'));
@@ -24,15 +23,9 @@ export default function RegistroDinamico() {
 }
 
 function RegistroDinamicoContent() {
-    // const { data: fields, isLoading } = useSchemaQuery(tabla, id_primario);
-    // const { formData } = useDynamicFormStore();
     const props = usePage().props;
     const table = (props.table as string);
-    const fields = props.fields as DatabaseField[];
-    const Dbfields = processFieldsFromAPI(fields.original);
     const primaryId = (props.primaryId as string);
-    const formData = {};
-    const isLoading = false;
     const registerName = table.replace(/_/g, ' ');
 
     const {
@@ -42,7 +35,8 @@ function RegistroDinamicoContent() {
         handleOpenNewForm,
         isModalOpen,
         modalMode,
-        result
+        result,
+        formData
     } = useDynamicFormModal();
 
     const { handleSubmit } = useDynamicFormSubmission({
@@ -66,8 +60,8 @@ function RegistroDinamicoContent() {
                 </Suspense>
             </div>
 
-            <Suspense fallback={<div>Loading...</div>}>
-                {isModalOpen && (
+            {isModalOpen && (
+                <Deferred data="fields" fallback={<Loader2 className="animate-spin" />}>
                     <ModalForm
                         isOpen={isModalOpen}
                         onClose={handleCloseModal}
@@ -75,14 +69,13 @@ function RegistroDinamicoContent() {
                         title={registerName}
                         initialData={formData as FormDataType}
                         onSubmit={handleSubmit}
-                        fields={Dbfields || []}
                         disableClose={result.isOpen}
-                        isLoading={isLoading}
+                        isLoading={false}
                     />
-                )}
-            </Suspense>
+                </Deferred>
+            )}
 
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<Loader2 className="animate-spin" />}>
                 <ResultModalNew
                     open={result.isOpen}
                     onClose={handleCloseResult}

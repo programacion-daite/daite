@@ -24,7 +24,8 @@ export interface TableColumn {
     sumar: string
     agrupar: number
     campo_atributos: string
-    acciones?: any // Campo virtual para botones
+    acciones?: any
+    [key: string]: string | number | boolean | null | undefined | any;
 }
 
 export interface TableButton extends ColDef<TableColumn> {

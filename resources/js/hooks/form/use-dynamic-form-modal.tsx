@@ -12,7 +12,8 @@ export const useDynamicFormModal = () => {
         openCreateModal,
         openEditModal,
         resetForm,
-        result
+        result,
+        formData
     } = useDynamicFormStore();
 
     const handleOpenNewForm = useCallback(() => {
@@ -47,6 +48,7 @@ export const useDynamicFormModal = () => {
         handleOpenNewForm,
         isModalOpen,
         modalMode,
-        result
+        result,
+        formData
     };
 };

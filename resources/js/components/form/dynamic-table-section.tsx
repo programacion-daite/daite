@@ -25,7 +25,10 @@ export default function DynamicTableSection({
             <FormHeader
                 title={titulo}
                 onSave={onNewClick}
-                onBack={() => window.history.back()}
+                onBack={() => {}}
+                backButtonProps={{
+                    // className: 'hidden'
+                }}
                 formId={`${table}Form`}
                 saveButtonProps={{ children: 'Crear' }}
             />

@@ -20,7 +20,6 @@ class RecordsController extends Controller
             'renglon' => $metadata['tabla'],
             'salida' => 'JSON_CON_ENCABEZADO',
         ]);
-        $fields = $this->storedProcedureService->executeProcedure($request, 'p_traer_campos_registros');
         $dbResult = $this->storedProcedureService->executeProcedure($request, 'p_traer_registros');
         $dataString = json_decode($dbResult->getContent(), true)[0]['resultado'];
         $data = json_decode($dataString, true);
@@ -28,7 +27,7 @@ class RecordsController extends Controller
         return Inertia::render('registros/genericos', [
             'columns' => $data['encabezado'],
             'data' => $data['datos'],
-            'fields' => $fields,
+            'fields' => Inertia::defer(fn () => $this->storedProcedureService->executeProcedure($request, 'p_traer_campos_registros')),
             'table' => $metadata['tabla'],
             'primaryId' => $metadata['id_primario'],
         ]);

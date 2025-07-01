@@ -3,51 +3,33 @@
 namespace App\Http\Controllers\registros;
 
 use App\Http\Controllers\Controller;
-use App\Http\Services\StoredProcedureService;
+use App\Traits\ExecuteProcedureTrait;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class RecordsController extends Controller
 {
-    public function __construct(
-        protected StoredProcedureService $storedProcedureService,
-    ) {}
+    use ExecuteProcedureTrait;
 
     public function dynamicRecords(Request $request)
     {
         $metadata = $request->route('metadata');
-        $request->merge([
-            'renglon' => $metadata['tabla'],
-            'salida' => 'JSON_CON_ENCABEZADO',
+        $table = $metadata['tabla'];
+        $dbResult = $this->executeProcedure([
+            'procedure' => 'p_traer_registros',
+            'fields' => ['renglon' => $table, 'salida' => 'JSON_CON_ENCABEZADO'],
         ]);
-        $dbResult = $this->storedProcedureService->executeProcedure($request, 'p_traer_registros');
-        $dataString = json_decode($dbResult->getContent(), true)[0]['resultado'];
-        $data = json_decode($dataString, true);
+        $data = json_decode($dbResult[0]->resultado, true);
 
         return Inertia::render('registros/genericos', [
             'columns' => $data['encabezado'],
             'data' => $data['datos'],
-            'fields' => Inertia::defer(fn () => $this->storedProcedureService->executeProcedure($request, 'p_traer_campos_registros')),
-            'table' => $metadata['tabla'],
+            'fields' => Inertia::defer(fn() => $this->executeProcedure([
+                'procedure' => 'p_traer_campos_registros',
+                'renglon' => $table,
+            ])),
+            'table' => $table,
             'primaryId' => $metadata['id_primario'],
         ]);
-    }
-
-
-
-    /**
-     * Obtiene los campos del esquema
-     */
-    public function getRegisterFields(Request $request)
-    {
-        return $this->storedProcedureService->executeProcedure($request, 'p_traer_campos_registros');
-    }
-
-    /**
-     * Obtiene los registros
-     */
-    public function getRegisterRecords(Request $request)
-    {
-        return $this->storedProcedureService->executeProcedure($request, 'p_traer_registros');
     }
 }

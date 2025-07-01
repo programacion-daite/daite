@@ -89,7 +89,6 @@ class GeneralController extends Controller
      */
     public function getSchema(Request $request)
     {
-        info('Obteniendo esquema', $request->all());
         $result = Helpers::getSchema($request);
         return response()->json(['data' => $result]);
     }

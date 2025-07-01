@@ -8,7 +8,6 @@ import { TableProvider } from '@/contexts/tableContext';
 import { useDynamicFormModal } from '@/hooks/form/use-dynamic-form-modal';
 import { useDynamicFormSubmission } from '@/hooks/form/use-dynamic-form-submission';
 import { capitalize } from '@/lib/utils';
-import { Deferred } from '@inertiajs/react'
 
 const DynamicTableSection = lazy(() => import('@/components/form/dynamic-table-section'));
 const ModalForm = lazy(() => import('@/components/form/modal-form'));
@@ -61,18 +60,16 @@ function RegistroDinamicoContent() {
             </div>
 
             {isModalOpen && (
-                <Deferred data="fields" fallback={<Loader2 className="animate-spin" />}>
-                    <ModalForm
-                        isOpen={isModalOpen}
-                        onClose={handleCloseModal}
-                        mode={modalMode || 'create'}
-                        title={registerName}
-                        initialData={formData as FormDataType}
-                        onSubmit={handleSubmit}
-                        disableClose={result.isOpen}
-                        isLoading={false}
-                    />
-                </Deferred>
+                <ModalForm
+                    isOpen={isModalOpen}
+                    onClose={handleCloseModal}
+                    mode={modalMode || 'create'}
+                    title={registerName}
+                    initialData={formData as FormDataType}
+                    onSubmit={handleSubmit}
+                    disableClose={result.isOpen}
+                    isLoading={false}
+                />
             )}
 
             <Suspense fallback={<Loader2 className="animate-spin" />}>

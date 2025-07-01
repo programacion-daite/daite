@@ -1,8 +1,7 @@
+import { useForm, usePage } from '@inertiajs/react';
 import { CheckCircle, Loader2, PlusCircle, Save, X } from 'lucide-react';
 import React, { useEffect } from 'react';
-import { useForm } from '@inertiajs/react';
 
-import { AsyncSearchSelect } from '@/components/async-select';
 import DatePicker  from '@/components/date-picker';
 import { DynamicSelect } from '@/components/dynamic-select';
 import { Button } from '@/components/ui/button';
@@ -13,9 +12,9 @@ import { useDynamicFormStore } from '@/store/useDynamicFormStore';
 import { DatabaseField, FormDataType } from '@/types/form';
 
 import { FormField } from './form-field';
+import { processFieldsFromAPI } from '@/lib/utils';
 
 const componentMap = {
-    AsyncSearchSelect,
     DatePicker,
     DynamicSelect,
     InputLabel,
@@ -29,14 +28,18 @@ interface ModalFormProps {
     title: string;
     initialData: FormDataType;
     onSubmit: (data: FormDataType) => Promise<void>;
-    fields: DatabaseField[];
     disableClose?: boolean;
     isLoading?: boolean;
 }
 
-export default function ModalForm({ disableClose = false, fields, initialData, isLoading = false, isOpen, mode, onClose, onSubmit, title }: ModalFormProps) {
+export default function ModalFormInertia({ disableClose = false, initialData, isLoading = false, isOpen, mode, onClose, onSubmit, title }: ModalFormProps) {
     const { data, errors, processing, reset, setData } = useForm<FormDataType>(initialData);
     const { setErrors, showError } = useDynamicFormStore();
+
+    // ! TODO: LOGICA TAMBIEN PARA CUANDO NO SE MANDEN DESDE EL SERVER LOS DATOS
+    const props = usePage().props;
+    const dbFields = props.fields as DatabaseField[];
+    const fields = processFieldsFromAPI(dbFields);
 
     useEffect(() => {
         if (isOpen) {
@@ -123,33 +126,27 @@ export default function ModalForm({ disableClose = false, fields, initialData, i
                     onSubmit={handleSubmit}
                     className="grid grid-cols-1 gap-4 px-3 pb-2"
                 >
-                    {isLoading ? (
-                        <div className="flex items-center justify-center py-8">
-                            <Loader2 className="h-8 w-8 animate-spin text-emerald-500" />
-                        </div>
-                    ) : (
-                        fields.map((field, index) => {
-                            const Component = componentMap[field.componente || 'InputLabel'];
+                    {fields && fields.map((field, index) => {
+                    const Component = componentMap[field.componente || 'InputLabel'];
 
-                            return (
-                                <FormField
-                                    key={field.nombre}
-                                    component={Component}
-                                    id={field.nombre}
-                                    label={field.label}
-                                    name={field.nombre}
-                                    parametros={field.parametros}
-                                    data={data}
-                                    errors={errors}
-                                    onChange={field.componente === 'MaskedInput' ? undefined : handleChange}
-                                    onInput={field.componente === 'MaskedInput' ? handleInput : undefined}
-                                    onValueChange={handleComponentChange(field.nombre)}
-                                    className={field.classname}
-                                    tabIndex={index + 1}
-                                />
-                            );
-                        })
-                    )}
+                    return (
+                        <FormField
+                            key={field.nombre}
+                            component={Component}
+                            id={field.nombre}
+                            label={field.label}
+                            name={field.nombre}
+                            parametros={field.parametros}
+                            data={data}
+                            errors={errors}
+                            onChange={field.componente === 'MaskedInput' ? undefined : handleChange}
+                            onInput={field.componente === 'MaskedInput' ? handleInput : undefined}
+                            onValueChange={handleComponentChange(field.nombre)}
+                            className={field.classname}
+                            tabIndex={index + 1}
+                        />
+                    );
+                })}
                 </form>
 
                 <div className="flex items-center justify-between gap-3 border-t border-gray-100 bg-gray-50 p-3">

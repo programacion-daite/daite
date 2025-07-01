@@ -39,7 +39,7 @@ export default function ModalForm({ disableClose = false, initialData, isLoading
     // ! TODO: LOGICA TAMBIEN PARA CUANDO NO SE MANDEN DESDE EL SERVER LOS DATOS
     const props = usePage().props;
     const dbFields = props.fields as DatabaseField[];
-    const fields = processFieldsFromAPI(dbFields.original);
+    const fields = processFieldsFromAPI(dbFields);
 
     useEffect(() => {
         if (isOpen) {

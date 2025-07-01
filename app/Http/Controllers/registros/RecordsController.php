@@ -19,15 +19,16 @@ class RecordsController extends Controller
             'procedure' => 'p_traer_registros',
             'fields' => ['renglon' => $table, 'salida' => 'JSON_CON_ENCABEZADO'],
         ]);
+
         $data = json_decode($dbResult[0]->resultado, true);
 
         return Inertia::render('registros/genericos', [
             'columns' => $data['encabezado'],
             'data' => $data['datos'],
-            'fields' => Inertia::defer(fn() => $this->executeProcedure([
+            'fields' => $this->executeProcedure([
                 'procedure' => 'p_traer_campos_registros',
-                'renglon' => $table,
-            ])),
+                'fields' => ['renglon' => $table],
+            ]),
             'table' => $table,
             'primaryId' => $metadata['id_primario'],
         ]);

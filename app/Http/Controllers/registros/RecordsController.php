@@ -32,4 +32,13 @@ class RecordsController extends Controller
             'primaryId' => $metadata['id_primario'],
         ]);
     }
+
+    public function store(Request $request)
+    {
+        $fields = $request->all();
+        return $this->executeProcedure([
+            'procedure' => 'p_registrar_registros',
+            'fields' => $fields,
+        ]);
+    }
 }

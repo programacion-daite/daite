@@ -36,8 +36,9 @@ class RecordsController extends Controller
 
     public function store(Request $request)
     {
-        $table = $request->input('table');
         $data = $request->all();
+        $table = $data['table'];
+        unset($data['table']);
         $keys = implode(',', array_keys($data));
         $values = implode(',', array_map(fn($v) => is_null($v) ? '' : $v, array_values($data)));
         $fields = [

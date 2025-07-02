@@ -36,7 +36,18 @@ class RecordsController extends Controller
 
     public function store(Request $request)
     {
-        $fields = $request->all();
+        $data = $request->all();
+        $table = $data['table'];
+        unset($data['table']);
+        $keys = implode(',', array_keys($data));
+        $values = implode(',', array_map(fn($v) => is_null($v) ? '' : $v, array_values($data)));
+        $fields = [
+            'json' => [
+                'tabla' => $table,
+                'campos' => $keys,
+                'valores' => $values,
+            ],
+        ];
         $result = $this->executeProcedure([
             'procedure' => 'p_registrar_registros',
             'fields' => $fields,

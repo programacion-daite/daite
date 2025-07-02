@@ -151,7 +151,7 @@ export const DataTable = forwardRef<DataTableRef, DataTableProps>(
 
                 <div className="flex h-[450px] w-full flex-col rounded-md border border-gray-200 shadow-sm">
                     <div className="relative flex-1">
-                        <AgGridReact
+                        <AgGridReact<TableItem>
                             ref={gridRef}
                             localeText={TABLE_LANGUAGE_ES}
                             rowData={rowData}

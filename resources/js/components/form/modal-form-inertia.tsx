@@ -44,7 +44,7 @@ export default function ModalFormInertia({ disableClose = false, initialData, is
         if (fields && fields.length > 0) {
             const data: Record<string, any> = {};
             fields.forEach(field => {
-                data[field.nombre] = '';
+                data[field.nombre] = field.nombre.startsWith('id_') ? 0 : '';
             });
             return data;
         }

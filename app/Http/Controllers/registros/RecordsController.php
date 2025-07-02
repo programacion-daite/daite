@@ -37,9 +37,11 @@ class RecordsController extends Controller
     public function store(Request $request)
     {
         $fields = $request->all();
-        return $this->executeProcedure([
+        $result = $this->executeProcedure([
             'procedure' => 'p_registrar_registros',
             'fields' => $fields,
         ]);
+        info($result);
+        return redirect()->back()->with('result', $result);
     }
 }

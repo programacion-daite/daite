@@ -1,3 +1,4 @@
+/* eslint-disable import/no-unresolved */
 import { Link } from '@inertiajs/react';
 import { type PropsWithChildren } from 'react';
 
@@ -47,7 +48,7 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
                                 variant="ghost"
                                 asChild
                                 className={cn('w-full justify-start', {
-                                    'bg-muted': currentPath === item.href,
+                                    'bg-gray-400': currentPath === item.href,
                                 })}
                             >
                                 <Link href={item.href} prefetch>

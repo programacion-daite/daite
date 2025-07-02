@@ -1,3 +1,4 @@
+/* eslint-disable import/no-unresolved */
 import { Transition } from '@headlessui/react';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
@@ -8,28 +9,20 @@ import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
-import { type BreadcrumbItem, type SharedData } from '@/types';
-
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        href: '/settings/profile',
-        title: 'Profile settings',
-    },
-];
+import { type SharedData } from '@/types';
 
 type ProfileForm = {
     name: string;
     email: string;
-}
+};
 
 export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: boolean; status?: string }) {
     const { auth } = usePage<SharedData>().props;
 
     const { data, errors, patch, processing, recentlySuccessful, setData } = useForm<Required<ProfileForm>>({
-        email: auth.user.email,
-        name: auth.user.name,
+        email: auth.user.email as string,
+        name: auth.user.name as string,
     });
 
     const submit: FormEventHandler = (e) => {
@@ -41,7 +34,7 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
     };
 
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <>
             <Head title="Profile settings" />
 
             <SettingsLayout>
@@ -122,6 +115,6 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
 
                 <DeleteUser />
             </SettingsLayout>
-        </AppLayout>
+        </>
     );
 }

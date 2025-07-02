@@ -1,24 +1,11 @@
-import {
-    AllCommunityModule,
-    GridApi,
-    GridReadyEvent,
-    ModuleRegistry,
-    RowClickedEvent,
-    RowDoubleClickedEvent,
-    themeQuartz,
-} from 'ag-grid-community';
-import { AgGridReact } from 'ag-grid-react';
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
-
 import { numericFormat } from '@/lib/utils';
 import { DataTableProps, DataTableRef, TableItem } from '@/types/table';
 import { TABLE_LANGUAGE_ES } from '@/utils/table-language';
+import { AllCommunityModule, GridApi, GridReadyEvent, ModuleRegistry, RowClickedEvent, RowDoubleClickedEvent, themeQuartz } from 'ag-grid-community';
+import { AgGridReact } from 'ag-grid-react';
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 
 import { InputLabel } from '../ui/input-label';
-
-
-
-
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -97,13 +84,19 @@ export const DataTable = forwardRef<DataTableRef, DataTableProps>(
             setGridApi(params.api);
         }, []);
 
-        const handleRowClick = useCallback((e: RowClickedEvent) => {
-            onRowClick(e.data);
-        }, [onRowClick]);
+        const handleRowClick = useCallback(
+            (e: RowClickedEvent) => {
+                onRowClick(e.data);
+            },
+            [onRowClick],
+        );
 
-        const handleRowDoubleClick = useCallback((e: RowDoubleClickedEvent) => {
-            onDoubleClick(e.data);
-        }, [onDoubleClick]);
+        const handleRowDoubleClick = useCallback(
+            (e: RowDoubleClickedEvent) => {
+                onDoubleClick(e.data);
+            },
+            [onDoubleClick],
+        );
 
         const handleFilterChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
             setFilterText(e.target.value);
@@ -128,35 +121,32 @@ export const DataTable = forwardRef<DataTableRef, DataTableProps>(
             [gridApi, onAction],
         );
 
-        const gridOptions = useMemo(() => ({
-            animateRows: false,
-            domLayout: 'normal' as const,
-            enableCellTextSelection: true,
-            pagination: true,
-            paginationPageSize: 50,
-            paginationPageSizeSelector: [25, 50, 100, 200, 500],
-            quickFilterDelay: 300,
-            rowBuffer: 20,
-            rowModelType: 'clientSide' as const,
-            rowSelection: 'single' as const,
-            suppressAnimationFrame: false,
-            suppressColumnMoveAnimation: true,
-            suppressColumnVirtualisation: false,
-            suppressRowHoverHighlight: false,
-            suppressRowVirtualisation: false,
-            suppressScrollOnNewData: true,
-        }), []);
+        const gridOptions = useMemo(
+            () => ({
+                animateRows: false,
+                domLayout: 'normal' as const,
+                enableCellTextSelection: true,
+                pagination: true,
+                paginationPageSize: 50,
+                paginationPageSizeSelector: [25, 50, 100, 200, 500],
+                quickFilterDelay: 300,
+                rowBuffer: 20,
+                rowModelType: 'clientSide' as const,
+                rowSelection: 'single' as const,
+                suppressAnimationFrame: false,
+                suppressColumnMoveAnimation: true,
+                suppressColumnVirtualisation: false,
+                suppressRowHoverHighlight: false,
+                suppressRowVirtualisation: false,
+                suppressScrollOnNewData: true,
+            }),
+            [],
+        );
 
         return (
             <>
                 <div className="flex items-center space-x-2 p-2">
-                    <InputLabel
-                        label="Buscar"
-                        id="buscar"
-                        name="buscar"
-                        value={filterText}
-                        onChange={handleFilterChange}
-                    />
+                    <InputLabel label="Buscar" id="buscar" name="buscar" value={filterText} onChange={handleFilterChange} />
                 </div>
 
                 <div className="flex h-[450px] w-full flex-col rounded-md border border-gray-200 shadow-sm">
@@ -180,8 +170,8 @@ export const DataTable = forwardRef<DataTableRef, DataTableProps>(
                                           fontWeight: 600,
                                       }
                                     : undefined
-                                }
-                            />
+                            }
+                        />
                     </div>
                 </div>
             </>

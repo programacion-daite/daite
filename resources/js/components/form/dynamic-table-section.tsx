@@ -11,12 +11,7 @@ interface DynamicTableSectionProps {
     onEditClick: (item: TableItem) => void;
 }
 
-export default function DynamicTableSection({
-    onEditClick,
-    onNewClick,
-    primaryId,
-    table
-}: DynamicTableSectionProps) {
+export default function DynamicTableSection({ onEditClick, onNewClick, primaryId, table }: DynamicTableSectionProps) {
     const titulo = `Registros de ${capitalize(table.replace(/_/g, ' '))}`;
 
     return (
@@ -36,11 +31,7 @@ export default function DynamicTableSection({
             >
                 <div className="space-x-3">
                     <div className="w-full">
-                        <DynamicTable
-                            table={table}
-                            primaryId={primaryId}
-                            onDoubleClick={onEditClick}
-                        />
+                        <DynamicTable table={table} primaryId={primaryId} onDoubleClick={onEditClick} />
                     </div>
                 </div>
             </FormBody>

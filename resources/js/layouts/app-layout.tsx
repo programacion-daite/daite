@@ -6,8 +6,4 @@ interface AppLayoutProps {
     children: ReactNode;
 }
 
-export default ({ children, ...props }: AppLayoutProps) => (
-    <AppLayoutTemplate {...props}>
-        {children}
-    </AppLayoutTemplate>
-);
+export default ({ children, ...props }: AppLayoutProps) => <AppLayoutTemplate {...props}>{children}</AppLayoutTemplate>;

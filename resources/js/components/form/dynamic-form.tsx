@@ -34,19 +34,11 @@ function RegistroDinamicoContent({ id_primario, tabla }: RegistroDinamicoProps) 
     const { formData } = useDynamicFormStore();
     const registerName = tabla.replace(/_/g, ' ');
 
-    const {
-        handleCloseModal,
-        handleCloseResult,
-        handleOpenEditForm,
-        handleOpenNewForm,
-        isModalOpen,
-        modalMode,
-        result
-    } = useDynamicFormModal();
+    const { handleCloseModal, handleCloseResult, handleOpenEditForm, handleOpenNewForm, isModalOpen, modalMode, result } = useDynamicFormModal();
 
     const { handleSubmit } = useDynamicFormSubmission({
         id_primario,
-        tabla
+        tabla,
     });
 
     return (
@@ -55,12 +47,7 @@ function RegistroDinamicoContent({ id_primario, tabla }: RegistroDinamicoProps) 
 
             <div className="flex h-full w-full flex-1 flex-col gap-4 rounded-xl p-4">
                 <Suspense fallback={<Loader2 className="animate-spin" />}>
-                    <DynamicTableSection
-                        table={tabla}
-                        primaryId={id_primario}
-                        onNewClick={handleOpenNewForm}
-                        onEditClick={handleOpenEditForm}
-                    />
+                    <DynamicTableSection table={tabla} primaryId={id_primario} onNewClick={handleOpenNewForm} onEditClick={handleOpenEditForm} />
                 </Suspense>
             </div>
 
@@ -87,7 +74,7 @@ function RegistroDinamicoContent({ id_primario, tabla }: RegistroDinamicoProps) 
                     title={result.isSuccess ? SUCCESS_TITLES.SUCCESS : SUCCESS_TITLES.INCOMPLETE_INFO}
                     message={result.message}
                     errors={result.errors || []}
-                    status={result.isSuccess ? 'success': 'error'}
+                    status={result.isSuccess ? 'success' : 'error'}
                 />
             </Suspense>
         </>

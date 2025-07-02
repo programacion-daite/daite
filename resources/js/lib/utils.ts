@@ -321,3 +321,18 @@ export const getValueFormatterByType = <TData, TValue>(
             return undefined;
     }
 };
+
+export function focusFieldAndClear(field: string, clear: () => void) {
+    if (field) {
+      setTimeout(() => {
+        const el = document.querySelector(`[name='${field}'], [id='${field}']`);
+        if (el && typeof (el as HTMLElement).focus === 'function') {
+          (el as HTMLElement).focus();
+          if (typeof (el as HTMLInputElement).select === 'function') {
+            (el as HTMLInputElement).select();
+          }
+        }
+        if(clear) clear();
+      }, 100);
+    }
+  }

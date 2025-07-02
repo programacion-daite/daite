@@ -1,23 +1,6 @@
-import { FormDataConvertible } from '@inertiajs/core';
 import React, { forwardRef } from 'react';
 
 import { FormDataType } from '@/types/form';
-
-type FormComponentProps = {
-  id: string;
-  label: string;
-  name: string;
-  value?: FormDataConvertible;
-  error?: string;
-  onChange?: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
-  onInput?: (e: React.FormEvent<HTMLInputElement>) => void;
-  onValueChange?: (value: string) => void;
-  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
-  className?: string;
-  autoFocus?: boolean;
-  ref?: React.Ref<HTMLInputElement>;
-  [key: string]: unknown;
-};
 
 interface FormFieldProps {
   component: React.ComponentType<any>; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -56,6 +39,7 @@ export const FormField = forwardRef<HTMLInputElement, FormFieldProps>(({
     onValueChange,
     ref,
     value: props.data[props.name] || '',
+    error: props.errors[props.name],
     ...props.parametros,
     tabIndex
   };

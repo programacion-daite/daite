@@ -225,7 +225,7 @@ export const processFieldsFromAPI = (fields: Array<{
         const maxLength = parseInt(field.longitud) || 255;
         const isRequired = field.requerido === '1';
 
-        let label = `${field.titulo} ${isRequired ? '*' : ''}`;
+        let label = `${field.titulo}`;
         if (isPrimary) {
             label = `ID ${label}`;
         }
@@ -245,11 +245,14 @@ export const processFieldsFromAPI = (fields: Array<{
             componente = 'MaskedInput';
         }
 
-        let parametros: Record<string, unknown> = {};
+        let parametros: Record<string, unknown> = {
+            required: isRequired,
+        };
 
         if (componente === 'DynamicSelect') {
             if (tipo === 'bit') {
                 parametros = {
+                    ...parametros,
                     options: [
                         { label: 'No', value: '0' },
                         { label: 'Si', value: '1' },
@@ -257,6 +260,7 @@ export const processFieldsFromAPI = (fields: Array<{
                 };
             } else {
                 parametros = {
+                    ...parametros,
                     options: field.json ? JSON.parse(field.json).map((option: { valor: string, descripcion: string }) => ({
                             label: option.descripcion,
                             value: option.valor.toString(),
@@ -266,16 +270,16 @@ export const processFieldsFromAPI = (fields: Array<{
             }
         } else if (componente === 'MaskedInput') {
             if (/telefono|celular|whatsapp/.test(field.campo)) {
-                parametros = { maskType: 'telefono' };
+                parametros = { ...parametros, maskType: 'telefono' };
             } else if (/cedula|rnc|identificacion/.test(field.campo)) {
-                parametros = { maskType: 'cedula' };
+                parametros = { ...parametros, maskType: 'cedula' };
             } else if (tipo === 'numeric') {
-                parametros = { maskType: 'dinero' };
+                parametros = { ...parametros, maskType: 'dinero' };
             } else {
-                parametros = { maskType: 'entero' };
+                parametros = { ...parametros, maskType: 'entero' };
             }
         } else if (componente === 'InputLabel') {
-            parametros = { maxLength: maxLength };
+            parametros = { ...parametros, maxLength: maxLength };
         }
 
         return {
@@ -283,7 +287,7 @@ export const processFieldsFromAPI = (fields: Array<{
             label,
             tipo,
             longitud: maxLength.toString(),
-            visible: field.visible,
+            visible: isVisible,
             requerido: isRequired,
             selector: field.selector,
             json: field.json,

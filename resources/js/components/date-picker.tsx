@@ -20,10 +20,11 @@ interface DatePickerProps {
   id: string;
   required?: boolean;
   value?: Date;
+  error?: string;
   onSelect?: (date: Date) => void;
 }
 
-export default function DatePicker({ id, label, onSelect, required, value }: DatePickerProps) {
+export default function DatePicker({ id, label, onSelect, required, value, error }: DatePickerProps) {
   const [date, setDate] = React.useState<Date | undefined>(value)
   const [open, setOpen] = React.useState(false)
 
@@ -41,7 +42,14 @@ export default function DatePicker({ id, label, onSelect, required, value }: Dat
 
   return (
     <div className="flex flex-col gap-2">
-      <Label htmlFor={id} className={cn("text-sm font-medium", required && "after:content-['*'] after:ml-0.5 after:text-red-500")}>
+      <Label
+        htmlFor={id}
+        className={cn(
+          "text-sm font-medium",
+          error && "text-red-500 font-medium",
+          required && "after:content-['*'] after:ml-0.5 after:text-red-500"
+        )}
+      >
         {label}
       </Label>
       <Popover open={open} onOpenChange={setOpen}>
@@ -50,8 +58,11 @@ export default function DatePicker({ id, label, onSelect, required, value }: Dat
             variant="outline"
             className={cn(
               "w-full justify-start text-left font-normal hover:text-white",
-              !date && "text-muted-foreground"
+              !date && "text-muted-foreground",
+              error && "border-red-500 focus:ring-red-500 focus:border-red-500"
             )}
+            aria-invalid={error ? "true" : "false"}
+            aria-describedby={error ? `${id}-error` : undefined}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
             {date ? format(date, "dd/MM/yyyy", { locale: es }) : <span>Seleccione una fecha</span>}
@@ -67,6 +78,15 @@ export default function DatePicker({ id, label, onSelect, required, value }: Dat
           />
         </PopoverContent>
       </Popover>
+      {error && (
+        <p
+          id={`${id}-error`}
+          className="text-sm text-red-500 font-medium mt-1"
+          role="alert"
+        >
+          {error}
+        </p>
+      )}
     </div>
   )
 }

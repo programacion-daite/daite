@@ -3,14 +3,13 @@ import { Loader2 } from 'lucide-react';
 import { lazy, Suspense } from 'react';
 
 import { SUCCESS_TITLES } from '@/constants';
-import type { FormDataType } from '@/types/form';
 import { TableProvider } from '@/contexts/tableContext';
 import { useDynamicFormModal } from '@/hooks/form/use-dynamic-form-modal';
-import { useDynamicFormSubmission } from '@/hooks/form/use-dynamic-form-submission';
 import { capitalize } from '@/lib/utils';
 
 const DynamicTableSection = lazy(() => import('@/components/form/dynamic-table-section'));
-const ModalForm = lazy(() => import('@/components/form/modal-form'));
+// const ModalForm = lazy(() => import('@/components/form/modal-form'));
+const ModalFormInertia = lazy(() => import('@/components/form/modal-form-inertia'));
 const ResultModalNew = lazy(() => import('@/components/modal/result-modal-new'));
 
 export default function RegistroDinamico() {
@@ -35,13 +34,8 @@ function RegistroDinamicoContent() {
         isModalOpen,
         modalMode,
         result,
-        formData
+        initialData,
     } = useDynamicFormModal();
-
-    const { handleSubmit } = useDynamicFormSubmission({
-        id_primario: primaryId,
-        tabla: table
-    });
 
     return (
         <>
@@ -60,13 +54,12 @@ function RegistroDinamicoContent() {
             </div>
 
             {isModalOpen && (
-                <ModalForm
+                <ModalFormInertia
                     isOpen={isModalOpen}
                     onClose={handleCloseModal}
                     mode={modalMode || 'create'}
                     title={registerName}
-                    initialData={formData as FormDataType}
-                    onSubmit={handleSubmit}
+                    initialData={initialData}
                     disableClose={result.isOpen}
                     isLoading={false}
                 />

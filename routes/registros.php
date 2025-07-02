@@ -59,7 +59,7 @@ Route::middleware(['auth', HandleDinamicConnections::class])->group(function () 
 
     // Registros del sistema
     Route::prefix('registros')->group(function () use ($genericos) {
-        
+
         //? Registros genéricos
         foreach ($genericos as $key => $value) {
             Route::get(
@@ -71,5 +71,8 @@ Route::middleware(['auth', HandleDinamicConnections::class])->group(function () 
 
         Route::get('beneficiarios', fn() => Inertia::render('registros/beneficiarios'))
         ->name('registros.beneficiarios');
+
+        Route::post('register-records-new', [RecordsController::class, 'store'])
+        ->name('register.records.new');
     });
 });

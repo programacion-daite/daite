@@ -94,7 +94,7 @@ export default function ModalFormInertia({ disableClose = false, initialData, is
             return;
         }
 
-        post(route('register.records'), {
+        post(route('register.records.new'), {
             onSuccess: () => {
                 reset();
                 onClose();

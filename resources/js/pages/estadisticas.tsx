@@ -71,6 +71,7 @@ export default function Estadisticas() {
                             selectId: "id_modulo",
                             valueKey: "value"
                         }}
+                        // ! TODO: CAMBIAR DE EJECUTAR EN EL FRONTEND A EJECUTAR ENDPOINT
                         procedure={{
                             name: "p_traer_filtros",
                             params: {

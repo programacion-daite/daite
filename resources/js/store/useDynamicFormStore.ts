@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 
 import { TableItem } from '@/types/table';
+import { DatabaseField, FormDataType } from '@/types/form';
 
 type Error = {
   title: string
@@ -11,6 +12,8 @@ interface DynamicFormState {
   // Form state
   formData: Record<string, unknown>
   errors: Record<string, string>
+  initialData: FormDataType
+  dbFields: DatabaseField[]
 
   // Modal state
   isModalOpen: boolean
@@ -29,6 +32,8 @@ interface DynamicFormState {
   setFormData: (data: Record<string, unknown>) => void
   setFieldValue: (field: string, value: unknown) => void
   setErrors: (errors: Record<string, string>) => void
+  setInitialData: (data: FormDataType) => void
+  generateInitialData: () => FormDataType
 
   // Modal actions
   openCreateModal: () => void
@@ -47,6 +52,8 @@ interface DynamicFormState {
 const initialState = {
   errors: {},
   formData: {},
+  initialData: {},
+  dbFields: [],
   isModalOpen: false,
   modalMode: null,
   result: {
@@ -58,7 +65,7 @@ const initialState = {
   selectedItem: null
 }
 
-export const useDynamicFormStore = create<DynamicFormState>((set) => ({
+export const useDynamicFormStore = create<DynamicFormState>((set, get) => ({
   ...initialState,
 
   closeModal: () => set({
@@ -72,29 +79,36 @@ export const useDynamicFormStore = create<DynamicFormState>((set) => ({
       result: { errors: [], isOpen: false, isSuccess: false, message: '' }
     };
   }),
+
   // Modal actions
-  openCreateModal: () => set({
-    errors: {},
-    formData: {},
-    isModalOpen: true,
-    modalMode: 'create',
-    selectedItem: null
-  }),
+  openCreateModal: () => {
+    const { generateInitialData } = get();
+    set({
+      errors: {},
+      formData: {},
+      initialData: generateInitialData(),
+      isModalOpen: true,
+      modalMode: 'create',
+      selectedItem: null
+    });
+  },
 
   openEditModal: (item) => {
     const formattedData = Object.entries(item).reduce((acc, [key, value]) => ({
       ...acc,
-      [key]: value !== null && value !== undefined ? String(value) : ''
+      [key]: value
     }), {});
 
     set({
       errors: {},
       formData: formattedData,
+      initialData: formattedData,
       isModalOpen: true,
       modalMode: 'edit',
       selectedItem: item
     });
   },
+
   // Reset
   resetForm: () => set(initialState),
   setErrors: (errors) => set({ errors }),
@@ -103,8 +117,22 @@ export const useDynamicFormStore = create<DynamicFormState>((set) => ({
     set((state) => ({
       formData: { ...state.formData, [field]: value }
     })),
+
   // Form actions
   setFormData: (data) => set({ formData: data }),
+
+  setInitialData: (data) => set({ initialData: data }),
+
+  generateInitialData: () => {
+    const { modalMode, formData } = get();
+
+    if (modalMode === 'edit' && formData) {
+      return formData as FormDataType;
+    }
+
+    return {};
+  },
+
   showError: (message, errors = []) => set((state) => {
     return {
       isModalOpen: state.isModalOpen,

@@ -1,25 +1,30 @@
 import FormBody from '@/components/form/form-body';
 import { FormHeader } from '@/components/form/form-header';
 import { DynamicTable } from '@/components/table/dynamic-table';
-import { capitalize } from '@/lib/utils';
 import { TableItem } from '@/types/table';
 
 interface DynamicTableSectionProps {
     table: string;
+    title: string;
     primaryId: string;
     onNewClick: () => void;
     onEditClick: (item: TableItem) => void;
 }
 
-export default function DynamicTableSection({ onEditClick, onNewClick, primaryId, table }: DynamicTableSectionProps) {
-    const titulo = `Registros de ${capitalize(table.replace(/_/g, ' '))}`;
+export default function DynamicTableSection({ onEditClick, onNewClick, title, table, primaryId }: DynamicTableSectionProps) {
+    const titulo = `Registros de ${title}`;
 
     return (
         <div className="w-full">
             <FormHeader
                 title={titulo}
                 onSave={onNewClick}
-                onBack={() => window.history.back()}
+                onBack={() => {}}
+                backButtonProps={
+                    {
+                        // className: 'hidden'
+                    }
+                }
                 formId={`${table}Form`}
                 saveButtonProps={{ children: 'Crear' }}
             />

@@ -62,7 +62,8 @@ export const InputLabel = forwardRef<HTMLInputElement, InputLabelProps>(({
         )}
         {...props}
       />
-      {error && (
+      {error && <span className="text-red-500 text-sm">Este campo es requerido</span>}
+      {/* {error && (
         <p
           id={`${id}-error`}
           className="text-sm text-red-500 font-medium mt-1"
@@ -70,7 +71,7 @@ export const InputLabel = forwardRef<HTMLInputElement, InputLabelProps>(({
         >
           {typeof error === 'string' ? error : 'Este campo es requerido'}
         </p>
-      )}
+      )} */}
     </div>
   );
 });

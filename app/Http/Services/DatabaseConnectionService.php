@@ -39,10 +39,6 @@ class DatabaseConnectionService
             // Verificamos la conexión
             DB::connection(self::CONNECTION_NAME)->getPdo();
 
-            Log::info('Conexión establecida correctamente', [
-                'database' => $credentials->base_datos,
-                'host' => $credentials->hospedaje
-            ]);
         } catch (\Exception $e) {
             Log::error('Error al establecer la conexión: ' . $e->getMessage(), [
                 'credentials' => $credentials

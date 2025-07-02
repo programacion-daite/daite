@@ -5,6 +5,7 @@ import { twMerge } from 'tailwind-merge';
 import type { DatabaseField } from '@/types/form';
 
 import { DataType } from '@/types/table';
+import { FIELDS } from '@/constants';
 
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
@@ -120,28 +121,26 @@ export const buildGenericJSON = (data: Record<string, unknown>, table: string) =
 // Process field from database to generate appropriate structure
 export const processField = (field: DatabaseField, primaryId: string): DatabaseField => {
 
-    if (field.nombre && field.label && field.tipo) {
+    if (field.titulo && field.tipo) {
         return field;
     }
 
-    // Normalize field name
-    const nombre = field.nombre || field.id || field.campo;
-    const esForanea = field.selector === 'SI';
-    const esPrimaria = nombre === primaryId;
+    const name = field.titulo;
+    const isSelector = field.selector === 'SI';
+    const isPrimary = name === primaryId;
     const isVisible = field.visible === '1';
     const maxLength = field.longitud || 255;
     const isRequired = field.requerido === '1';
 
-    // Get field label
     let label = `${field.titulo} ${isRequired ? '*' : ''}`;
-    if (esPrimaria) {
+    if (isPrimary) {
         label = `ID ${label}`;
     }
 
     let componente: DatabaseField['componente'] = 'InputLabel';
     const tipo = field.tipo || 'text';
 
-    if (esForanea) {
+    if (isSelector) {
         componente = 'DynamicSelect';
     } else if (tipo === 'bit') {
         componente = 'DynamicSelect';
@@ -149,7 +148,7 @@ export const processField = (field: DatabaseField, primaryId: string): DatabaseF
         componente = 'DatePicker';
     } else if (tipo === 'numeric') {
         componente = 'MaskedInput';
-    } else if (/telefono|celular|whatsapp|cedula|rnc|identificacion/i.test(nombre || '')) {
+    } else if (/telefono|celular|whatsapp|cedula|rnc|identificacion/i.test(name || '')) {
         componente = 'MaskedInput';
     }
 
@@ -173,9 +172,9 @@ export const processField = (field: DatabaseField, primaryId: string): DatabaseF
             };
         }
     } else if (componente === 'MaskedInput') {
-        if (/telefono|celular|whatsapp/.test(nombre || '')) {
+        if (/telefono|celular|whatsapp/.test(name || '')) {
             parametros = { maskType: 'telefono' };
-        } else if (/cedula|rnc|identificacion/.test(nombre || '')) {
+        } else if (/cedula|rnc|identificacion/.test(name || '')) {
             parametros = { maskType: 'cedula' };
         } else if (tipo === 'numeric') {
             parametros = { maskType: 'dinero' };
@@ -186,18 +185,119 @@ export const processField = (field: DatabaseField, primaryId: string): DatabaseF
         parametros = { maxLength: maxLength };
     }
 
-    // Create field structure
     return {
         classname: isVisible ? 'col-span-1' : 'hidden',
         componente,
-        foranea: esForanea,
+        foranea: isSelector,
         label,
         longitud: maxLength.toString(),
-        nombre: nombre || '',
+        nombre: name || '',
         parametros,
         requerido: field.requerido || false,
         tipo,
     };
+};
+
+export const processFields = (fields: DatabaseField[]) => {
+    const primaryId = fields[0].titulo;
+    return fields.map(field => processField(field, primaryId));
+}
+
+// Nueva función para procesar campos con estructura original (campo, titulo, requerido como string)
+export const processFieldsFromAPI = (fields: Array<{
+    campo: string;
+    titulo: string;
+    tipo: string;
+    longitud: string;
+    visible: string;
+    requerido: string;
+    selector: string;
+    json: string;
+    alineacion: string;
+    [key: string]: any;
+}>) => {
+    const primaryId = fields[0]?.campo || '';
+
+    return fields.map(field => {
+        const isSelector = field.selector === 'SI';
+        const isPrimary = field.campo === primaryId;
+        const isVisible = field.visible === '1';
+        const maxLength = parseInt(field.longitud) || 255;
+        const isRequired = field.requerido === '1';
+
+        let label = `${field.titulo}`;
+        if (isPrimary) {
+            label = `ID ${label}`;
+        }
+
+        let componente: 'InputLabel' | 'DynamicSelect' | 'DatePicker' | 'MaskedInput' = 'InputLabel';
+        const tipo = field.tipo || 'text';
+
+        if (isSelector) {
+            componente = 'DynamicSelect';
+        } else if (tipo === 'bit') {
+            componente = 'DynamicSelect';
+        } else if (tipo === 'datetime') {
+            componente = 'DatePicker';
+        } else if (tipo === 'numeric') {
+            componente = 'MaskedInput';
+        } else if (/telefono|celular|whatsapp|cedula|rnc|identificacion/i.test(field.campo)) {
+            componente = 'MaskedInput';
+        }
+
+        let parametros: Record<string, unknown> = {
+            required: isRequired,
+        };
+
+        if (componente === 'DynamicSelect') {
+            if (tipo === 'bit') {
+                parametros = {
+                    ...parametros,
+                    options: [
+                        { label: 'No', value: '0' },
+                        { label: 'Si', value: '1' },
+                    ],
+                };
+            } else {
+                parametros = {
+                    ...parametros,
+                    options: field.json ? JSON.parse(field.json).map((option: { valor: string, descripcion: string }) => ({
+                            label: option.descripcion,
+                            value: option.valor.toString(),
+                        }))
+                        : [],
+                };
+            }
+        } else if (componente === 'MaskedInput') {
+            if (/telefono|celular|whatsapp/.test(field.campo)) {
+                parametros = { ...parametros, maskType: 'telefono' };
+            } else if (/cedula|rnc|identificacion/.test(field.campo)) {
+                parametros = { ...parametros, maskType: 'cedula' };
+            } else if (tipo === 'numeric') {
+                parametros = { ...parametros, maskType: 'dinero' };
+            } else {
+                parametros = { ...parametros, maskType: 'entero' };
+            }
+        } else if (componente === 'InputLabel') {
+            parametros = { ...parametros, maxLength: maxLength };
+        }
+
+        return {
+            nombre: field.campo,
+            label,
+            tipo,
+            longitud: maxLength.toString(),
+            visible: isVisible,
+            requerido: isRequired,
+            selector: field.selector,
+            json: field.json,
+            alineacion: field.alineacion,
+            componente,
+            foranea: isSelector,
+            parametros,
+            classname: isVisible ? 'col-span-1' : 'hidden',
+        };
+    });
 };
 
 // Función para obtener el formateador de valores según el tipo de dato para la tabla

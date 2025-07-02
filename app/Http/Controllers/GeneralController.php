@@ -2,74 +2,22 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Services\StoredProcedureService;
 use App\Utils\Helpers;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use App\Models\User;
-use Illuminate\Http\Response;
-use Illuminate\Contracts\Routing\ResponseFactory;
 
 class GeneralController extends Controller
 {
-    /**
-     * Lista de procedimientos permitidos
-     */
-    private const ALLOWED_PROCEDURES = [
-        'p_traer_filtros',
-        'p_traer_encabezado_consultas',
-        'p_traer_encabezado_registros',
-        'p_traer_encabezado_procesos',
-        'p_traer_encabezado_reportes',
-        'p_traer_entidades',
-        'p_traer_seguimientos',
-        'p_traer_unico_registro',
-        'p_traer_registros_consulta_principal',
-        'p_traer_programas',
-        'p_registrar_registros',
-        'p_traer_registros_combinados',
-        'p_traer_campos_registros',
-        'p_traer_registros',
-        'p_traer_informes',
-        'p_traer_filtros_json',
-        'p_traer_activos'
-    ];
-
-    /**
-     * Ejecuta un procedimiento almacenado y retorna su resultado
-     *
-     * @param Request $request
-     * @param string $procedure
-     * @return \Illuminate\Http\Response
-     */
-    private function executeProcedure(Request $request, string $procedure): Response|ResponseFactory
-    {
-        $request->merge(['procedimiento' => $procedure]);
-        $this->validateProcedure($procedure);
-
-        $data = json_encode($request->all());
-
-        return Helpers::executeProcedure($data);
-    }
-
-    /**
-     * Valida que el procedimiento esté en la lista de permitidos
-     *
-     * @param string $procedure
-     * @throws \Exception
-     */
-    private function validateProcedure(string $procedure): void
-    {
-        if (!in_array($procedure, self::ALLOWED_PROCEDURES)) {
-            throw new \Exception('Procedimiento no permitido');
-        }
-    }
+    public function __construct(
+        protected StoredProcedureService $storedProcedureService,
+    ) {}
 
     /**
      * Obtiene los filtros
      */
     public function getFilters(Request $request)
     {
-        return $this->executeProcedure($request, 'p_traer_filtros');
+        return $this->storedProcedureService->executeProcedure($request, 'p_traer_filtros');
     }
 
     /**
@@ -77,7 +25,7 @@ class GeneralController extends Controller
      */
     public function getQueryHeader(Request $request)
     {
-        return $this->executeProcedure($request, 'p_traer_encabezado_consultas');
+        return $this->storedProcedureService->executeProcedure($request, 'p_traer_encabezado_consultas');
     }
 
     /**
@@ -85,7 +33,7 @@ class GeneralController extends Controller
      */
     public function getRecordsHeader(Request $request)
     {
-        return $this->executeProcedure($request, 'p_traer_encabezado_registros');
+        return $this->storedProcedureService->executeProcedure($request, 'p_traer_encabezado_registros');
     }
 
     /**
@@ -93,7 +41,7 @@ class GeneralController extends Controller
      */
     public function getProcessesHeader(Request $request)
     {
-        return $this->executeProcedure($request, 'p_traer_encabezado_procesos');
+        return $this->storedProcedureService->executeProcedure($request, 'p_traer_encabezado_procesos');
     }
 
     /**
@@ -101,7 +49,7 @@ class GeneralController extends Controller
      */
     public function getReportsHeader(Request $request)
     {
-        return $this->executeProcedure($request, 'p_traer_encabezado_reportes');
+        return $this->storedProcedureService->executeProcedure($request, 'p_traer_encabezado_reportes');
     }
 
     /**
@@ -109,7 +57,7 @@ class GeneralController extends Controller
      */
     public function getEntities(Request $request)
     {
-        return $this->executeProcedure($request, 'p_traer_entidades');
+        return $this->storedProcedureService->executeProcedure($request, 'p_traer_entidades');
     }
 
     /**
@@ -117,7 +65,7 @@ class GeneralController extends Controller
      */
     public function getPaymentBatches(Request $request)
     {
-        return $this->executeProcedure($request, 'p_traer_seguimientos');
+        return $this->storedProcedureService->executeProcedure($request, 'p_traer_seguimientos');
     }
 
     /**
@@ -125,7 +73,7 @@ class GeneralController extends Controller
      */
     public function getSingleEntity(Request $request)
     {
-        return $this->executeProcedure($request, 'p_traer_unico_registro');
+        return $this->storedProcedureService->executeProcedure($request, 'p_traer_unico_registro');
     }
 
     /**
@@ -133,7 +81,7 @@ class GeneralController extends Controller
      */
     public function getInform(Request $request)
     {
-        return $this->executeProcedure($request, 'p_traer_informes');
+        return $this->storedProcedureService->executeProcedure($request, 'p_traer_informes');
     }
 
     /**
@@ -141,7 +89,6 @@ class GeneralController extends Controller
      */
     public function getSchema(Request $request)
     {
-        info('Obteniendo esquema', $request->all());
         $result = Helpers::getSchema($request);
         return response()->json(['data' => $result]);
     }
@@ -151,7 +98,7 @@ class GeneralController extends Controller
      */
     public function getMainQueryRecords(Request $request)
     {
-        return $this->executeProcedure($request, 'p_traer_registros_consulta_principal');
+        return $this->storedProcedureService->executeProcedure($request, 'p_traer_registros_consulta_principal');
     }
 
     /**
@@ -159,7 +106,7 @@ class GeneralController extends Controller
      */
     public function getCombinedRecords(Request $request)
     {
-        return $this->executeProcedure($request, 'p_traer_registros_combinados');
+        return $this->storedProcedureService->executeProcedure($request, 'p_traer_registros_combinados');
     }
 
     /**
@@ -187,7 +134,7 @@ class GeneralController extends Controller
      */
     public function registerRecords(Request $request)
     {
-        return $this->executeProcedure($request, 'p_registrar_registros');
+        return $this->storedProcedureService->executeProcedure($request, 'p_registrar_registros');
     }
 
     /**
@@ -195,7 +142,7 @@ class GeneralController extends Controller
      */
     public function getRegisterFields(Request $request)
     {
-        return $this->executeProcedure($request, 'p_traer_campos_registros');
+        return $this->storedProcedureService->executeProcedure($request, 'p_traer_campos_registros');
     }
 
     /**
@@ -203,7 +150,7 @@ class GeneralController extends Controller
      */
     public function getRegisterRecords(Request $request)
     {
-        return $this->executeProcedure($request, 'p_traer_registros');
+        return $this->storedProcedureService->executeProcedure($request, 'p_traer_registros');
     }
 
     /**
@@ -211,7 +158,7 @@ class GeneralController extends Controller
      */
     public function getFiltersJson(Request $request)
     {
-        return $this->executeProcedure($request, 'p_traer_filtros_json');
+        return $this->storedProcedureService->executeProcedure($request, 'p_traer_filtros_json');
     }
 
     /**
@@ -219,7 +166,7 @@ class GeneralController extends Controller
      */
     public function getActiveData(Request $request)
     {
-        return $this->executeProcedure($request, 'p_traer_activos');
+        return $this->storedProcedureService->executeProcedure($request, 'p_traer_activos');
     }
 }
 

@@ -3,6 +3,7 @@ import { AlertCircle, CheckCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
+import { usePage } from "@inertiajs/react"
 
 type Error = {
     title: string
@@ -60,7 +61,7 @@ function MessageSection({ message }: { message: string }) {
 function ErrorItem({ error }: { error: Error }) {
     return (
         <div className="bg-slate-50 rounded-lg p-4">
-            <p className="text-sm text-slate-600 mb-3 font-bold">Campos requeridos:</p>
+            {/* <p className="text-sm text-slate-600 mb-3 font-bold">Campos requeridos:</p> */}
             <div className="flex items-center gap-3">
                 <div className="w-3 h-3 rounded-full bg-red-400 animate-pulse" />
                 <span className="text-sm font-medium text-slate-700">{error.title}</span>

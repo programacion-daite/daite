@@ -33,6 +33,7 @@ interface ModalFormProps {
 export default function ModalFormInertia({ disableClose = false, initialData, isLoading = false, isOpen, mode, onClose, title }: ModalFormProps) {
     const props = usePage().props;
     const dbFields = props.fields as DatabaseField[];
+    const table = props.table as string;
     const fields = processFieldsFromAPI(dbFields);
 
     // Construir initialData si no viene por props
@@ -42,9 +43,11 @@ export default function ModalFormInertia({ disableClose = false, initialData, is
             return initialData;
         }
         if (fields && fields.length > 0) {
-            const data: Record<string, any> = {};
+            const data: Record<string, any> = {
+                table: table
+            };
             fields.forEach(field => {
-                data[field.nombre] = '';
+                data[field.nombre] = field.nombre.startsWith('id_') ? 0 : '';
             });
             return data;
         }
@@ -76,23 +79,23 @@ export default function ModalFormInertia({ disableClose = false, initialData, is
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        const validationErrors: Record<string, string> = {};
-        if (fields) {
-            fields.forEach(field => {
-                const isVisible = field.visible === true || field.visible === "1" || field.visible === 1 || field.visible === "true";
-                if (field.requerido && isVisible && (!data[field.nombre] || !String(data[field.nombre]).trim())) {
-                    validationErrors[field.nombre] = 'Este campo es requerido';
-                }
-            });
-        }
+        // const validationErrors: Record<string, string> = {};
+        // if (fields) {
+        //     fields.forEach(field => {
+        //         const isVisible = field.visible === true;
+        //         if (field.requerido && isVisible && (!data[field.nombre] || !String(data[field.nombre]).trim())) {
+        //             validationErrors[field.nombre] = 'Este campo es requerido';
+        //         }
+        //     });
+        // }
 
-        if (Object.keys(validationErrors).length > 0) {
-            Object.entries(validationErrors).forEach(([field, message]) => {
-                setError(field, message);
-            });
-            console.log(validationErrors);
-            return;
-        }
+        // if (Object.keys(validationErrors).length > 0) {
+        //     Object.entries(validationErrors).forEach(([field, message]) => {
+        //         setError(field, message);
+        //     });
+        //     console.log(validationErrors);
+        //     return;
+        // }
 
         post(route('register.records.new'), {
             onSuccess: () => {
@@ -100,6 +103,7 @@ export default function ModalFormInertia({ disableClose = false, initialData, is
                 onClose();
             },
             onError: (errs) => {
+                console.log(errs);
                 console.log('Errores del servidor:', errs);
             },
         });

@@ -134,7 +134,12 @@ class GeneralController extends Controller
      */
     public function registerRecords(Request $request)
     {
-        return $this->storedProcedureService->executeProcedure($request, 'p_registrar_registros');
+        $result = $this->storedProcedureService->executeProcedure($request, 'p_registrar_registros');
+
+        $content = $result->getContent();
+        $data = json_decode($content, true);
+
+        return redirect()->back()->with('result', $data);
     }
 
     /**

@@ -11,13 +11,7 @@ interface DynamicTableSectionProps {
     onEditClick: (item: TableItem) => void;
 }
 
-export default function DynamicTableSection({
-    onEditClick,
-    onNewClick,
-    title,
-    table,
-    primaryId
-}: DynamicTableSectionProps) {
+export default function DynamicTableSection({ onEditClick, onNewClick, title, table, primaryId }: DynamicTableSectionProps) {
     const titulo = `Registros de ${title}`;
 
     return (
@@ -26,9 +20,11 @@ export default function DynamicTableSection({
                 title={titulo}
                 onSave={onNewClick}
                 onBack={() => {}}
-                backButtonProps={{
-                    // className: 'hidden'
-                }}
+                backButtonProps={
+                    {
+                        // className: 'hidden'
+                    }
+                }
                 formId={`${table}Form`}
                 saveButtonProps={{ children: 'Crear' }}
             />
@@ -40,11 +36,7 @@ export default function DynamicTableSection({
             >
                 <div className="space-x-3">
                     <div className="w-full">
-                        <DynamicTable
-                            table={table}
-                            primaryId={primaryId}
-                            onDoubleClick={onEditClick}
-                        />
+                        <DynamicTable table={table} primaryId={primaryId} onDoubleClick={onEditClick} />
                     </div>
                 </div>
             </FormBody>

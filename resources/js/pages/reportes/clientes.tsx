@@ -1,5 +1,4 @@
-import { Head } from '@inertiajs/react';
-import { useForm } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import { ArrowLeft } from 'lucide-react';
 import { useState } from 'react';
 
@@ -38,23 +37,16 @@ export default function Clientes() {
         tipo_reporte: '01',
     });
 
-    const {
-        columnDefs,
-        defaultColDef,
-        loading,
-        refreshColumns,
-        refreshData,
-        rowData,
-    } = useAgGridData({
+    const { columnDefs, defaultColDef, loading, refreshColumns, refreshData, rowData } = useAgGridData({
         columnsRoute: 'reports.header',
         dataRoute: 'get.active.data',
         fetchData: false,
         loadColumns: true,
         parametrosColumna: {
             programa: 'reportes.activos',
-            tipo_reporte: data.tipo_reporte
+            tipo_reporte: data.tipo_reporte,
         },
-        parametrosDatos: data
+        parametrosDatos: data,
     });
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -81,29 +73,28 @@ export default function Clientes() {
         <>
             <Head title="Reportes de Clientes" />
 
-                <div className="bg-[#e6f0f9] p-4 rounded-t-md flex items-center w-full">
-                    <Button variant="ghost" size="icon" className="bg-blue-600 text-white h-8 w-8">
-                        <ArrowLeft className="h-4 w-4" />
-                    </Button>
-                    <h2 className="text-xl font-semibold text-[#0066b3] flex-grow text-center">Reportes de Activos</h2>
-                </div>
+            <div className="flex w-full items-center rounded-t-md bg-[#e6f0f9] p-4">
+                <Button variant="ghost" size="icon" className="h-8 w-8 bg-blue-600 text-white">
+                    <ArrowLeft className="h-4 w-4" />
+                </Button>
+                <h2 className="flex-grow text-center text-xl font-semibold text-[#0066b3]">Reportes de Activos</h2>
+            </div>
 
-            <div className="border-t-4 border-blue-800 w-full mt-1"></div>
+            <div className="mt-1 w-full border-t-4 border-blue-800"></div>
 
             <form onSubmit={handleSubmit} className="p-4">
                 <div className="grid grid-cols-12 gap-4">
-
-                    <div className='col-span-3'>
+                    <div className="col-span-3">
                         <DynamicSelect
                             label="Sucursal"
                             id="id_sucursal"
                             name="sucursal"
                             procedure={{
-                                name: "p_traer_filtros",
+                                name: 'p_traer_filtros',
                                 params: {
-                                    renglon: "sucursales",
-                                    valor: (value) => value
-                                }
+                                    renglon: 'sucursales',
+                                    valor: (value) => value,
+                                },
                             }}
                             onValueChange={(value) => setData('sucursal', value)}
                             value={data.sucursal}
@@ -113,21 +104,21 @@ export default function Clientes() {
                         />
                     </div>
 
-                    <div className='col-span-2'>
+                    <div className="col-span-2">
                         <DatePicker label="Fecha de registro" id="fecha_registro" />
                     </div>
 
-                    <div className='col-span-3'>
+                    <div className="col-span-3">
                         <DynamicSelect
                             label="Grupo"
                             id="id_grupo"
                             name="grupo"
                             procedure={{
-                                name: "p_traer_filtros",
+                                name: 'p_traer_filtros',
                                 params: {
-                                    renglon: "grupos",
-                                    valor: (value) => value
-                                }
+                                    renglon: 'grupos',
+                                    valor: (value) => value,
+                                },
                             }}
                             onValueChange={(value) => setData('grupo', value)}
                             value={data.grupo}
@@ -137,17 +128,17 @@ export default function Clientes() {
                         />
                     </div>
 
-                    <div className='col-span-2'>
+                    <div className="col-span-2">
                         <DynamicSelect
                             label="Ubicación"
                             id="id_ubicacion"
                             name="ubicacion"
                             procedure={{
-                                name: "p_traer_filtros",
+                                name: 'p_traer_filtros',
                                 params: {
-                                    renglon: "ubicaciones",
-                                    valor: (value) => value
-                                }
+                                    renglon: 'ubicaciones',
+                                    valor: (value) => value,
+                                },
                             }}
                             onValueChange={(value) => setData('ubicacion', value)}
                             value={data.ubicacion}
@@ -157,17 +148,17 @@ export default function Clientes() {
                         />
                     </div>
 
-                    <div className='col-span-2'>
+                    <div className="col-span-2">
                         <DynamicSelect
                             label="Categoria"
                             id="id_categoria"
                             name="categoria"
                             procedure={{
-                                name: "p_traer_filtros",
+                                name: 'p_traer_filtros',
                                 params: {
-                                    renglon: "categorias",
-                                    valor: (value) => value
-                                }
+                                    renglon: 'categorias',
+                                    valor: (value) => value,
+                                },
                             }}
                             onValueChange={(value) => setData('categoria', value)}
                             value={data.categoria}
@@ -177,17 +168,17 @@ export default function Clientes() {
                         />
                     </div>
 
-                    <div className='col-span-3'>
+                    <div className="col-span-3">
                         <DynamicSelect
                             label="Estado"
                             id="id_estado"
                             name="estado"
                             procedure={{
-                                name: "p_traer_filtros",
+                                name: 'p_traer_filtros',
                                 params: {
-                                    renglon: "estados",
-                                    valor: (value) => value
-                                }
+                                    renglon: 'estados',
+                                    valor: (value) => value,
+                                },
                             }}
                             onValueChange={(value) => setData('estado', value)}
                             value={data.estado}
@@ -197,17 +188,17 @@ export default function Clientes() {
                         />
                     </div>
 
-                    <div className='col-span-2'>
+                    <div className="col-span-2">
                         <DynamicSelect
                             label="Condicion"
                             id="id_condicion"
                             name="condicion"
                             procedure={{
-                                name: "p_traer_filtros",
+                                name: 'p_traer_filtros',
                                 params: {
-                                    renglon: "tipos",
-                                    valor: (value) => value
-                                }
+                                    renglon: 'tipos',
+                                    valor: (value) => value,
+                                },
                             }}
                             onValueChange={(value) => setData('tipo', value)}
                             value={data.tipo}
@@ -217,16 +208,16 @@ export default function Clientes() {
                         />
                     </div>
 
-                    <div className='col-span-3'>
+                    <div className="col-span-3">
                         <DynamicSelect
                             label="Registrado por"
                             id="id_usuario_registro"
                             name="id_usuario_registro"
                             procedure={{
-                                name: "p_traer_filtros",
+                                name: 'p_traer_filtros',
                                 params: {
-                                    renglon: "usuarios"
-                                }
+                                    renglon: 'usuarios',
+                                },
                             }}
                             onValueChange={(value) => setData('id_usuario_registro', value)}
                             value={data.id_usuario_registro}
@@ -235,52 +226,40 @@ export default function Clientes() {
                             error={errors.id_usuario_registro}
                         />
                     </div>
-
-
                 </div>
 
-                <div className="border-t-4 border-blue-800 w-full mt-2"></div>
+                <div className="mt-2 w-full border-t-4 border-blue-800"></div>
 
-                <div className='flex '>
-                        <DynamicSelect
-                            label="Tipo Reporte"
-                            id="tipo_reporte"
-                            name="tipo_reporte"
-                            procedure={{
-                                name: "p_traer_filtros",
-                                params: {
-                                    renglon: "tipos_reportes"
-                                }
-                            }}
-                            onValueChange={(value) => setData('tipo_reporte', value)}
-                            value={data.tipo_reporte}
-                            placeholder="Selecciona una opción"
-                            error={errors.tipo_reporte}
-                        />
+                <div className="flex">
+                    <DynamicSelect
+                        label="Tipo Reporte"
+                        id="tipo_reporte"
+                        name="tipo_reporte"
+                        procedure={{
+                            name: 'p_traer_filtros',
+                            params: {
+                                renglon: 'tipos_reportes',
+                            },
+                        }}
+                        onValueChange={(value) => setData('tipo_reporte', value)}
+                        value={data.tipo_reporte}
+                        placeholder="Selecciona una opción"
+                        error={errors.tipo_reporte}
+                    />
                 </div>
 
                 <div className="mt-6 flex gap-2">
-                    <Button
-                        type="submit"
-                        className="bg-blue-600 text-white hover:bg-blue-700 hover:text-black"
-                        disabled={processing}
-                    >
+                    <Button type="submit" className="bg-blue-600 text-white hover:bg-blue-700 hover:text-black" disabled={processing}>
                         {processing ? 'Procesando...' : 'Buscar'}
                     </Button>
 
-                    <Button
-                        type="reset"
-                        onClick={handleReset}
-                        className="bg-yellow-500 text-white hover:bg-yellow-400 hover:text-black"
-                    >
+                    <Button type="reset" onClick={handleReset} className="bg-yellow-500 text-white hover:bg-yellow-400 hover:text-black">
                         Limpiar
                     </Button>
                 </div>
-
             </form>
 
             <div className="flex h-full w-full flex-1 flex-col gap-4 rounded-xl p-4">
-
                 <DataTable
                     rowData={rowData}
                     columnDefs={columnDefs}
@@ -290,9 +269,7 @@ export default function Clientes() {
                     onRowClick={handleRowClick}
                     onDoubleClick={handleDoubleClick}
                 />
-
             </div>
-
         </>
     );
 }

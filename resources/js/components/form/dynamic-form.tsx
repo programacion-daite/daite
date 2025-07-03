@@ -23,8 +23,8 @@ export default function RegistroDinamico() {
 
 function RegistroDinamicoContent() {
     const props = usePage().props;
-    const table = (props.table as string);
-    const primaryId = (props.primaryId as string);
+    const table = props.table as string;
+    const primaryId = props.primaryId as string;
     const registerName = table.replace(/_/g, ' ');
 
     const {
@@ -80,7 +80,7 @@ function RegistroDinamicoContent() {
                     title={result.isSuccess ? SUCCESS_TITLES.SUCCESS : SUCCESS_TITLES.INCOMPLETE_INFO}
                     message={result.message}
                     errors={result.errors || []}
-                    status={result.isSuccess ? 'success': 'error'}
+                    status={result.isSuccess ? 'success' : 'error'}
                 />
             </Suspense>
         </>

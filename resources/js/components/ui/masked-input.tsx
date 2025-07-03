@@ -22,7 +22,7 @@ const masks: Record<string, MaskitoOptions> = {
     mask: [/\d/, /\d/, /\d/, /\d/, /\d/, /\d/, /\d/, /\d/],
   },
   telefono: {
-    mask: ["(", /\d/, /\d/, /\d/, ") ", /\d/, /\d/, /\d/, "-", /\d/, /\d/, /\d/, /\d/],
+    mask: ["(", /\d/, /\d/, /\d/, ") ", /\d/, /\d/, /\d/ , /\d/, "-", /\d/, /\d/, /\d/, /\d/],
   },
 };
 

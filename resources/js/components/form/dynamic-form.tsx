@@ -5,8 +5,7 @@ import { lazy, Suspense } from 'react';
 import { SUCCESS_TITLES } from '@/constants';
 import { TableProvider } from '@/contexts/tableContext';
 import { useDynamicFormModal } from '@/hooks/form/use-dynamic-form-modal';
-import { capitalize, focusFieldAndClear } from '@/lib/utils';
-import { useDynamicFormStore } from '@/store/useDynamicFormStore';
+import { capitalize } from '@/lib/utils';
 
 const DynamicTableSection = lazy(() => import('@/components/form/dynamic-table-section'));
 // const ModalForm = lazy(() => import('@/components/form/modal-form'));
@@ -27,28 +26,8 @@ function RegistroDinamicoContent() {
     const primaryId = props.primaryId as string;
     const registerName = table.replace(/_/g, ' ');
 
-<<<<<<< HEAD
     const { handleCloseModal, handleCloseResult, handleOpenEditForm, handleOpenNewForm, isModalOpen, modalMode, result, initialData } =
         useDynamicFormModal();
-=======
-    const {
-        handleCloseModal,
-        handleCloseResult: handleCloseResultOrig,
-        handleOpenEditForm,
-        handleOpenNewForm,
-        isModalOpen,
-        modalMode,
-        result,
-        initialData,
-    } = useDynamicFormModal();
->>>>>>> origin/feature/refactor_dynamic_data_fetching
-
-    const { focusField, clearFocusField } = useDynamicFormStore();
-
-    const handleCloseResult = () => {
-        handleCloseResultOrig();
-        focusFieldAndClear(focusField, clearFocusField);
-    };
 
     return (
         <>

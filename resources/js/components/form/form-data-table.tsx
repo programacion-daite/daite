@@ -7,6 +7,8 @@ import { usePage } from '@inertiajs/react';
 import { Pencil } from 'lucide-react';
 import { useCallback, useState } from 'react';
 
+import { useDynamicFormModal } from '@/hooks/form/use-dynamic-form-modal';
+
 type Field = { campo: string; visible: string; titulo: string; data: string[] };
 
 export const FormDataTableSection = () => {
@@ -28,6 +30,8 @@ export const FormDataTableSection = () => {
     const handleFilterChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         setFilterText(e.target.value);
     }, []);
+
+    const { handleOpenEditForm } = useDynamicFormModal();
 
     return (
         <div className="mx-auto w-full space-y-6 p-6">
@@ -54,6 +58,7 @@ export const FormDataTableSection = () => {
                                 <TableRow
                                     key={row[primaryId as string] || index}
                                     className={`border-b border-gray-100 transition-all duration-200 hover:bg-blue-50/50 hover:shadow-sm ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'} `}
+                                    onDoubleClick={() => handleOpenEditForm(row)}
                                 >
                                     {allFields.map((field) => (
                                         <TableCell key={field.campo} className="py-4">
@@ -63,7 +68,7 @@ export const FormDataTableSection = () => {
                                     <TableCell className="px-6 py-4 text-center">
                                         <button
                                             className="text-blue-600 hover:text-blue-800 focus:outline-none"
-                                            onClick={() => console.log(`Editar ${row[index as number]}`)}
+                                            onClick={() => handleOpenEditForm(row)}
                                         >
                                             <Pencil className="h-5 w-5" />
                                         </button>

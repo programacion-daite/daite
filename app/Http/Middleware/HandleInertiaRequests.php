@@ -105,6 +105,7 @@ class HandleInertiaRequests extends Middleware
             'companyData' => $companyData,
             'applicationRoutes' => $applicationRoutes,
             'userGlobalConfig' => $userGlobalConfig,
+            'result' => $request->session()->get('result'),
         ];
     }
 
@@ -117,7 +118,7 @@ class HandleInertiaRequests extends Middleware
     protected function getUserGlobalConfig(Request $request): array
     {
         $idUsuario = $request->user()->id_usuario;
-        
+
         $configuraciones = app(\App\Http\Services\DatabaseConnectionService::class)
             ->getConnection()
             ->select('EXEC [dbo].[p_traer_configuraciones] ?, ?, ?', [$idUsuario, '', '']);

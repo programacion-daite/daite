@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 
 import { RenderEditButton } from '@/components/table/utils/shared-table-utils';
 import { getValueFormatterByType } from '@/lib/utils';
-import { TableButton, TableColumn, TableItem } from '@/types/table';
+import { DataType, TableButton, TableColumn, TableItem } from '@/types/table';
 import { TABLE_LANGUAGE_ES } from '@/utils/table-language';
 
 interface UseGenericTableProps {
@@ -23,6 +23,7 @@ interface UseAgGridDataReturn {
     refreshColumns?: () => Promise<void>;        // Función para recargar columnas
     loadData?: (filters?: Record<string, string>) => Promise<void>;  // Función para cargar datos con filtros
 }
+
 
 const SUMA_MODO = {
     CONTAR_FILAS: 'filas',   // Contar número de filas
@@ -48,7 +49,7 @@ export function useGenericTableSSR({
         if (!columns) return [];
 
         const colDefs: ColDef<TableColumn>[] = columns.map((col: TableColumn) => {
-            const formatter = getValueFormatterByType(col.tipo);
+            const formatter = getValueFormatterByType(col.tipo as DataType);
             return {
                 cellStyle: {
                     fontWeight: 'bold',

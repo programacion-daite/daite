@@ -52,6 +52,13 @@ class RecordsController extends Controller
             'procedure' => 'p_registrar_registros',
             'fields' => $fields,
         ]);
-        return $result;
+
+        if ($result[0]->codigo_estado === '200') {
+            return redirect()->back()->with('result', $result);
+        } else {
+            info('adio, fue un error');
+            return redirect()->back()
+                ->withErrors([$result]);
+        }
     }
 }

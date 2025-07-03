@@ -6,7 +6,6 @@ import { SUCCESS_TITLES } from '@/constants';
 import { usePage, router } from '@inertiajs/react';
 import { useResultModalStore } from '@/store/useDynamicFormStore';
 import { focusFieldAndClear } from '@/lib/utils';
-import { useDynamicFormStore } from '@/store/useDynamicFormStore';
 
 interface AppLayoutProps {
     children: ReactNode;

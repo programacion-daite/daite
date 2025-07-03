@@ -163,8 +163,8 @@ export const DynamicSelect = memo(function DynamicSelect({
     // Filtrar opciones basado en la búsqueda
     const filteredOptions = useMemo(() => {
         if (!searchValue.trim()) return options;
-        
-        return options.filter(option => 
+
+        return options.filter(option =>
             option.label.toLowerCase().includes(searchValue.toLowerCase()) &&
             option.value !== '_empty'
         );
@@ -274,16 +274,16 @@ export const DynamicSelect = memo(function DynamicSelect({
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                     </PopoverTrigger>
-                    <PopoverContent 
-                        className="p-0" 
+                    <PopoverContent
+                        className="p-0"
                         align="start"
                         sideOffset={4}
                         style={{ width: popoverWidth }}
                     >
                         <Command shouldFilter={false}>
                             {shouldShowSearch && (
-                                <CommandInput 
-                                    placeholder={`Buscar ${label.toLowerCase().replace('*', '')}...`} 
+                                <CommandInput
+                                    placeholder={`Buscar ${label.toLowerCase().replace('*', '')}...`}
                                     className="h-9"
                                     onValueChange={(search) => {
                                         setSearchValue(search);

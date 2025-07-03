@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { usePage } from '@inertiajs/react';
 import { Pencil } from 'lucide-react';
 import { useCallback, useState } from 'react';
+
 type Field = { campo: string; visible: string; titulo: string; data: string[] };
 
 export const FormDataTableSection = () => {

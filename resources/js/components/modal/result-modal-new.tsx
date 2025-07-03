@@ -60,15 +60,15 @@ function MessageSection({ message }: { message: string }) {
 function ErrorItem({ error }: { error: Error }) {
     return (
         <div className="bg-slate-50 rounded-lg p-4">
-            <p className="text-sm text-slate-600 mb-3 font-bold">Campos requeridos:</p>
+            {/* <p className="text-sm text-slate-600 mb-3 font-bold">Campos requeridos:</p> */}
             <div className="flex items-center gap-3">
                 <div className="w-3 h-3 rounded-full bg-red-400 animate-pulse" />
                 <span className="text-sm font-medium text-slate-700">{error.title}</span>
-                <div className="ml-auto">
+                {/* <div className="ml-auto">
                     <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full">
                         Obligatorio
                     </span>
-                </div>
+                </div> */}
             </div>
             {error.message && (
                 <p className="text-sm text-slate-500 mt-2">{error.message}</p>
@@ -104,7 +104,9 @@ export default function ResultModalNew({
             <DialogContent className="max-w-md md:max-w-lg rounded-lg gap-0 border-0 p-0 overflow-hidden">
                 <ModalHeader title={title} status={status} />
 
-                <MessageSection message={message} />
+                {!errors.length && (
+                    <MessageSection message={message} />
+                )}
 
                 <div className="p-6 space-y-4">
                     <ErrorsSection errors={errors} />

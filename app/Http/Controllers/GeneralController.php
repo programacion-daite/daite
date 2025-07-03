@@ -3,11 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Http\Services\StoredProcedureService;
+use App\Traits\ExecuteProcedureTrait;
 use App\Utils\Helpers;
 use Illuminate\Http\Request;
 
 class GeneralController extends Controller
 {
+    use ExecuteProcedureTrait;
+
     public function __construct(
         protected StoredProcedureService $storedProcedureService,
     ) {}
@@ -17,7 +20,21 @@ class GeneralController extends Controller
      */
     public function getFilters(Request $request)
     {
-        return $this->storedProcedureService->executeProcedure($request, 'p_traer_filtros');
+        // TODO: Validate request
+        $request->validate([
+            'renglon' => ['required', 'string', 'max:30'],
+            'parametros' => ['nullable', 'array'],
+        ]);
+        $renglon = $request->input('renglon');
+        $payload = [
+            'procedure' => 'p_traer_filtros_json',
+            'fields' => [
+                'id_usuario' => $request->user()->id_usuario,
+                'renglon' => $renglon,
+            ],
+        ];
+
+        return $this->executeProcedure($payload);
     }
 
     /**

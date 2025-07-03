@@ -17,7 +17,7 @@ class RecordsController extends Controller
         $table = $metadata['tabla'];
         $dbResult = $this->executeProcedure([
             'procedure' => 'p_traer_registros',
-            'fields' => ['renglon' => $table, 'salida' => 'JSON_CON_ENCABEZADO'],
+            'fields' => ['id_usuario' => $request->user()->id_usuario, 'renglon' => $table, 'salida' => 'JSON_CON_ENCABEZADO'],
         ]);
 
         $data = json_decode($dbResult[0]->resultado, true);
@@ -42,6 +42,7 @@ class RecordsController extends Controller
         $keys = implode(',', array_keys($data));
         $values = implode(',', array_map(fn($v) => is_null($v) ? '' : $v, array_values($data)));
         $fields = [
+            'id_usuario' => $request->user()->id_usuario,
             'json' => [
                 'tabla' => $table,
                 'campos' => $keys,

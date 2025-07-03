@@ -47,6 +47,10 @@ interface DynamicFormState {
 
   // Reset
   resetForm: () => void
+
+  focusField: string
+  setFocusField: (field: string) => void
+  clearFocusField: () => void
 }
 
 const initialState = {
@@ -62,7 +66,8 @@ const initialState = {
     isSuccess: false,
     message: ''
   },
-  selectedItem: null
+  selectedItem: null,
+  focusField: ''
 }
 
 export const useDynamicFormStore = create<DynamicFormState>((set, get) => ({
@@ -146,5 +151,51 @@ export const useDynamicFormStore = create<DynamicFormState>((set, get) => ({
       isModalOpen: state.isModalOpen,
       result: { errors: [], isOpen: true, isSuccess: true, message }
     };
-  })
+  }),
+
+  focusField: '',
+  setFocusField: (field) => set({ focusField: field }),
+  clearFocusField: () => set({ focusField: '' })
 }))
+
+// Nuevo store global para el ResultModal
+export type ResultModalError = {
+  title: string;
+  message: string;
+};
+
+interface ResultModalState {
+  isOpen: boolean;
+  isSuccess: boolean;
+  message: string;
+  errors: ResultModalError[];
+  status: 'success' | 'error';
+  focusField: string;
+  openResult: (payload: { message: string; errors?: ResultModalError[]; status: 'success' | 'error'; focusField?: string }) => void;
+  closeResult: () => void;
+  clearFocusField: () => void;
+}
+
+const initialResultState = {
+  isOpen: false,
+  isSuccess: false,
+  message: '',
+  errors: [],
+  status: 'success' as 'success' | 'error',
+  focusField: '',
+};
+
+export const useResultModalStore = create<ResultModalState>((set) => ({
+  ...initialResultState,
+  openResult: ({ message, errors = [], status, focusField = '' }) =>
+    set({
+      isOpen: true,
+      isSuccess: status === 'success',
+      message,
+      errors,
+      status,
+      focusField,
+    }),
+  closeResult: () => set(initialResultState),
+  clearFocusField: () => set({ focusField: '' }),
+}));

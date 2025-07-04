@@ -1,9 +1,10 @@
-import { numericFormat } from '@/lib/utils';
-import { DataTableProps, DataTableRef, TableItem } from '@/types/table';
-import { TABLE_LANGUAGE_ES } from '@/utils/table-language';
 import { AllCommunityModule, GridApi, GridReadyEvent, ModuleRegistry, RowClickedEvent, RowDoubleClickedEvent, themeQuartz } from 'ag-grid-community';
 import { AgGridReact } from 'ag-grid-react';
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+
+import { numericFormat } from '@/lib/utils';
+import { DataTableProps, DataTableRef, TableItem } from '@/types/table';
+import { TABLE_LANGUAGE_ES } from '@/utils/table-language';
 
 import { InputLabel } from '../ui/input-label';
 

@@ -3,7 +3,7 @@ import { FC } from 'react';
 import { DynamicTableProps } from '@/types/table';
 
 // import { DataTable } from './data-table';
-import { FormDataTableSection } from '../form/form-data-table';
+import { FormDataTable } from '../form/form-data-table';
 
 const styleConfig = {
     headerColor: '#005CAC',
@@ -39,7 +39,7 @@ export const DynamicTable: FC<DynamicTableProps> = ({ onAction, onDoubleClick, o
 
     return (
         <div className={`${styleConfig.theme} h-full w-full`}>
-            <FormDataTableSection />
+            <FormDataTable />
         </div>
     );
 };
